@@ -7,14 +7,24 @@ from app import app, db
 from api.models import Usuario
 from werkzeug.security import generate_password_hash
 from dotenv import load_dotenv
+from api.models import Proveedor, Gasto, Usuario, Restaurante, Venta
 
 load_dotenv()
 
 with app.app_context():
-    print("🧹 Borrando usuarios existentes...")
-    Usuario.query.delete()
-    db.session.commit()
+    print("🧹 Borrando datos existentes...")
+    
+    # Primero eliminar registros hijos
+    Gasto.query.delete()
+    Venta.query.delete()  # opcional, pero recomendable
+    Proveedor.query.delete()  # si quieres limpiar por completo
 
+    # Luego eliminar registros padres
+    Usuario.query.delete()
+    Restaurante.query.delete()
+    
+    db.session.commit()
+    
     print("👤 Creando admin...")
     admin = Usuario(
         nombre="Heider Fandiño",
@@ -26,7 +36,6 @@ with app.app_context():
     )
     db.session.add(admin)
     db.session.commit()
-
     print("✅ Admin creado con éxito.")
 
 
