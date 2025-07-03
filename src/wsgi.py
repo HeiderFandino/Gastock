@@ -4,5 +4,7 @@
 
 from app import app
 
+application = app  # define 'application' para gunicorn
+
 if __name__ == "__main__":
     app.run()
