@@ -1,12 +1,11 @@
-# Schema documented at https://render.com/docs/yaml-spec
 services:
-  - type: web # valid values: https://render.com/docs/yaml-spec#type
+  - type: web
     region: ohio
     name: sample-service-name
-    env: python # valid values: https://render.com/docs/yaml-spec#environment
+    env: python
     buildCommand: "./render_build.sh"
     startCommand: "gunicorn wsgi --chdir ./src/"
-    plan: free # optional; defaults to starter
+    plan: free
     numInstances: 1
     envVars:
       - key: VITE_BASENAME
@@ -19,17 +18,17 @@ services:
         value: any_key_works
       - key: PYTHON_VERSION
         value: 3.10.6
-      - key: DATABASE_URL # Render PostgreSQL database
+      - key: DATABASE_URL
         fromDatabase:
           name: postgresql-trapezoidal-42170
           property: connectionString
       - key: JWT_SECRET_KEY
         value: tu_clave_super_secreta
       - key: SENDGRID_API_KEY
-        value: tu_api_key_de_sendgrid
+        value: tu_api_key_real_aqui
 
-databases: # Render PostgreSQL database
+databases:
   - name: postgresql-trapezoidal-42170
     region: ohio
-    ipAllowList: [] # only allow internal connections
-    plan: free # optional; defaults to starter
+    ipAllowList: []
+    plan: free
