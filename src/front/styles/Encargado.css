@@ -1,0 +1,20 @@
+.btn {
+  color: #fff !important;
+  background-color: #ff5d1d !important;
+  padding: 10px 10px;
+  font-family: sans-serif;
+  border-radius: 10px;
+  text-align: center;
+  border: none !important;
+}
+
+.btn.nobg {
+  background-color: #fff !important;
+  border: 1px solid #ff5d1d !important;
+  color: #000000 !important;
+}
+
+button.btn:hover {
+  background: #e24508 !important;
+  color: #fff !important;
+}

@@ -1,0 +1,197 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap");
+
+body,
+html,
+* {
+  font-family: "Quicksand", sans-serif !important;
+}
+.enlacevertodo {
+  text-decoration: none;
+  padding: 4px;
+  background: #ff5d1d;
+  border-radius: 6px;
+  color: #fff;
+  border: 1px solid #db3e00;
+  font-size: 0.8rem !important;
+}
+.enlacevertodo:hover {
+  cursor: pointer;
+  background: #bb3e0c;
+}
+.barralarga {
+  padding: 10px;
+  background: #ff5d1d;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  color: #fff;
+}
+.bg-orange {
+  background-color: #ff7741 !important;
+  color: rgb(255, 255, 255) !important;
+  color: #ff7741 !important;
+}
+.color-orange {
+  color: #ff7741 !important;
+}
+.color-orange-bold {
+  color: #ff7741 !important;
+  font-weight: 500 !important;
+}
+.btn-outline-orange {
+  background-color: rgb(255 255 255 / 50%) !important;
+  border: 1px solid #ffb496 !important;
+  color: #000000 !important;
+}
+.btn-outline-orange.active {
+  background: #ff5d1d !important;
+  border: 1px solid #c63b04 !important;
+  color: #fff !important;
+}
+.card.container .nosotros p {
+  font-size: 1rem !important;
+}
+.boder-orange {
+  border: 1px solid #c43c06;
+}
+.text-info.strong {
+  color: rgb(0 142 170) !important;
+}
+button.bg-orange:hover {
+  background-color: #f55d21 !important;
+}
+
+.fs-7 {
+  font-size: 0.9rem;
+}
+.footer-landing.contacto {
+  background: rgba(255, 255, 255, 0.6) !important;
+  width: 310px;
+  margin: 0 auto;
+  border-radius: 4px;
+  font-weight: bold;
+}
+.proveedor-header span.proveedor-zone {
+  color: #000000 !important;
+  background: #ffffff;
+  border: 1px solid #c9c2c2;
+}
+.proveedor-header span {
+  color: #f94700 !important;
+}
+table thead tr th {
+  text-align: left;
+}
+.table > thead tr th {
+  background: #396d81 !important;
+  color: #ffffff !important;
+}
+
+.table > tbody tr td {
+  background: #ffffff82;
+}
+.vh-90 {
+  height: 90vh !important;
+}
+.vh-70 {
+  height: 70vh !important;
+}
+.vh-10 {
+  height: 10vh !important;
+}
+.w-60 {
+  width: 60px !important;
+}
+
+/* .custom-sidebar {
+  overflow-x: hidden !important;
+} */
+.rtl-scroll {
+  direction: rtl;
+  text-align: left;
+}
+
+.ltr-scroll {
+  direction: ltr;
+  text-align: left;
+}
+
+.dashboard-container {
+  direction: ltr;
+  align-self: flex-start;
+  background-color: #f3f3f3b5;
+}
+.custom-sidebar {
+  overflow: scroll !important;
+  direction: rtl;
+}
+
+.custom-sidebar > div {
+  direction: ltr;
+}
+.wrapper-content {
+  height: 90vh !important;
+}
+.nav-link.pestania {
+  color: black !important;
+}
+
+a.nav-link.pestania.active {
+  box-shadow: inset 0px 4px 0px rgb(255 93 29);
+  border-bottom: none;
+  color: #af3200 !important;
+}
+span.w-auto {
+  width: auto !important;
+}
+span.w-60 {
+  width: auto !important;
+}
+.usuario {
+  padding: 5px 10px;
+  background: #f0f0f0;
+  border-radius: 10px;
+  border: 1px solid #ff5d1d;
+}
+@media (max-width: 2100px) {
+  input.form-control.custom-gastos-fecha {
+    width: 40%;
+  }
+  .restauranteDash {
+    max-width: 24% !important;
+  }
+}
+
+@media (max-width: 1500px) {
+  input.form-control.custom-gastos-fecha {
+    width: 40%;
+  }
+  .restauranteDash {
+    max-width: initial !important;
+  }
+}
+
+@media (max-width: 972px) {
+  .wrapper-content {
+    height: 80vh !important;
+  }
+  input.form-control.custom-gastos-fecha {
+    width: 22%;
+  }
+}
+@media (max-width: 767px) {
+  span.w-60 {
+    width: auto !important;
+  }
+  span.w-auto {
+    width: 60px !important;
+  }
+  .logout {
+    left: 10px !important;
+  }
+  .dashboard-container {
+    margin: 0 auto !important;
+  }
+  .dashboard-container input.form-control.custom-gastos-fecha {
+    width: 100% !important;
+  }
+}

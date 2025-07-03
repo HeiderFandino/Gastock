@@ -1,0 +1,19 @@
+.inicio {
+  padding: 20px 2px;
+  border-radius: 14px;
+  width: 95%;
+  max-width: 480px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-in-out;
+  font-family: "Inter", sans-serif;
+}
+
+form {
+  padding: 20px 2px;
+  border-radius: 14px;
+  width: 95%;
+  max-width: 480px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-in-out;
+  font-family: "Inter", sans-serif;
+}
