@@ -36,7 +36,7 @@ export const DetalleGastosMensual = () => {
     if (!user?.restaurante_id) return;
     gastoServices
       .getProveedores(user.restaurante_id)
-      .then((list) => setProveedoresList(list))
+      .then(setProveedoresList)
       .catch(() => {});
   }, [user]);
 
@@ -44,32 +44,32 @@ export const DetalleGastosMensual = () => {
     if (view !== "mensual" || !user?.restaurante_id) return;
     gastoServices
       .resumenMensual(mes, ano)
-      .then((data) => setMonthlyData(data))
+      .then(setMonthlyData)
       .catch(() => setMensaje("Error al obtener resumen mensual"));
   }, [view, mes, ano]);
 
   useEffect(() => {
-  if (view !== "diario" || !user?.restaurante_id) return;
+    if (view !== "diario" || !user?.restaurante_id) return;
 
-  const fetchGastos = async () => {
-    try {
-      const all = await gastoServices.getGastos();
-      if (!Array.isArray(all)) throw new Error("Datos no válidos");
+    const fetchGastos = async () => {
+      try {
+        const all = await gastoServices.getGastos();
+        if (!Array.isArray(all)) throw new Error("Datos no válidos");
 
-      const filtered = all
-        .filter((g) => g.restaurante_id === user.restaurante_id)
-        .filter((g) => g.fecha === selectedDate);
+        const filtered = all
+          .filter((g) => g.restaurante_id === user.restaurante_id)
+          .filter((g) => g.fecha === selectedDate);
 
-      setDailyData(filtered);
-    } catch (err) {
-      console.error("❌ Error al obtener gastos:", err);
-      setMensaje("Error al obtener gastos diarios");
-      setTipoMensaje("error");
-    }
-  };
+        setDailyData(filtered);
+      } catch (err) {
+        console.error("❌ Error al obtener gastos:", err);
+        setMensaje("Error al obtener gastos diarios");
+        setTipoMensaje("error");
+      }
+    };
 
-  fetchGastos();
-}, [view, selectedDate, user?.restaurante_id]);
+    fetchGastos();
+  }, [view, selectedDate, user?.restaurante_id]);
 
   useEffect(() => {
     const el = document.getElementsByClassName("custom-sidebar")[0];
@@ -83,7 +83,15 @@ export const DetalleGastosMensual = () => {
   };
 
   const handleDateChange = (e) => setSelectedDate(e.target.value);
+
   const handleHoy = () => setSelectedDate(new Date().toISOString().split("T")[0]);
+
+  const cambiarDia = (delta) => {
+    const current = new Date(selectedDate);
+    current.setDate(current.getDate() + delta);
+    setSelectedDate(current.toISOString().split("T")[0]);
+  };
+
   const nombreMes = new Date(ano, mes - 1).toLocaleString("es", { month: "long", year: "numeric" });
 
   const eliminar = async (id) => {
@@ -132,14 +140,13 @@ export const DetalleGastosMensual = () => {
     .filter((g) => !filterProveedor || g.proveedor_id === parseInt(filterProveedor, 10))
     .filter((g) => !filterCategoria || g.categoria === filterCategoria);
 
+  const totalGastosDia = displayedDaily.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+
   return (
-    <div className="dashboard-container ">
-      <button
-  onClick={() => navigate(-1)}
-  className="btn btn-outline-secondary mb-3"
->
-  ← Volver
-</button>
+    <div className="dashboard-container">
+      <button onClick={() => navigate(-1)} className="btn btn-outline-secondary mb-3">
+        ← Volver
+      </button>
 
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h1 className="dashboard-title">Detalle de Gastos</h1>
@@ -198,9 +205,7 @@ export const DetalleGastosMensual = () => {
               <tbody>
                 {monthlyData.proveedores.map((prov) => (
                   <tr key={prov}>
-                    <td className="fs-7">
-                      <strong>{prov}</strong>
-                    </td>
+                    <td className="fs-7"><strong>{prov}</strong></td>
                     {monthlyData.dias.map((d) => (
                       <td key={d} className="text-end">
                         {monthlyData.datos[prov]?.[d]?.toFixed(2) || "-"}
@@ -217,18 +222,19 @@ export const DetalleGastosMensual = () => {
         <>
           <div className="d-flex align-items-center mb-3 flex-wrap gap-2">
             <label className="me-2">Fecha:</label>
-            <input type="date" className="form-control w-auto me-2" value={selectedDate} onChange={handleDateChange} />
-            <button className="btn btn-success me-3" onClick={handleHoy}>
-              Hoy
-            </button>
+            <div className="d-flex align-items-center gap-2 me-3">
+              <button className="btn btn-outline-secondary px-2" onClick={() => cambiarDia(-1)} title="Día anterior">←</button>
+              <input type="date" className="form-control w-auto" value={selectedDate} onChange={handleDateChange} />
+              <button className="btn btn-outline-secondary px-2" onClick={() => cambiarDia(1)} title="Día siguiente">→</button>
+            </div>
+
+            <button className="btn btn-success me-3" onClick={handleHoy}>Hoy</button>
 
             <label className="me-2">Proveedor:</label>
             <select className="form-select w-auto me-2" value={filterProveedor} onChange={(e) => setFilterProveedor(e.target.value)}>
               <option value="">Todos</option>
               {proveedoresList.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
+                <option key={p.id} value={p.id}>{p.nombre}</option>
               ))}
             </select>
 
@@ -241,6 +247,7 @@ export const DetalleGastosMensual = () => {
               <option value="otros">Otros</option>
             </select>
           </div>
+
           <div className="table-responsive">
             <table className="table table-striped users-table">
               <thead>
@@ -259,48 +266,24 @@ export const DetalleGastosMensual = () => {
                     <tr key={g.id}>
                       <td>{provName}</td>
                       <td>{g.categoria}</td>
-                      <td>
-                        {simbolo}
-                        {parseFloat(g.monto).toFixed(2)}
-                      </td>
+                      <td>{simbolo}{parseFloat(g.monto).toFixed(2)}</td>
                       <td>{g.nota}</td>
                       <td>
-                       <button
-  className="action-icon-button edit-button"
-  onClick={() => abrirModalEditar(g.id)}
-  title="Editar gasto"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="feather feather-edit-2"
-  >
-    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-  </svg>
-</button>
-                        <button className="action-icon-button delete-button" onClick={() => eliminar(g.id)} title="Eliminar gasto">
-                          🗑️
-                        </button>
+                        <button className="action-icon-button edit-button" onClick={() => abrirModalEditar(g.id)} title="Editar gasto">✏️</button>
+                        <button className="action-icon-button delete-button" onClick={() => eliminar(g.id)} title="Eliminar gasto">🗑️</button>
                       </td>
                     </tr>
                   );
                 })}
                 {displayedDaily.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="text-center">
-                      No hay gastos para esta fecha.
-                    </td>
-                  </tr>
+                  <tr><td colSpan={5} className="text-center">No hay gastos para esta fecha.</td></tr>
                 )}
               </tbody>
             </table>
+
+            <div className="bg-white shadow rounded p-3 mt-3 text-end">
+              <span className="fw-bold fs-5">Total del día: {simbolo}{totalGastosDia.toFixed(2)}</span>
+            </div>
           </div>
         </>
       )}

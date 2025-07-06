@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import GastosChef from "../../components/GastosChef";
 import { QuickActionsEncargado } from "../../components/QuickActionsEncargado";
 import "../../styles/EncargadoDashboard.css";
@@ -10,6 +9,7 @@ import useGlobalReducer from "../../hooks/useGlobalReducer";
 import VentaModal from "./VentaModal";
 import ventaServices from "../../services/ventaServices";
 import { useNavigate } from "react-router-dom";
+import { PatchAnnouncement } from "../../components/PatchAnnouncement";
 
 export const EncargadoDashboard = () => {
   const { store } = useGlobalReducer();
@@ -23,7 +23,6 @@ export const EncargadoDashboard = () => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mensaje, setMensaje] = useState("");
 
-
   const guardarVenta = async (form) => {
     try {
       await ventaServices.registrarVenta({
@@ -33,7 +32,7 @@ export const EncargadoDashboard = () => {
       setMensaje("Venta registrada con éxito");
       setTimeout(() => setMensaje(""), 2000);
       setMostrarModal(false);
-      navigate(`/encargado/ventas`)
+      navigate(`/encargado/ventas`);
     } catch (error) {
       setMensaje("Error al registrar la venta");
       setTimeout(() => setMensaje(""), 2000);
@@ -89,6 +88,9 @@ export const EncargadoDashboard = () => {
 
   return (
     <div className="dashboard-container">
+      {/* Anuncio solo si el rol es encargado o chef */}
+      {(user?.rol === "encargado" || user?.rol === "chef") && <PatchAnnouncement />}
+
       <h1 className="dashboard-title">Resumen De Tu Restaurante</h1>
       <p className="dashboard-welcome mb-4">Configura tu Restaurante</p>
 
@@ -181,28 +183,22 @@ export const EncargadoDashboard = () => {
         </div>
       </div>
 
-
-
       <div className="card mt-4 shadow-sm border rounded p-4 px-0 pt-0">
-        {/* === CAMBIO: PASAR FUNCION PARA ABRIR MODAL EN QuickActionsEncargado === */}
         <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
       </div>
 
-      {/* Mensaje de confirmación */}
       {mensaje && (
         <div className={`alert mt-3 ${mensaje.includes("éxito") ? "alert-success" : "alert-danger"}`}>
           {mensaje}
         </div>
       )}
 
-      {/* === RENDERIZAR MODAL SOLO SI mostrarModal ES TRUE === */}
       {mostrarModal && (
         <VentaModal
-          onSave={guardarVenta} // FUNCION QUE GUARDA Y CIERRA MODAL
-          onClose={() => setMostrarModal(false)} // CERRAR MODAL
+          onSave={guardarVenta}
+          onClose={() => setMostrarModal(false)}
         />
       )}
     </div>
-
   );
 };
