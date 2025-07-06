@@ -693,6 +693,21 @@ def editar_gasto(id):
         print("❌ Error al actualizar gasto:", str(e))
         return jsonify({"msg": "Error al actualizar el gasto", "error": str(e)}), 500
 
+@api.route('/gastos/<int:id>', methods=['DELETE'])
+@jwt_required()
+def eliminar_gasto(id):
+    gasto = Gasto.query.get(id)
+    if not gasto:
+        return jsonify({"msg": "Gasto no encontrado"}), 404
+    try:
+        db.session.delete(gasto)
+        db.session.commit()
+        return jsonify({"msg": "Gasto eliminado correctamente"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print("❌ Error al eliminar gasto:", str(e))
+        return jsonify({"msg": "Error al eliminar gasto", "error": str(e)}), 500
+
 
 @api.route('/gastos/usuario/<int:usuario_id>', methods=['DELETE'])
 @jwt_required()

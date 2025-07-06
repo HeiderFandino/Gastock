@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import gastoServices from "../services/GastoServices";
+
 export const GastoForm = () => {
   const { store } = useGlobalReducer();
   const user = store.user;
@@ -14,6 +16,7 @@ export const GastoForm = () => {
   const [activo, setActivo] = useState(false);
   const [proveedores, setProveedores] = useState([]);
   const [mensaje, setMensaje] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const nombreMes = new Date(fecha).toLocaleString("es", {
     month: "long",
@@ -35,6 +38,16 @@ export const GastoForm = () => {
     setGastos(nuevosGastos);
   };
 
+  const handleProveedorChange = (index, proveedorId) => {
+    const nuevosGastos = [...gastos];
+    nuevosGastos[index].proveedor_id = proveedorId;
+
+    const proveedor = proveedores.find((p) => p.id === parseInt(proveedorId));
+    nuevosGastos[index].categoria = proveedor ? proveedor.categoria : "";
+
+    setGastos(nuevosGastos);
+  };
+
   const agregarGasto = () => {
     setGastos([...gastos, { proveedor_id: "", categoria: "", monto: "", nota: "" }]);
     setActivo(true);
@@ -46,15 +59,63 @@ export const GastoForm = () => {
     setGastos(nuevosGastos);
   };
 
+  const safeEval = (expression) => {
+    const validChars = /^[0-9+\-.\s]+$/;
+    if (!validChars.test(expression)) {
+      throw new Error("Expresión inválida: solo números y + - son permitidos.");
+    }
+    const tokens = expression.match(/[+\-]|\d+(\.\d+)?/g);
+    if (!tokens) throw new Error("Expresión vacía o inválida.");
+    let result = 0;
+    let operator = "+";
+    tokens.forEach((token) => {
+      if (token === "+" || token === "-") {
+        operator = token;
+      } else {
+        const num = parseFloat(token);
+        if (isNaN(num)) throw new Error("Número inválido en expresión.");
+        result = operator === "+" ? result + num : result - num;
+      }
+    });
+    return result;
+  };
+
   const registrarGastos = async () => {
-    const datos = gastos.map((g) => ({
-      ...g,
-      fecha,
-      usuario_id: user.id,
-      restaurante_id: user.restaurante_id,
-    }));
+    if (loading) return;
+
+    const camposIncompletos = gastos.some(
+      (g) => !g.proveedor_id || !g.monto
+    );
+    if (camposIncompletos) {
+      setMensaje("Completa proveedor y monto en todos los gastos antes de registrar ❌");
+      return;
+    }
+
+    let datos;
+    try {
+      datos = gastos.map((g) => {
+        let montoCalculado = 0;
+        try {
+          montoCalculado = safeEval(g.monto.replace(/,/g, "."));
+        } catch (e) {
+          console.error("Expresión inválida en el monto:", g.monto);
+          setMensaje(`Monto inválido en una de las filas: "${g.monto}"`);
+          throw new Error("Monto inválido");
+        }
+        return {
+          ...g,
+          fecha,
+          monto: parseFloat(montoCalculado.toFixed(2)),
+          usuario_id: user.id,
+          restaurante_id: user.restaurante_id,
+        };
+      });
+    } catch (e) {
+      return; 
+    }
 
     try {
+      setLoading(true);
       await gastoServices.registrarGastoMultiple(datos);
       setMensaje("Gastos registrados correctamente ✅");
 
@@ -66,6 +127,8 @@ export const GastoForm = () => {
     } catch (error) {
       console.error("Error al registrar:", error);
       setMensaje("Error al registrar los gastos ❌");
+    } finally {
+      setTimeout(() => setLoading(false), 5000);
     }
   };
 
@@ -95,50 +158,81 @@ export const GastoForm = () => {
         </div>
 
         {gastos.map((gasto, index) => (
-          <div key={index} className="row align-items-end g-3 mb-3">
-            <div className="col-md-3">
-              <label className="form-label">Proveedor</label>
-              <select
-                className="form-select"
-                value={gasto.proveedor_id}
-                onChange={(e) => handleInputChange(index, "proveedor_id", e.target.value)}
-              >
-                <option value="">Selecciona</option>
-                {proveedores.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre}
-                  </option>
-                ))}
-              </select>
+          <div
+            key={index}
+            className="d-flex flex-wrap align-items-end mb-3 border-bottom pb-3 gap-2"
+          >
+            <div className="flex-grow-1 min-w-0" style={{ flexBasis: "25%" }}>
+              <label className="form-label fw-semibold">Proveedor</label>
+              <Select
+                options={proveedores.map((prov) => ({
+                  value: prov.id,
+                  label: prov.nombre,
+                }))}
+                value={
+                  gasto.proveedor_id
+                    ? {
+                        value: gasto.proveedor_id,
+                        label:
+                          proveedores.find((p) => p.id === parseInt(gasto.proveedor_id))?.nombre ||
+                          gasto.proveedor_id,
+                      }
+                    : null
+                }
+                onChange={(selected) => handleProveedorChange(index, selected.value)}
+                placeholder="Selecciona un proveedor..."
+                isSearchable
+                styles={{
+                  control: (provided, state) => ({
+                    ...provided,
+                    borderColor: state.isFocused ? "#fd7e14" : "#ced4da",
+                    boxShadow: state.isFocused ? "0 0 0 0.2rem rgba(253, 126, 20, 0.25)" : "none",
+                    height: "38px",
+                    minHeight: "38px",
+                    fontSize: "0.9rem",
+                  }),
+                  option: (provided) => ({
+                    ...provided,
+                    fontSize: "0.9rem",
+                  }),
+                  singleValue: (provided) => ({
+                    ...provided,
+                    fontSize: "0.9rem",
+                  }),
+                  dropdownIndicator: (provided) => ({
+                    ...provided,
+                    padding: "6px",
+                  }),
+                  clearIndicator: (provided) => ({
+                    ...provided,
+                    padding: "6px",
+                  }),
+                }}
+              />
             </div>
 
-            <div className="col-md-2">
-              <label className="form-label">Categoría</label>
-              <select
-                className="form-select"
-                value={gasto.categoria}
-                onChange={(e) => handleInputChange(index, "categoria", e.target.value)}
-              >
-                <option value="">$</option>
-                <option value="Alimentos">Alimentos</option>
-                <option value="Bebidas">Bebidas</option>
-                <option value="Limpieza">Limpieza</option>
-                <option value="Otros">Otros</option>
-              </select>
-            </div>
-
-            <div className="col-md-2">
-              <label className="form-label">Monto (€)</label>
+            <div className="flex-grow-1 min-w-0" style={{ flexBasis: "20%" }}>
+              <label className="form-label fw-semibold">Categoría</label>
               <input
-                type="number"
-                className="form-control text-start"
+                type="text"
+                className="form-control"
+                value={gasto.categoria}
+                readOnly
+              />
+            </div>
+
+            <div className="flex-grow-1 min-w-0" style={{ flexBasis: "15%" }}>
+              <label className="form-label fw-semibold">Monto (€)</label>
+              <input
+                type="text"
+                className="form-control"
                 value={gasto.monto}
                 onChange={(e) => handleInputChange(index, "monto", e.target.value)}
               />
             </div>
 
-            <div className="col-md-3">
-              <label className="form-label">Nota</label>
+            <div className="flex-grow-1 min-w-0" style={{ flexBasis: "25%" }}>
+              <label className="form-label fw-semibold">Nota</label>
               <input
                 type="text"
                 className="form-control"
@@ -147,11 +241,11 @@ export const GastoForm = () => {
               />
             </div>
 
-            <div className="col-md-2 d-flex justify-content-end">
+            <div className="ms-auto">
               {gastos.length > 1 && (
                 <button
                   type="button"
-                  className="btn btn-outline-danger"
+                  className="btn btn-outline-danger mt-4"
                   onClick={() => eliminarGasto(index)}
                 >
                   Eliminar
@@ -165,14 +259,16 @@ export const GastoForm = () => {
           <button
             className={`btn btn-outline-orange ${activo ? "active" : "nobg"}`}
             onClick={agregarGasto}
+            disabled={loading}
           >
             + Añadir otro gasto
           </button>
           <button
             className={`btn btn-outline-orange ${!activo ? "active" : "nobg"}`}
             onClick={registrarGastos}
+            disabled={loading}
           >
-            Registrar Gastos
+            {loading ? "Registrando..." : "Registrar Gastos"}
           </button>
         </div>
 

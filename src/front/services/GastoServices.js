@@ -2,7 +2,6 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const gastoServices = {};
 
-
 gastoServices.getProveedores = async (restaurante_id) => {
   const token = sessionStorage.getItem("token");
   const response = await fetch(`${backendUrl}/api/proveedores?restaurante_id=${restaurante_id}`, {
@@ -50,7 +49,6 @@ gastoServices.resumenMensual = async (mes, ano, restaurante_id) => {
   return await resp.json();
 };
 
-
 gastoServices.getGastos = async () => {
   const token = sessionStorage.getItem("token");
   const resp = await fetch(`${backendUrl}/api/gastos`, {
@@ -72,6 +70,17 @@ gastoServices.editarGasto = async (id, gastoData) => {
   });
 
   if (!response.ok) throw new Error("Error al editar gasto");
+  return await response.json();
+};
+
+// 🚨 NUEVO: eliminar gasto
+gastoServices.eliminarGasto = async (id) => {
+  const token = sessionStorage.getItem("token");
+  const response = await fetch(`${backendUrl}/api/gastos/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Error al eliminar gasto");
   return await response.json();
 };
 
