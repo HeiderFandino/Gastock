@@ -6,7 +6,7 @@ export const PatchAnnouncement = () => {
     const [show, setShow] = useState(false);
 
     useEffect(() => {
-        const hasViewed = localStorage.getItem("patchViewed_v1");
+        const hasViewed = localStorage.getItem("patchViewed_v2");
         if (!hasViewed) {
             setShow(true);
         }
