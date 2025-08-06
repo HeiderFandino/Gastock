@@ -23,6 +23,26 @@ export const EncargadoDashboard = () => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mensaje, setMensaje] = useState("");
 
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
+    const hoy = new Date();
+    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
+  });
+
+  const retrocederMes = () => {
+    const [a, m] = fechaSeleccionada.split("-").map(Number);
+    const nuevaFecha = new Date(a, m - 2);
+    setFechaSeleccionada(`${nuevaFecha.getFullYear()}-${String(nuevaFecha.getMonth() + 1).padStart(2, "0")}`);
+  };
+
+  const avanzarMes = () => {
+    const [a, m] = fechaSeleccionada.split("-").map(Number);
+    const nuevaFecha = new Date(a, m);
+    setFechaSeleccionada(`${nuevaFecha.getFullYear()}-${String(nuevaFecha.getMonth() + 1).padStart(2, "0")}`);
+  };
+
+  const [ano, mes] = fechaSeleccionada.split("-").map(Number);
+  const diasDelMes = new Date(ano, mes, 0).getDate();
+
   const guardarVenta = async (form) => {
     try {
       await ventaServices.registrarVenta({
@@ -40,9 +60,7 @@ export const EncargadoDashboard = () => {
   };
 
   useEffect(() => {
-    const fecha = new Date();
-    const mes = fecha.getMonth() + 1;
-    const ano = fecha.getFullYear();
+    if (!mes || !ano) return;
 
     encargadoServices.resumenGastoDiario(mes, ano)
       .then((resumen) => {
@@ -64,13 +82,13 @@ export const EncargadoDashboard = () => {
 
     const el = document.getElementsByClassName("custom-sidebar")[0];
     if (el) el.scrollTo(0, 0);
-  }, []);
+  }, [fechaSeleccionada]);
 
   const porcentaje = resumenMensual?.porcentaje || 0;
   const gasto = resumenMensual?.gastos || 0;
   const totalVentas = ventas.reduce((acc, item) => acc + item.monto, 0);
-  const promedioDiario = ventas.length > 0 ? (totalVentas / ventas.length) : 0;
-  const proyeccionMensual = promedioDiario * 30;
+  const promedioDiario = ventas.length > 0 ? totalVentas / ventas.length : 0;
+  const proyeccionMensual = promedioDiario * diasDelMes;
 
   let bgClass = "bg-success-subtle";
   let textClass = "text-success";
@@ -88,11 +106,34 @@ export const EncargadoDashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Anuncio solo si el rol es encargado o chef */}
       {(user?.rol === "encargado" || user?.rol === "chef") && <PatchAnnouncement />}
 
       <h1 className="dashboard-title">Resumen De Tu Restaurante</h1>
-      <p className="dashboard-welcome mb-4">Configura tu Restaurante</p>
+
+      <div className="d-flex align-items-center justify-content-start gap-2 mb-3 ms-3" style={{ maxWidth: 360 }}>
+        <label className="fw-bold mb-0">Fecha:</label>
+        <button
+          className="btn btn-sm px-2 py-1 text-white"
+          style={{ backgroundColor: "#ff5b00", borderRadius: "8px" }}
+          onClick={retrocederMes}
+        >
+          ←
+        </button>
+        <input
+          type="month"
+          className="form-control text-center border"
+          style={{ flex: 1 }}
+          value={fechaSeleccionada}
+          onChange={(e) => setFechaSeleccionada(e.target.value)}
+        />
+        <button
+          className="btn btn-sm px-2 py-1 text-white"
+          style={{ backgroundColor: "#ff5b00", borderRadius: "8px" }}
+          onClick={avanzarMes}
+        >
+          →
+        </button>
+      </div>
 
       <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
         <h5 className="mb-3 fw-bold barralarga">VENTAS</h5>

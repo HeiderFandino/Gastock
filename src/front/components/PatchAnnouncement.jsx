@@ -24,13 +24,10 @@ export const PatchAnnouncement = () => {
             </Modal.Header>
             <Modal.Body>
                 <ul className="list-unstyled mb-0">
-                    <li>✅ Ahora puedes registrar gastos sumando valores como “10+5+2”.</li>
-                    <li>✅ Buscador integrado para encontrar proveedores fácilmente al registrar gastos.</li>
-                    <li>✅ Botón de registro de gastos bloqueado para evitar envíos duplicados.</li>
-                    <li>✅ Validación mejorada en montos: evita errores al ingresar letras u operadores inválidos.</li>
-                    <li>✅ Edición y eliminación de gastos en el detalle diario, con total del día calculado automáticamente.</li>
-                    <li>✅ Flechas añadidas para cambiar rápidamente de día en el detalle diario.</li>
-                    <li>✅ Modal de anuncio de actualizaciones mostrado solo una vez por usuario.</li>
+                    <li>✅ SE CORRIGIO LOS DATOS DE PROYECCION MENSUAL, ANTES CALCULABA A 30 DIAS SIN IMPORTAR EL MES, AHORA SE CALCULA DEPENDIENDO EL MES ACTUAL </li>
+                    <li>✅ YA SE PUEDEN MIRAR LOS MESES ANTERIORES DESDE EL DASHBOARD </li>
+                    <li>✅ NUR, GRACIAS POR EL APOYO HERMANO! </li>
+
                 </ul>
             </Modal.Body>
             <Modal.Footer>

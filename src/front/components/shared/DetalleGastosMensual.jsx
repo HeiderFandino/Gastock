@@ -37,7 +37,7 @@ export const DetalleGastosMensual = () => {
     gastoServices
       .getProveedores(user.restaurante_id)
       .then(setProveedoresList)
-      .catch(() => {});
+      .catch(() => { });
   }, [user]);
 
   useEffect(() => {
