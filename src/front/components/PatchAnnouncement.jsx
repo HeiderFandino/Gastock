@@ -3,10 +3,11 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
 export const PatchAnnouncement = () => {
+    const STORAGE_KEY = "patchViewed_v2"; // misma clave en todos los sitios
     const [show, setShow] = useState(false);
 
     useEffect(() => {
-        const hasViewed = localStorage.getItem("patchViewed_v2");
+        const hasViewed = localStorage.getItem(STORAGE_KEY);
         if (!hasViewed) {
             setShow(true);
         }
@@ -14,7 +15,7 @@ export const PatchAnnouncement = () => {
 
     const handleClose = () => {
         setShow(false);
-        localStorage.setItem("patchViewed_v1", "true");
+        localStorage.setItem(STORAGE_KEY, "true");
     };
 
     return (
@@ -24,10 +25,9 @@ export const PatchAnnouncement = () => {
             </Modal.Header>
             <Modal.Body>
                 <ul className="list-unstyled mb-0">
-                    <li>✅ SE CORRIGIO LOS DATOS DE PROYECCION MENSUAL, ANTES CALCULABA A 30 DIAS SIN IMPORTAR EL MES, AHORA SE CALCULA DEPENDIENDO EL MES ACTUAL </li>
-                    <li>✅ YA SE PUEDEN MIRAR LOS MESES ANTERIORES DESDE EL DASHBOARD </li>
-                    <li>✅ NUR, GRACIAS POR EL APOYO HERMANO! </li>
-
+                    <li>✅ Y</li>
+                    <li>✅ YA SE PUEDEN MIRAR LOS MESES ANTERIORES DESDE EL DASHBOARD</li>
+                    <li>✅ NUR, GRACIAS POR EL APOYO HERMANO!</li>
                 </ul>
             </Modal.Body>
             <Modal.Footer>

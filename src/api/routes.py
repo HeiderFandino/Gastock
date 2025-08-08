@@ -49,39 +49,7 @@ def send_email(to_email, subject, html_content):
         print("❌ Error al enviar correo:", str(e))
         return False
 
-def notificar_admin_sobre_evento(tipo, datos):
-    subject = ""
-    html_content = ""
 
-    if tipo == "venta":
-        subject = f"Nueva venta registrada en {datos['restaurante']}"
-        html_content = f"""
-        <h4>📥 Venta registrada:</h4>
-        <ul>
-            <li><strong>Restaurante:</strong> {datos['restaurante']}</li>
-            <li><strong>Monto:</strong> {datos['monto']}€</li>
-            <li><strong>Turno:</strong> {datos['turno']}</li>
-            <li><strong>Fecha:</strong> {datos['fecha']}</li>
-            <li><strong>Usuario:</strong> {datos['usuario']}</li>
-        </ul>
-        """
-
-    elif tipo == "gasto":
-        subject = f"Nuevo gasto registrado en {datos['restaurante']}"
-        html_content = f"""
-        <h4>📤 Gasto registrado:</h4>
-        <ul>
-            <li><strong>Restaurante:</strong> {datos['restaurante']}</li>
-            <li><strong>Proveedor:</strong> {datos['proveedor']}</li>
-            <li><strong>Categoría:</strong> {datos.get('categoria', 'Sin categoría')}</li>
-            <li><strong>Monto:</strong> {datos['monto']}€</li>
-            <li><strong>Fecha:</strong> {datos['fecha']}</li>
-            <li><strong>Usuario:</strong> {datos['usuario']}</li>
-        </ul>
-        """
-
-    admin_email = os.getenv("EMAIL_ADMIN", "admin@ohmychef.com")
-    send_email(admin_email, subject, html_content)
 
 
 
@@ -2051,6 +2019,14 @@ def ventas_detalle_por_restaurante():
             "msg": "Error al obtener ventas detalladas",
             "error": str(e)
         }), 500
+
+@api.route("/ping", methods=["GET"])
+def ping():
+    """
+    Endpoint ligero para mantener vivo el backend en Render.
+    No consulta la base de datos, solo responde con un estado básico.
+    """
+    return jsonify({"status": "ok"}), 200
 
 def limpiar_email(texto):
     texto = unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('utf-8')
