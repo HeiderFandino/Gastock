@@ -3,7 +3,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
 export const PatchAnnouncement = () => {
-    const STORAGE_KEY = "patchViewed_v2"; // misma clave en todos los sitios
+    const STORAGE_KEY = "patchViewed_v3"; // misma clave en todos los sitios
     const [show, setShow] = useState(false);
 
     useEffect(() => {
@@ -25,9 +25,9 @@ export const PatchAnnouncement = () => {
             </Modal.Header>
             <Modal.Body>
                 <ul className="list-unstyled mb-0">
-                    <li>✅ Y</li>
-                    <li>✅ YA SE PUEDEN MIRAR LOS MESES ANTERIORES DESDE EL DASHBOARD</li>
-                    <li>✅ NUR, GRACIAS POR EL APOYO HERMANO!</li>
+                    <li>✅¡¡¡¡ AHORA LA PAGINA SE MANTENDRA SIEMPRE ACTIVA !!!!</li>
+                    <li>✅ACTUALIZACION DE SISTEMA SOLO SALDRA UNA VEZ POR INICIO DE SESION </li>
+                   
                 </ul>
             </Modal.Body>
             <Modal.Footer>
