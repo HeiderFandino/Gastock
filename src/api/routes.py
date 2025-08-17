@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, Usuario, Venta, Gasto, FacturaAlbaran, Proveedor, MargenObjetivo, Restaurante
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from sqlalchemy import select, func, extract, desc,text
+from sqlalchemy import select, func, extract, desc, text
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, decode_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from api.mail.mailer import send_reset_email
@@ -21,8 +21,8 @@ import unicodedata
 from calendar import monthrange
 
 
-
 api = Blueprint('api', __name__)
+
 
 def send_email(to_email, subject, html_content):
     """
@@ -33,7 +33,8 @@ def send_email(to_email, subject, html_content):
 
     try:
         message = Mail(
-            from_email=os.getenv("EMAIL_SENDER", "OhMyChef <ohmychefapp@gmail.com>"),
+            from_email=os.getenv(
+                "EMAIL_SENDER", "OhMyChef <ohmychefapp@gmail.com>"),
             to_emails=to_email,
             subject=subject,
             html_content=html_content
@@ -48,10 +49,6 @@ def send_email(to_email, subject, html_content):
     except Exception as e:
         print("❌ Error al enviar correo:", str(e))
         return False
-
-
-
-
 
 
 @api.route('/forgot-password', methods=['POST'])
@@ -132,7 +129,8 @@ def register():
         if not data.get("email") or not data.get("password") or not data.get("rol") or not data.get("nombre"):
             return jsonify({"error": "Faltan datos obligatorios"}), 400
 
-        total_users = db.session.scalar(select(func.count()).select_from(Usuario))
+        total_users = db.session.scalar(
+            select(func.count()).select_from(Usuario))
         current_user_id = get_jwt_identity()
 
         if total_users > 0:
@@ -191,7 +189,8 @@ def register():
         <p style="font-size:0.8em;color:gray;"><em>Este mensaje ha sido generado automáticamente. No respondas a este correo.</em></p>
         """
 
-        send_email(to_email=data["email"], subject=subject, html_content=html_content)
+        send_email(to_email=data["email"],
+                   subject=subject, html_content=html_content)
 
         return jsonify({"msg": "Usuario creado correctamente"}), 201
 
@@ -391,7 +390,8 @@ def crear_venta():
             usuario = Usuario.query.get(get_jwt_identity())
 
             print("✅ Venta registrada correctamente:")
-            print("  Restaurante:", restaurante.nombre if restaurante else "Desconocido")
+            print("  Restaurante:",
+                  restaurante.nombre if restaurante else "Desconocido")
             print("  Usuario:", usuario.nombre if usuario else "Sistema")
 
             notificar_admin_sobre_evento("venta", {
@@ -410,7 +410,6 @@ def crear_venta():
         db.session.rollback()
         print("❌ ERROR en /ventas:", str(e))
         return jsonify({"msg": "Error al crear la venta", "error": str(e)}), 500
-
 
 
 @api.route('/ventas/<int:id>', methods=['GET'])
@@ -539,7 +538,8 @@ def crear_gasto():
                         "usuario": usuario.nombre if usuario else "Sistema"
                     })
                 except Exception as error_envio:
-                    print("❌ Error al enviar notificación del gasto (lote):", str(error_envio))
+                    print("❌ Error al enviar notificación del gasto (lote):", str(
+                        error_envio))
 
             db.session.commit()
             return jsonify({"msg": "Gastos registrados correctamente"}), 201
@@ -583,7 +583,8 @@ def crear_gasto():
                 proveedor = Proveedor.query.get(proveedor_id)
 
                 print("📤 Gasto individual:", monto, "→", restaurante.nombre)
-                print("✅ Gasto registrado como:", usuario.nombre if usuario else "Sistema")
+                print("✅ Gasto registrado como:",
+                      usuario.nombre if usuario else "Sistema")
 
                 notificar_admin_sobre_evento("gasto", {
                     "restaurante": restaurante.nombre if restaurante else "Desconocido",
@@ -602,8 +603,6 @@ def crear_gasto():
             db.session.rollback()
             print("❌ ERROR en gasto individual:", str(e))
             return jsonify({"msg": "Error al registrar el gasto", "error": str(e)}), 500
-
-
 
 
 @api.route('/gastos/<int:id>', methods=['GET'])
@@ -660,6 +659,7 @@ def editar_gasto(id):
         db.session.rollback()
         print("❌ Error al actualizar gasto:", str(e))
         return jsonify({"msg": "Error al actualizar el gasto", "error": str(e)}), 500
+
 
 @api.route('/gastos/<int:id>', methods=['DELETE'])
 @jwt_required()
@@ -817,9 +817,10 @@ def eliminar_factura(id):
 def get_proveedores():
     restaurante_id = request.args.get("restaurante_id", type=int)
     if restaurante_id:
-        proveedores = Proveedor.query.filter_by(restaurante_id=restaurante_id).all()
+        proveedores = Proveedor.query.filter_by(
+            restaurante_id=restaurante_id).all()
     else:
-        
+
         proveedores = Proveedor.query.all()
     resultados = [
         {
@@ -1179,7 +1180,6 @@ def eliminar_restaurante(id):
         }), 500
 
 
-
 @api.route("/gastos/resumen-mensual", methods=["GET"])
 @jwt_required()
 def resumen_gastos_mensual():
@@ -1351,6 +1351,7 @@ def resumen_diario_chef_encargado():
         if not mes or not ano:
             return jsonify({"msg": "Faltan parámetros"}), 400
 
+        # Ventas y gastos por día
         ventas_diarias = db.session.query(
             extract("day", Venta.fecha).label("dia"),
             func.sum(Venta.monto).label("ventas")
@@ -1373,24 +1374,32 @@ def resumen_diario_chef_encargado():
             extract("day", Gasto.fecha)
         ).all()
 
-        resumen = []
-        dias = set()
-
         ventas_dict = {int(v.dia): float(v.ventas) for v in ventas_diarias}
         gastos_dict = {int(g.dia): float(g.gastos) for g in gastos_diarios}
-        dias.update(ventas_dict.keys())
-        dias.update(gastos_dict.keys())
 
-        for dia in sorted(dias):
-            ventas = ventas_dict.get(dia, 0)
-            gastos = gastos_dict.get(dia, 0)
-            porcentaje = round((gastos / ventas) * 100, 2) if ventas > 0 else 0
+        # --- ACUMULADOS ---
+        acum_ventas = 0.0
+        acum_gastos = 0.0
+        resumen = []
+
+        dias = sorted(set(ventas_dict.keys()) | set(gastos_dict.keys()))
+        for dia in dias:
+            v = ventas_dict.get(dia, 0.0)
+            g = gastos_dict.get(dia, 0.0)
+
+            acum_ventas += v
+            acum_gastos += g
+
+            porcentaje = round((acum_gastos / acum_ventas)
+                               * 100, 2) if acum_ventas > 0 else 0.0
 
             resumen.append({
                 "dia": dia,
-                "ventas": ventas,
-                "gastos": gastos,
-                "porcentaje": porcentaje
+                "ventas": v,               # ventas SOLO del día
+                "gastos": g,               # gastos SOLO del día
+                "acum_ventas": acum_ventas,  # acumulado hasta ese día
+                "acum_gastos": acum_gastos,  # acumulado hasta ese día
+                "porcentaje": porcentaje    # % acumulado hasta ese día
             })
 
         return jsonify(resumen), 200
@@ -1710,9 +1719,11 @@ def resumen_gastos_admin():
                 total_gastado += g.monto
                 # Contar proveedores
                 if g.proveedor_id:
-                    proveedor_contador[g.proveedor_id] = proveedor_contador.get(g.proveedor_id, 0) + 1
+                    proveedor_contador[g.proveedor_id] = proveedor_contador.get(
+                        g.proveedor_id, 0) + 1
             # Sumar gasto total por restaurante
-            restaurante_gastos[r.nombre] = restaurante_gastos.get(r.nombre, 0) + sum([g.monto for g in gastos])
+            restaurante_gastos[r.nombre] = restaurante_gastos.get(
+                r.nombre, 0) + sum([g.monto for g in gastos])
         # Proveedor más usado
         proveedor_top = "No disponible"
         if proveedor_contador:
@@ -1722,7 +1733,8 @@ def resumen_gastos_admin():
         # Restaurante con más gasto
         restaurante_top = "No disponible"
         if restaurante_gastos:
-            restaurante_top = max(restaurante_gastos, key=restaurante_gastos.get)
+            restaurante_top = max(restaurante_gastos,
+                                  key=restaurante_gastos.get)
         resumen = {
             "total_gastado": round(total_gastado, 2),
             "restaurantes_activos": len(restaurantes),
@@ -1731,7 +1743,8 @@ def resumen_gastos_admin():
         }
         return jsonify(resumen), 200
     except Exception as e:
-        return jsonify({ "msg": "Error al obtener el resumen", "error": str(e) }), 500
+        return jsonify({"msg": "Error al obtener el resumen", "error": str(e)}), 500
+
 
 @api.route("/gasto-por-restaurante", methods=["GET"])
 @jwt_required()
@@ -1766,6 +1779,7 @@ def gasto_por_restaurante():
             "error": str(e)
         }), 500
 
+
 @api.route('/gasto-evolucion-mensual', methods=['GET'])
 @jwt_required()
 def evolucion_gasto_mensual():
@@ -1794,7 +1808,8 @@ def evolucion_gasto_mensual():
         return jsonify(resultado), 200
     except Exception as e:
         return jsonify({"msg": "Error al calcular la evolución mensual", "error": str(e)}), 500
-    
+
+
 @api.route('/proveedores-top', methods=['GET'])
 @jwt_required()
 def get_proveedores_top():
@@ -1828,8 +1843,9 @@ def get_proveedores_top():
     except Exception as e:
         print("Error en get_proveedores_top:", e)
         return jsonify({"msg": "Error al obtener proveedores", "error": str(e)}), 500
-    
-#Endpoints Vista Ventas
+
+# Endpoints Vista Ventas
+
 
 @api.route('/resumen-ventas', methods=['GET'])
 @jwt_required()
@@ -1852,7 +1868,8 @@ def resumen_ventas_admin():
             restaurante_ventas[r.nombre] = monto_total_restaurante
         restaurante_top = "No disponible"
         if restaurante_ventas:
-            restaurante_top = max(restaurante_ventas, key=restaurante_ventas.get)
+            restaurante_top = max(restaurante_ventas,
+                                  key=restaurante_ventas.get)
         promedio_por_restaurante = (
             round(total_vendido / len(restaurante_ventas), 2)
             if restaurante_ventas else 0
@@ -1865,7 +1882,8 @@ def resumen_ventas_admin():
         }
         return jsonify(resumen), 200
     except Exception as e:
-        return jsonify({ "msg": "Error al obtener el resumen de ventas", "error": str(e) }), 500
+        return jsonify({"msg": "Error al obtener el resumen de ventas", "error": str(e)}), 500
+
 
 @api.route('/venta-evolucion-mensual', methods=['GET'])
 @jwt_required()
@@ -1893,6 +1911,7 @@ def evolucion_venta_mensual():
         return jsonify(resultado), 200
     except Exception as e:
         return jsonify({"msg": "Error al calcular la evolución mensual de ventas", "error": str(e)}), 500
+
 
 @api.route("/ventas-por-restaurante", methods=["GET"])
 @jwt_required()
@@ -1922,6 +1941,7 @@ def ventas_por_restaurante():
             "msg": "Error al obtener las ventas por restaurante",
             "error": str(e)
         }), 500
+
 
 @api.route('/restaurantes-top', methods=['GET'])
 @jwt_required()
@@ -1956,8 +1976,9 @@ def get_restaurantes_top():
     except Exception as e:
         print("Error en get_restaurantes_top:", e)
         return jsonify({"msg": "Error al obtener restaurantes top", "error": str(e)}), 500
-    
-#aLERT BORRAR rESTAURANTE
+
+# aLERT BORRAR rESTAURANTE
+
 
 @api.route('/restaurantes/<int:id>/tiene-ventas', methods=['GET'])
 @jwt_required()
@@ -1968,8 +1989,9 @@ def restaurante_tiene_ventas(id):
         return jsonify({"tieneVentas": tiene_ventas}), 200
     except Exception as e:
         return jsonify({"msg": "Error al verificar ventas del restaurante", "error": str(e)}), 500
-    
-#Nuevo endpoint Ventas
+
+# Nuevo endpoint Ventas
+
 
 @api.route('/ventas/encargado', methods=['GET'])
 @jwt_required()
@@ -1999,6 +2021,7 @@ def obtener_ventas_encargado():
     except Exception as e:
         return jsonify({"msg": "Error al obtener ventas", "error": str(e)}), 500
 
+
 @api.route("/ventas-detalle", methods=["GET"])
 @jwt_required()
 def ventas_detalle_por_restaurante():
@@ -2020,6 +2043,7 @@ def ventas_detalle_por_restaurante():
             "error": str(e)
         }), 500
 
+
 @api.route("/ping", methods=["GET"])
 def ping():
     """
@@ -2028,7 +2052,8 @@ def ping():
     """
     return jsonify({"status": "ok"}), 200
 
-def limpiar_email(texto):
-    texto = unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('utf-8')
-    return texto.lower().replace(' ', '').replace('&', '')
 
+def limpiar_email(texto):
+    texto = unicodedata.normalize('NFKD', texto).encode(
+        'ascii', 'ignore').decode('utf-8')
+    return texto.lower().replace(' ', '').replace('&', '')
