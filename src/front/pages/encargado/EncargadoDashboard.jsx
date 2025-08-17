@@ -62,11 +62,12 @@ export const EncargadoDashboard = () => {
   useEffect(() => {
     if (!mes || !ano) return;
 
+    // Gasto diario -> convertimos 'dia' a NÚMERO para eje X numérico
     encargadoServices.resumenGastoDiario(mes, ano)
       .then((resumen) => {
         const data = resumen.map((item) => ({
-          name: `${item.dia}`,
-          porcentaje: item.porcentaje,
+          dia: Number(item.dia),
+          porcentaje: Number(item.porcentaje),
         }));
         setGastoDatos(data);
       })
@@ -135,6 +136,7 @@ export const EncargadoDashboard = () => {
         </button>
       </div>
 
+      {/* VENTAS */}
       <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
         <h5 className="mb-3 fw-bold barralarga">VENTAS</h5>
         <div className="row align-items-center ms-3">
@@ -144,7 +146,7 @@ export const EncargadoDashboard = () => {
                 💰
               </div>
               <h6 className="fw-bold text-warning">Ventas actuales</h6>
-              <div className="fs-4 fw-bold text-warning" style={{ textShadow: '0 0 1px white' }}>
+              <div className="fs-4 fw-bold text-warning" style={{ textShadow: "0 0 1px white" }}>
                 {parseFloat(totalVentas).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
               </div>
             </div>
@@ -154,7 +156,7 @@ export const EncargadoDashboard = () => {
                 📈
               </div>
               <h6 className="fw-bold text-info">Promedio diario</h6>
-              <div className="fs-5 fw-bold text-info" style={{ textShadow: '0 0 1px white' }}>
+              <div className="fs-5 fw-bold text-info" style={{ textShadow: "0 0 1px white" }}>
                 {parseFloat(promedioDiario).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
               </div>
             </div>
@@ -164,7 +166,7 @@ export const EncargadoDashboard = () => {
                 📊
               </div>
               <h6 className="fw-bold text-success">Proyección mensual</h6>
-              <div className="fs-5 fw-bold text-success" style={{ textShadow: '0 0 1px white' }}>
+              <div className="fs-5 fw-bold text-success" style={{ textShadow: "0 0 1px white" }}>
                 {parseFloat(proyeccionMensual).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
               </div>
             </div>
@@ -183,6 +185,7 @@ export const EncargadoDashboard = () => {
         </div>
       </div>
 
+      {/* GASTOS */}
       <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
         <h5 className="mb-3 fw-bold barralarga">GASTOS</h5>
         <div className="row align-items-center ms-3">
@@ -192,7 +195,7 @@ export const EncargadoDashboard = () => {
                 💸
               </div>
               <h6 className="fw-bold text-info">Gastos Actuales</h6>
-              <div className="fs-4 fw-bold text-info" style={{ textShadow: '0 0 1px white' }}>
+              <div className="fs-4 fw-bold text-info" style={{ textShadow: "0 0 1px white" }}>
                 {parseFloat(gasto).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
               </div>
             </div>
@@ -202,7 +205,7 @@ export const EncargadoDashboard = () => {
                 {icono}
               </div>
               <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
-              <div className={`fs-4 fw-bold ${textClass}`} style={{ textShadow: '0 0 1px white' }}>
+              <div className={`fs-4 fw-bold ${textClass}`} style={{ textShadow: "0 0 1px white" }}>
                 {porcentaje} %
               </div>
             </div>
@@ -212,13 +215,19 @@ export const EncargadoDashboard = () => {
             <h6 className="text-center mb-3">Gráfico Diario de Gastos</h6>
             <GastosChef
               datos={gastoDatos}
-              ancho={800}
+              ancho="100%"
               alto={250}
               rol="encargado"
-              xAxisProps={{ dataKey: "name", interval: 0 }}
-              yAxisProps={{ domain: [0, 100], tickFormatter: v => `${v}%` }}
-              tooltipProps={{ formatter: v => `${v}%` }}
-              lineProps={{ dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 3 } }}
+              xAxisProps={{
+                dataKey: "dia",
+                type: "number",
+                domain: [1, diasDelMes],
+                allowDecimals: false,
+                tickCount: diasDelMes
+              }}
+              yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
+              tooltipProps={{ formatter: (v) => `${v}%` }}
+              lineProps={{ dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }}
             />
           </div>
         </div>
