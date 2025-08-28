@@ -1,6 +1,14 @@
 const userServices = {};
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+// Función para manejar errores y redirigir al login
+const handleUnauthorized = (response) => {
+  if (response.status === 401) {
+    sessionStorage.clear(); // Limpia el token y otros datos
+    window.location.href = "/login"; // Redirige al login
+  }
+};
+
 userServices.register = async (formData) => {
   try {
     const resp = await fetch(backendUrl + "/api/register", {
@@ -17,6 +25,7 @@ userServices.register = async (formData) => {
     console.log(error);
   }
 };
+
 userServices.getUsuarios = async (token) => {
   const response = await fetch(`${backendUrl}/api/usuarios`, {
     method: "GET",
@@ -25,8 +34,10 @@ userServices.getUsuarios = async (token) => {
     },
   });
   await new Promise((res) => setTimeout(res, 2000));
-  if (!response.ok)
+  if (!response.ok) {
+    handleUnauthorized(response); // Verifica si el token expiró
     throw new Error("No se pudo obtener la información del los usuarios");
+  }
   const data = await response.json();
   return data;
 };
@@ -40,11 +51,14 @@ userServices.getUserinfo = async () => {
     },
   });
   await new Promise((res) => setTimeout(res, 2000));
-  if (!response.ok)
+  if (!resp.ok) {
+    handleUnauthorized(resp); // Verifica si el token expiró
     throw new Error("No se pudo obtener la información del usuario");
-  const data = await response.json();
+  }
+  const data = await resp.json();
   return data;
 };
+
 userServices.login = async (formData) => {
   try {
     const resp = await fetch(backendUrl + "/api/login", {
