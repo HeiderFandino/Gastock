@@ -3,7 +3,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
 export const PatchAnnouncement = () => {
-    const STORAGE_KEY = "patchViewed_v3"; // misma clave en todos los sitios
+    const STORAGE_KEY = "patchViewed_v4"; // misma clave en todos los sitios
     const [show, setShow] = useState(false);
 
     useEffect(() => {
@@ -24,11 +24,11 @@ export const PatchAnnouncement = () => {
                 <Modal.Title>🛠️ ¡Actualización del sistema!</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <ul className="list-unstyled mb-0">
-                    <li>✅¡¡¡¡ AHORA LA PAGINA SE MANTENDRA SIEMPRE ACTIVA !!!!</li>
-                    <li>✅ACTUALIZACION DE SISTEMA SOLO SALDRA UNA VEZ POR INICIO DE SESION </li>
-                   
-                </ul>
+            <ul className="list-unstyled mb-0">
+                <li>✅ Tu sesión ahora dura ¡hasta 10 horas! 🔐</li>
+                <li>✅ Nada de que te saque cada rato 😅</li>
+                <li>👉 Recuerda: este aviso solo aparece una vez por sesión 😉</li>
+            </ul>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="primary" onClick={handleClose}>
