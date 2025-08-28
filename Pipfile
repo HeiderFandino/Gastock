@@ -23,6 +23,7 @@ sendgrid = "*"
 flask = "*"
 flask-migrate = "*"
 tomli = "*"
+colorama = "*"
 
 [requires]
 python_version = "3.13"
