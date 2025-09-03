@@ -1,3 +1,4 @@
+// src/front/pages/admin/VistaGastos/FiltrosGasto.jsx
 import React from "react";
 
 const FiltrosGasto = () => {
@@ -9,7 +10,6 @@ const FiltrosGasto = () => {
         </label>
         <select className="form-select form-select-sm me-2" id="selectRestaurante" disabled>
           <option>Selecciona un restaurante</option>
-          {/* Opciones dinámicas irán aquí */}
         </select>
       </div>
       <div className="mb-2">
@@ -21,9 +21,3 @@ const FiltrosGasto = () => {
   );
 };
 export default FiltrosGasto;
-
-
-
-
-
-

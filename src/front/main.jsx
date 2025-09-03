@@ -9,6 +9,7 @@ import { router } from "./routes";  // Import the router configuration
 import { StoreProvider } from './hooks/useGlobalReducer';  // Import the StoreProvider for global state management
 import { BackendURL } from './components/BackendURL';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/admin-analytics.css'
 
 const Main = () => {
 
@@ -23,7 +24,7 @@ const Main = () => {
             <StoreProvider>
                 {/* Set up routing for the application */}
                 <RouterProvider router={router}>
-                   
+
                 </RouterProvider>
             </StoreProvider>
         </React.StrictMode>

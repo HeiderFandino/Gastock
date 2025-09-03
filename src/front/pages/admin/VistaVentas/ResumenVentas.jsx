@@ -1,42 +1,54 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Card, Row, Col, Spinner } from "react-bootstrap";
 import adminService from "../../../services/adminService";
-const ResumenVentas = () => {
+import { useSearchParams } from "react-router-dom";
+
+const ResumenVentas = ({ mes: mesProp, ano: anoProp }) => {
+  const [searchParams] = useSearchParams();
+  const hoy = useMemo(() => new Date(), []);
+  const mesFromUrl = Number(searchParams.get("mes")) || null;
+  const anoFromUrl = Number(searchParams.get("ano")) || null;
+
+  const mes = mesProp || mesFromUrl || hoy.getMonth() + 1;
+  const ano = anoProp || anoFromUrl || hoy.getFullYear();
+
   const [resumen, setResumen] = useState(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    let cancel = false;
     const fetchResumen = async () => {
+      setLoading(true);
       try {
-        const mes = 6; // Junio
-        const ano = 2025;
         const data = await adminService.getResumenAdminVentas(mes, ano);
+        if (cancel) return;
+
         if (data && data.total_vendido !== undefined) {
-          const resumenArray = [
-            { titulo: "Total vendido (junio)", valor: `€${data.total_vendido}` },
-            { titulo: "Nº de restaurantes con ventas", valor: data.restaurantes_con_ventas },
-            { titulo: "Restaurante top", valor: data.restaurante_top },
-            { titulo: "Promedio por restaurante", valor: `€${data.promedio_por_restaurante}` },
-          ];
-          setResumen(resumenArray);
-        } else {
-          setResumen([]);
-        }
+          setResumen([
+            { titulo: `Total vendido (${mes}/${ano})`, valor: `€${Number(data.total_vendido || 0).toLocaleString("es-ES")}` },
+            { titulo: "Nº de restaurantes con ventas", valor: Number(data.restaurantes_con_ventas || 0).toLocaleString("es-ES") },
+            { titulo: "Restaurante top", valor: data.restaurante_top || "—" },
+            { titulo: "Promedio por restaurante", valor: `€${Number(data.promedio_por_restaurante || 0).toLocaleString("es-ES")}` },
+          ]);
+        } else setResumen([]);
       } catch (err) {
         console.error("Error al obtener el resumen de ventas:", err);
         setResumen([]);
       } finally {
-        setLoading(false);
+        if (!cancel) setLoading(false);
       }
     };
     fetchResumen();
-  }, []);
+    return () => { cancel = true; };
+  }, [mes, ano]);
+
   if (loading) return <Spinner animation="border" size="sm" />;
-  if (!resumen || resumen.length === 0)
-    return <p className="text-muted">No hay datos disponibles.</p>;
+  if (!resumen || resumen.length === 0) return <p className="text-muted">No hay datos disponibles.</p>;
+
   return (
     <Row className="mb-4">
       {resumen.map((item, i) => (
-        <Col key={i} xs={12} sm={6} md={3} className="mb-3 col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-12">
+        <Col key={i} xs={12} sm={6} md={3} className="mb-3">
           <Card className="h-100 shadow-sm">
             <Card.Body>
               <Card.Title className="fs-6 text-muted">{item.titulo}</Card.Title>
@@ -48,17 +60,5 @@ const ResumenVentas = () => {
     </Row>
   );
 };
+
 export default ResumenVentas;
-
-
-
-
-
-
-
-
-
-
-
-
-
