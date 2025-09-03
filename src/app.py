@@ -30,7 +30,7 @@ app.url_map.strict_slashes = False
 
 # JWT config
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=10)  # <-- NEW: en lugar de ~15 min
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)  # <-- NEW: en lugar de ~15 min
 jwt = JWTManager(app)
 
 # Mail config

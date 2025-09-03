@@ -1,126 +1,203 @@
-.dashboard-container {
-  align-content: flex-start;
-  padding: 30px;
-  font-family: "Segoe UI", sans-serif;
-  background-color: #f5f7fa;
+/* Tipografía fluida y espaciamiento agradable */
+:root {
+  --brand: #ff5b00;
+  --radius: 1rem;
 }
 
-.dashboard-title {
-  font-size: 28px;
-  font-weight: 700;
+.btn-naranja {
+  background-color: var(--brand);
+  color: #fff;
+  border-radius: 8px;
+  padding-inline: 10px;
+}
+.btn-naranja:hover {
+  opacity: 0.95;
 }
 
-.dashboard-welcome {
-  margin-bottom: 40px;
-  color: #555;
+.selector-mes {
+  max-width: 520px;
+}
+.selector-mes__input {
+  max-width: 220px;
+  min-width: 160px;
 }
 
-.restaurant-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.restaurant-card {
+/* Card restaurante */
+.rest-card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius);
+  padding: clamp(12px, 2vw, 18px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
   background: #fff;
-  padding: 20px;
-  flex: 1;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.rest-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+.rest-card--top {
+  outline: 2px dashed rgba(255, 91, 0, 0.35);
+  outline-offset: 6px;
 }
 
-.restaurant-card h3 {
-  font-size: 18px;
-  margin-bottom: 15px;
+.rest-card__title {
+  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  line-height: 1.2;
+}
+.rest-card__legend {
+  font-size: clamp(0.72rem, 1.8vw, 0.8rem);
 }
 
-.card-metrics {
+/* Subcards de stats */
+.stat-card {
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.stat-card__inner {
+  padding: clamp(10px, 2.2vw, 14px);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+}
+.stat-card__value {
+  font-size: clamp(0.95rem, 2.2vw, 1.05rem);
 }
 
-.metric {
-  text-align: left;
-}
-
-.metric .label {
-  font-size: 14px;
-  color: #777;
-}
-
-.metric .value {
-  font-size: 20px;
-  font-weight: bold;
-  color: #222;
-}
-
-.metric .change.down {
-  color: red;
-  font-size: 12px;
-}
-
-.metric .status {
-  font-size: 12px;
-  color: green;
-}
-
-.quick-actions-section {
-  margin-top: 40px;
-}
-
-.actions-grid {
-  display: flex;
-  gap: 20px;
-  margin-top: 10px;
-  display: flex;
-  align-content: space-around;
-  justify-content: space-between;
-}
-
-.action-card {
+/* Icono circular */
+.icono-circular {
+  width: 32px;
+  height: 32px;
   background: #fff;
-  padding: 20px;
-  width: 200px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
 }
 
-.action-btn {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  padding: 12px;
-  width: 100%;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 10px;
-  margin-bottom: 10px;
+/* CTA */
+.enlacevertodo {
+  color: var(--brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+.enlacevertodo:hover {
+  text-decoration: underline;
 }
 
-@media (max-width: 1536px) {
-  .restaurant-card h4 {
-    font-size: 1rem;
-    margin-bottom: 18px !important;
-  }
-}
-
-@media (max-width: 962px) {
-  .restaurant-card {
-    width: 100%;
-  }
-}
-@media (max-width: 767px) {
-  .dashboard-container {
+/* Mejoras móviles */
+@media (max-width: 576px) {
+  .stat-card__inner {
     padding: 10px;
   }
+  .icono-circular {
+    width: 28px;
+    height: 28px;
+  }
 }
 
-.view-link {
-  margin-top: 10px;
-  display: inline-block;
-  font-size: 14px;
-  color: #ffffff;
+:root {
+  --brand: #ff5b00;
+  --radius: 16px;
+}
+
+.btn-naranja {
+  background-color: var(--brand);
+  color: #fff;
+  border-radius: 8px;
+  padding-inline: 10px;
+}
+.btn-naranja:hover {
+  opacity: 0.95;
+}
+
+.selector-mes {
+  max-width: 520px;
+}
+.selector-mes__input {
+  max-width: 220px;
+  min-width: 160px;
+}
+
+/* Contenedor de toda la lista */
+.rest-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+/* Bloque visual por restaurante (simula una card) */
+.rest-block {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: clamp(14px, 2.2vw, 18px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.rest-block:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
+}
+
+.rest-block__title {
+  font-size: clamp(1rem, 2.3vw, 1.15rem);
+  line-height: 1.2;
+}
+.rest-block__legend {
+  font-size: clamp(0.72rem, 1.8vw, 0.8rem);
+}
+
+/* Subtarjetas de stats dentro de cada bloque */
+.rest-stat {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  padding: clamp(10px, 2.2vw, 14px);
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.rest-stat__value {
+  font-size: clamp(0.95rem, 2.1vw, 1.05rem);
+}
+
+.icono-circular {
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+/* CTA */
+.enlacevertodo {
+  color: var(--brand);
+  font-weight: 600;
   text-decoration: none;
-  background-color: #ff5d1d;
-  border-radius: 5px;
+}
+.enlacevertodo:hover {
+  text-decoration: underline;
+}
+
+/* Responsive: 2 y 3 columnas en pantallas grandes */
+@media (min-width: 576px) {
+  .rest-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 992px) {
+  .rest-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1400px) {
+  .rest-list {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
