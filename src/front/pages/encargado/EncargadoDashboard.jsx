@@ -30,13 +30,12 @@ export const EncargadoDashboard = () => {
 
   const retrocederMes = () => {
     const [a, m] = fechaSeleccionada.split("-").map(Number);
-    const nuevaFecha = new Date(a, m - 2);
+    const nuevaFecha = new Date(a, m - 2, 1);
     setFechaSeleccionada(`${nuevaFecha.getFullYear()}-${String(nuevaFecha.getMonth() + 1).padStart(2, "0")}`);
   };
-
   const avanzarMes = () => {
     const [a, m] = fechaSeleccionada.split("-").map(Number);
-    const nuevaFecha = new Date(a, m);
+    const nuevaFecha = new Date(a, m, 1);
     setFechaSeleccionada(`${nuevaFecha.getFullYear()}-${String(nuevaFecha.getMonth() + 1).padStart(2, "0")}`);
   };
 
@@ -53,7 +52,7 @@ export const EncargadoDashboard = () => {
       setTimeout(() => setMensaje(""), 2000);
       setMostrarModal(false);
       navigate(`/encargado/ventas`);
-    } catch (error) {
+    } catch {
       setMensaje("Error al registrar la venta");
       setTimeout(() => setMensaje(""), 2000);
     }
@@ -62,8 +61,8 @@ export const EncargadoDashboard = () => {
   useEffect(() => {
     if (!mes || !ano) return;
 
-    // Gasto diario -> convertimos 'dia' a NÚMERO para eje X numérico
-    encargadoServices.resumenGastoDiario(mes, ano)
+    encargadoServices
+      .resumenGastoDiario(mes, ano)
       .then((resumen) => {
         const data = resumen.map((item) => ({
           dia: Number(item.dia),
@@ -71,15 +70,17 @@ export const EncargadoDashboard = () => {
         }));
         setGastoDatos(data);
       })
-      .catch((err) => console.error(err));
+      .catch(console.error);
 
-    encargadoServices.resumenGastoMensual(mes, ano)
+    encargadoServices
+      .resumenGastoMensual(mes, ano)
       .then((resumen) => setResumenMensual(resumen))
-      .catch((err) => console.error(err));
+      .catch(console.error);
 
-    encargadoServices.resumenVentasDiarias(mes, ano)
+    encargadoServices
+      .resumenVentasDiarias(mes, ano)
       .then((data) => setVentas(data))
-      .catch((err) => console.error(err));
+      .catch(console.error);
 
     const el = document.getElementsByClassName("custom-sidebar")[0];
     if (el) el.scrollTo(0, 0);
@@ -94,7 +95,6 @@ export const EncargadoDashboard = () => {
   let bgClass = "bg-success-subtle";
   let textClass = "text-success";
   let icono = "✅";
-
   if (porcentaje > 36) {
     bgClass = "bg-danger-subtle";
     textClass = "text-danger";
@@ -111,12 +111,17 @@ export const EncargadoDashboard = () => {
 
       <h1 className="dashboard-title">Resumen De Tu Restaurante</h1>
 
-      <div className="d-flex align-items-center justify-content-start gap-2 mb-3 ms-3" style={{ maxWidth: 360 }}>
-        <label className="fw-bold mb-0">Fecha:</label>
+      {/* ========== CONTROLES FECHA (sticky, con flechas también en móvil) ========== */}
+      <div
+        className="dm-sticky-controls d-flex align-items-center gap-2 mb-3 ms-md-3"
+
+      >
+        <label className="fw-bold mb-0 d-none d-md-inline">Fecha:</label>
         <button
           className="btn btn-sm px-2 py-1 text-white"
           style={{ backgroundColor: "#ff5b00", borderRadius: "8px" }}
           onClick={retrocederMes}
+          aria-label="Mes anterior"
         >
           ←
         </button>
@@ -126,115 +131,190 @@ export const EncargadoDashboard = () => {
           style={{ flex: 1 }}
           value={fechaSeleccionada}
           onChange={(e) => setFechaSeleccionada(e.target.value)}
+          aria-label="Seleccionar mes"
         />
         <button
           className="btn btn-sm px-2 py-1 text-white"
           style={{ backgroundColor: "#ff5b00", borderRadius: "8px" }}
           onClick={avanzarMes}
+          aria-label="Mes siguiente"
         >
           →
         </button>
       </div>
 
-      {/* VENTAS */}
-      <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
-        <h5 className="mb-3 fw-bold barralarga">VENTAS</h5>
-        <div className="row align-items-center ms-3">
-          <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center">
-            <div className="rounded shadow-sm p-3 text-center bg-warning-subtle w-100">
-              <div className="icono-circular rounded-circle bg-white text-warning d-inline-flex align-items-center justify-content-center mb-2">
-                💰
-              </div>
-              <h6 className="fw-bold text-warning">Ventas actuales</h6>
-              <div className="fs-4 fw-bold text-warning" style={{ textShadow: "0 0 1px white" }}>
-                {parseFloat(totalVentas).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
-              </div>
-            </div>
+      {/* ========== MOBILE: KPIs y GRÁFICOS DESPLEGADOS ========== */}
+      <div className="d-block d-md-none dm-no-shadow">
 
-            <div className="rounded shadow-sm p-3 text-center bg-info-subtle w-100">
-              <div className="icono-circular rounded-circle bg-white text-info d-inline-flex align-items-center justify-content-center mb-2">
-                📈
-              </div>
-              <h6 className="fw-bold text-info">Promedio diario</h6>
-              <div className="fs-5 fw-bold text-info" style={{ textShadow: "0 0 1px white" }}>
-                {parseFloat(promedioDiario).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
-              </div>
-            </div>
-
-            <div className="rounded shadow-sm p-3 text-center bg-success-subtle w-100">
-              <div className="icono-circular rounded-circle bg-white text-success d-inline-flex align-items-center justify-content-center mb-2">
-                📊
-              </div>
-              <h6 className="fw-bold text-success">Proyección mensual</h6>
-              <div className="fs-5 fw-bold text-success" style={{ textShadow: "0 0 1px white" }}>
-                {parseFloat(proyeccionMensual).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
-              </div>
-            </div>
+        {/* 1) KPIs Ventas */}
+        <div className="dm-kpi-row">
+          <div className="dm-chip">
+            <h6 className="text-warning mb-1">Ventas actuales</h6>
+            <p className="dm-valor text-warning">
+              {parseFloat(totalVentas).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {simbolo}
+            </p>
           </div>
-
-          <div className="col-md-9">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={ventas}>
-                <XAxis dataKey="dia" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="monto" fill="#ffa94d" />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="dm-chip">
+            <h6 className="text-info mb-1">Promedio diario</h6>
+            <p className="dm-valor text-info">
+              {parseFloat(promedioDiario).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {simbolo}
+            </p>
           </div>
+          <div className="dm-chip">
+            <h6 className="text-success mb-1">Proyección mensual</h6>
+            <p className="dm-valor text-success">
+              {parseFloat(proyeccionMensual).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {simbolo}
+            </p>
+          </div>
+        </div>
+
+        {/* 2) Gráfico Ventas */}
+        <div className="dm-chart mb-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={ventas}>
+              <XAxis dataKey="dia" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="monto" fill="#ffa94d" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 3) KPIs Gastos */}
+        <div className="dm-kpi-row mt-2">
+          <div className="dm-chip">
+            <h6 className="text-info mb-1">Gastos actuales</h6>
+            <p className="dm-valor text-info">
+              {parseFloat(gasto).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {simbolo}
+            </p>
+          </div>
+          <div className="dm-chip">
+            <h6 className={`${textClass} mb-1`}>% Gastos</h6>
+            <p className={`dm-valor ${textClass}`}>{porcentaje} %</p>
+          </div>
+        </div>
+
+        {/* 4) Gráfico Gastos */}
+        <div className="dm-chart">
+          <GastosChef
+            datos={gastoDatos}
+            ancho="100%"
+            alto={180}
+            rol="encargado"
+            xAxisProps={{
+              dataKey: "dia",
+              type: "number",
+              domain: [1, diasDelMes],
+              allowDecimals: false,
+              tickCount: diasDelMes,
+            }}
+            yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
+            tooltipProps={{ formatter: (v) => `${v}%` }}
+            lineProps={{ dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 2 }, name: "% gasto" }}
+          />
+        </div>
+
+        {/* Acciones rápidas compactas */}
+        <div className="card mt-3 border-0">
+          <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
         </div>
       </div>
 
-      {/* GASTOS */}
-      <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
-        <h5 className="mb-3 fw-bold barralarga">GASTOS</h5>
-        <div className="row align-items-center ms-3">
-          <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center">
-            <div className="rounded shadow-sm p-3 text-center bg-info-subtle w-100">
-              <div className="icono-circular rounded-circle bg-white text-info d-inline-flex align-items-center justify-content-center mb-2">
-                💸
+      {/* ========== DESKTOP: igual que ya tenías ========== */}
+      <div className="d-none d-md-block">
+        {/* VENTAS */}
+        <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
+          <h5 className="mb-3 fw-bold barralarga">VENTAS</h5>
+          <div className="row align-items-center ms-3">
+            <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center">
+              <div className="rounded shadow-sm p-3 text-center bg-warning-subtle w-100">
+                <div className="icono-circular rounded-circle bg-white text-warning d-inline-flex align-items-center justify-content-center mb-2">💰</div>
+                <h6 className="fw-bold text-warning">Ventas actuales</h6>
+                <div className="fs-4 fw-bold text-warning" style={{ textShadow: "0 0 1px white" }}>
+                  {parseFloat(totalVentas).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {simbolo}
+                </div>
               </div>
-              <h6 className="fw-bold text-info">Gastos Actuales</h6>
-              <div className="fs-4 fw-bold text-info" style={{ textShadow: "0 0 1px white" }}>
-                {parseFloat(gasto).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
+              <div className="rounded shadow-sm p-3 text-center bg-info-subtle w-100">
+                <div className="icono-circular rounded-circle bg-white text-info d-inline-flex align-items-center justify-content-center mb-2">📈</div>
+                <h6 className="fw-bold text-info">Promedio diario</h6>
+                <div className="fs-5 fw-bold text-info" style={{ textShadow: "0 0 1px white" }}>
+                  {parseFloat(promedioDiario).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {simbolo}
+                </div>
+              </div>
+              <div className="rounded shadow-sm p-3 text-center bg-success-subtle w-100">
+                <div className="icono-circular rounded-circle bg-white text-success d-inline-flex align-items-center justify-content-center mb-2">📊</div>
+                <h6 className="fw-bold text-success">Proyección mensual</h6>
+                <div className="fs-5 fw-bold text-success" style={{ textShadow: "0 0 1px white" }}>
+                  {parseFloat(proyeccionMensual).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {simbolo}
+                </div>
               </div>
             </div>
-
-            <div className={`rounded shadow-sm p-3 text-center w-100 ${bgClass}`}>
-              <div className={`icono-circular rounded-circle ${textClass} bg-white d-inline-flex align-items-center justify-content-center mb-2`}>
-                {icono}
-              </div>
-              <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
-              <div className={`fs-4 fw-bold ${textClass}`} style={{ textShadow: "0 0 1px white" }}>
-                {porcentaje} %
-              </div>
+            <div className="col-md-9">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={ventas}>
+                  <XAxis dataKey="dia" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="monto" fill="#ffa94d" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-
-          <div className="col-md-9">
-            <h6 className="text-center mb-3">Gráfico Diario de Gastos</h6>
-            <GastosChef
-              datos={gastoDatos}
-              ancho="100%"
-              alto={250}
-              rol="encargado"
-              xAxisProps={{
-                dataKey: "dia",
-                type: "number",
-                domain: [1, diasDelMes],
-                allowDecimals: false,
-                tickCount: diasDelMes
-              }}
-              yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
-              tooltipProps={{ formatter: (v) => `${v}%` }}
-              lineProps={{ dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }}
-            />
           </div>
         </div>
-      </div>
 
-      <div className="card mt-4 shadow-sm border rounded p-4 px-0 pt-0">
-        <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
+        {/* GASTOS */}
+        <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
+          <h5 className="mb-3 fw-bold barralarga">GASTOS</h5>
+          <div className="row align-items-center ms-3">
+            <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center">
+              <div className="rounded shadow-sm p-3 text-center bg-info-subtle w-100">
+                <div className="icono-circular rounded-circle bg-white text-info d-inline-flex align-items-center justify-content-center mb-2">💸</div>
+                <h6 className="fw-bold text-info">Gastos Actuales</h6>
+                <div className="fs-4 fw-bold text-info" style={{ textShadow: "0 0 1px white" }}>
+                  {parseFloat(gasto).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {simbolo}
+                </div>
+              </div>
+              <div className={`rounded shadow-sm p-3 text-center w-100 ${bgClass}`}>
+                <div className={`icono-circular rounded-circle ${textClass} bg-white d-inline-flex align-items-center justify-content-center mb-2`}>{icono}</div>
+                <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
+                <div className={`fs-4 fw-bold ${textClass}`} style={{ textShadow: "0 0 1px white" }}>
+                  {porcentaje} %
+                </div>
+              </div>
+            </div>
+            <div className="col-md-9">
+              <h6 className="text-center mb-3">Gráfico Diario de Gastos</h6>
+              <GastosChef
+                datos={gastoDatos}
+                ancho="100%"
+                alto={250}
+                rol="encargado"
+                xAxisProps={{
+                  dataKey: "dia",
+                  type: "number",
+                  domain: [1, diasDelMes],
+                  allowDecimals: false,
+                  tickCount: diasDelMes,
+                }}
+                yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
+                tooltipProps={{ formatter: (v) => `${v}%` }}
+                lineProps={{ dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="card mt-4 shadow-sm border rounded p-4 px-0 pt-0">
+          <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
+        </div>
       </div>
 
       {mensaje && (
@@ -244,10 +324,7 @@ export const EncargadoDashboard = () => {
       )}
 
       {mostrarModal && (
-        <VentaModal
-          onSave={guardarVenta}
-          onClose={() => setMostrarModal(false)}
-        />
+        <VentaModal onSave={guardarVenta} onClose={() => setMostrarModal(false)} />
       )}
     </div>
   );

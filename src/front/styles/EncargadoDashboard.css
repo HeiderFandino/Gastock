@@ -1,11 +1,115 @@
+/* =========================================================
+   EncargadoDashboard – Mobile-first refinado
+   ========================================================= */
 
+/* --- Variables útiles --- */
+:root {
+  --navbar-h: 56px; /* alto de tu navbar superior */
+  --bottom-nav-h: 68px; /* tabs inferiores en móvil (Home/Ventas/...) */
+}
 
-.icono-circular {
-  width: 50px;
-  height: 50px;
-  font-size: 1.5rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
+/* ============ MÓVIL (≤ md) ============ */
+@media (max-width: 767.98px) {
+  /* Barra de mes SIEMPRE visible + flechas */
+  .dm-sticky-controls {
+    position: fixed !important;
+    top: var(--navbar-h);
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 0.35rem 0.75rem; /* padding lateral para que abarque todo */
+  }
+  .dm-sticky-controls .dm-month {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: 100%;
+  }
+  .dm-sticky-controls input[type="month"] {
+    flex: 1 1 auto;
+    height: 34px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    padding: 0.25rem 0.5rem;
+  }
+  .dm-ctrl:active {
+    transform: translateY(1px);
+  }
+  .dm-ctrl:disabled {
+    opacity: 0.6;
+  }
+
+  /* Título más discreto */
+  .dashboard-title {
+    font-size: 1.05rem !important;
+    font-weight: 700;
+    margin: 0.25rem 0.5rem 0.5rem !important;
+  }
+
+  /* KPIs en chips horizontales scrolleables */
+  .dm-kpi-row {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.5rem 0.5rem 0;
+    scrollbar-width: thin;
+  }
+  .dm-chip {
+    min-width: 160px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 0.55rem 0.65rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  .dm-chip h6 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+  .dm-chip .dm-valor {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  /* Gráficos compactos */
+  .dm-chart {
+    width: 100%;
+    height: 190px; /* alto agradable para móvil */
+    padding: 0.4rem 0.5rem 0.6rem;
+  }
+
+  /* Acordeón (si lo usas en otras pantallas) más denso */
+  .dm-accordion .accordion-button {
+    padding: 0.6rem 0.9rem;
+    font-weight: 600;
+  }
+  .dm-accordion .accordion-body {
+    padding: 0.5rem 0.75rem 0.75rem;
+  }
+
+  /* Quitar brillos/sombras para que “pese” menos visualmente */
+  .dm-no-shadow,
+  .dm-no-shadow * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Encabezados de tarjetas (ej. “Acciones rápidas”) compactos */
+  .barralarga {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+/* ============ DESKTOP (≥ md) ============ */
+/* No tocamos tu layout de escritorio. Solo un pequeño plus: altura de charts */
+@media (min-width: 768px) {
+  .dm-chart {
+    height: 250px;
+  }
 }
