@@ -1,69 +1,42 @@
+/* ======== Base ======== */
 body {
   overflow-x: hidden;
 }
 
-/* Sidebar base */
+/* Sidebar (desktop ≥ md) */
 .sidebar {
-  width: 250px;
-  background-color: #ffffff;
+  width: 240px;
+  min-width: 240px;
+  background: #fff;
   transition: width 0.3s ease;
   overflow: hidden;
 }
 
-/* Cuando colapsa (puedes añadir esta clase si haces un colapso global, no solo móvil) */
-.sidebar.collapsed {
-  width: 60px;
-  transition: width 0.3s ease;
-}
-.sidebar.menu .nav-link {
-  color: #000000;
-}
-/* Botón de colapso */
-.toggle-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
+/* Rail colapsado */
+.sidebar.w-72 {
+  width: 72px;
+  min-width: 72px;
 }
 
-/* Icono flecha girando */
-.bi-chevron-right {
-  display: inline-block;
-  -webkit-transform: rotate(0deg); /* Safari y Chrome antiguos */
-  -moz-transform: rotate(0deg); /* Firefox antiguos */
-  -ms-transform: rotate(0deg); /* IE */
-  -o-transform: rotate(0deg); /* Opera antiguos */
-  transform: rotate(0deg);
-  transition: transform 0.3s ease;
-}
-
-.bi-chevron-right.rotated {
-  -webkit-transform: rotate(90deg); /* Safari y Chrome antiguos */
-  -moz-transform: rotate(90deg); /* Firefox antiguos */
-  -ms-transform: rotate(90deg); /* IE */
-  -o-transform: rotate(90deg); /* Opera antiguos */
-  transform: rotate(90deg);
-  transition: transform 0.3s ease;
-}
-
-/* Contenido principal */
+/* Contenido principal empujado por el sidebar en desktop */
 .content {
+  margin-left: 240px;
   transition: margin-left 0.3s ease;
-  margin-left: 250px;
   padding: 1rem;
   width: 100%;
 }
-
 .content.expanded {
-  margin-left: 60px;
+  /* cuando sidebar está en rail */
+  margin-left: 72px;
 }
+
+/* Links del menú */
 .sidebar.menu .nav-link {
-  /* Reservamos 1px de borde transparente para que el tamaño no cambie al hacer hover */
-  background-color: 1px solid transparent;
-  color: inherit;
+  /* Corregido: antes había background-color con un valor de borde */
+  border: 1px solid transparent; /* evita “saltos” en hover */
+  color: #000;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-
 .sidebar.menu .nav-link:hover {
   background-color: #ff5d1d;
   color: #fff;
@@ -72,36 +45,40 @@ body {
   color: #fff;
 }
 
+/* Botón de colapso (desktop) */
+.toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Flecha giratoria */
+.bi-chevron-right {
+  display: inline-block;
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+.bi-chevron-right.rotated {
+  transform: rotate(90deg);
+}
+
+/* Logout (desktop) */
 .logout {
   position: absolute;
   bottom: 20px;
-  width: auto;
   left: 20px;
 }
-.w-40 {
-  width: 40px;
-  transition: transform 0.3s ease;
+
+/* Utilidades */
+.logout-row {
+  flex-direction: row;
 }
-a.nav-link.text-muted.d-flex .logout-row {
-  flex-direction: row !important;
-  width: 160px;
+.logout-column {
+  flex-direction: column;
 }
 
-a.nav-link.text-muted.d-flex .logout-column {
-  flex-direction: column !important;
-  width: 40px;
-}
-.sidebar {
-  width: 220px;
-  background: white;
-}
-.sidebar.w200 {
-  width: 200px;
-}
-.sidebar.w70 {
-  width: 70px;
-}
-
+/* ======== Responsivo ======== */
 @media (max-width: 1100px) {
   .collapse.chefmenu a {
     padding: 10px 5px;
@@ -109,32 +86,58 @@ a.nav-link.text-muted.d-flex .logout-column {
   }
 }
 
-@media (max-width: 767px) {
-  .menu {
-    font-size: 1rem !important; /* Tamaño más pequeño solo para móviles */
-  }
-  .menu {
-    font-size: 1rem !important;
+/* Móvil (< md): ocultamos sidebar, activamos bottom-nav y liberamos el contenido */
+@media (max-width: 767.98px) {
+  /* Oculta visualmente el sidebar (asegúrate de tener d-none d-md-flex en el JSX también) */
+  .sidebar {
+    display: none !important;
   }
 
-  .collapse.chefmenu a {
-    padding: 10px 5px;
-    font-size: 0.9rem;
-  }
-  .sidebar {
-    width: 70px;
-  }
+  /* El contenido ocupa todo el ancho */
   .content {
     margin-left: 0;
   }
 
-  a.nav-link.text-muted.d-flex.align-items-center.logout-row {
-    flex-direction: row !important;
-    width: 100px;
+  /* Ajustes de tamaño de fuente si usas .menu dentro del sidebar */
+  .menu {
+    font-size: 1rem !important;
   }
 
-  a.nav-link.text-muted.d-flex.align-items-center.logout-column {
-    flex-direction: column !important;
-    width: 40px;
+  /* Asegura que nada quede detrás de la bottom nav */
+  main,
+  .page-content,
+  .app-content,
+  .content {
+    padding-bottom: 64px; /* Alto aprox. de la bottom nav */
   }
+}
+
+/* ======== Bottom Nav (móvil) ======== */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid #e5e5e5;
+  padding: 6px 4px;
+  z-index: 1030;
+}
+.bottom-nav .bn-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  text-decoration: none;
+  color: #555;
+}
+.bottom-nav .bn-item i {
+  font-size: 18px;
+  line-height: 1;
+}
+.bottom-nav .bn-item.color-orange-bold,
+.bottom-nav .bn-item:hover {
+  color: #ff7a00;
+  font-weight: 600;
 }

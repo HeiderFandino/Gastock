@@ -1,44 +1,22 @@
-.quick-action-card {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 20px;
-  width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
+.qa-icon-btn {
+  background: none;
+  border: none;
+  text-align: center;
+  flex: 1;
 }
 
-.quick-action-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(240, 24, 24, 0.1);
-}
-
-.icon-wrapper {
-  background-color: #f0f4f8;
+.qa-circle {
+  width: 50px;
+  height: 50px;
+  font-size: 1.3rem;
   border-radius: 50%;
-  padding: 12px;
-  margin-bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 auto;
 }
 
-.text-content {
-  text-align: center;
-}
-
-.qa-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333333;
-  margin-bottom: 6px;
-}
-
-.qa-subtitle {
-  font-size: 14px;
-  color: #777777;
+.qa-icon-btn small {
+  font-size: 0.75rem;
+  color: #333;
 }

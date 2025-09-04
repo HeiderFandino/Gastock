@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import "../styles/QuickActionCard.css"; // agrega estilos específicos
 
 export const QuickActionsEncargado = ({ onNuevaVenta }) => {
     const actions = [
@@ -6,33 +7,54 @@ export const QuickActionsEncargado = ({ onNuevaVenta }) => {
             icon: "➕",
             title: "Registrar Venta",
             subtitle: "Agregar ventas diarias",
-            // link: "/encargado/registrar-venta",
             onClick: onNuevaVenta,
-            bg: "bg-warning-subtle"
+            bg: "bg-warning-subtle",
         },
         {
             icon: "📅",
             title: "Ver Ventas",
             subtitle: "Historial mensual",
             link: "/encargado/ventas",
-            bg: "bg-primary-subtle"
+            bg: "bg-primary-subtle",
         },
         {
             icon: "📈",
             title: "Resumen de Gastos",
             subtitle: "Gasto mensual",
             link: "/encargado/gastos",
-            bg: "bg-success-subtle"
-        }
+            bg: "bg-success-subtle",
+        },
     ];
 
     return (
         <div className="mt-0 text-center">
             <h5 className="mb-3 fw-bold barralarga">⚡ Acciones Rápidas</h5>
 
-            <div className="d-flex flex-wrap justify-content-center gap-4">
-                {actions.map((a, i) => (
-                    // Cambiar <Link> por <div> o <button> si tiene onClick
+            {/* ✅ Móvil: grid simple */}
+            <div className="d-flex d-md-none justify-content-around gap-2">
+                {actions.map((a, i) =>
+                    a.onClick ? (
+                        <button
+                            key={i}
+                            className="qa-icon-btn"
+                            onClick={a.onClick}
+                            title={a.title}
+                        >
+                            <div className={`qa-circle ${a.bg}`}>{a.icon}</div>
+                            <small className="d-block mt-1">{a.title}</small>
+                        </button>
+                    ) : (
+                        <Link key={i} to={a.link} className="qa-icon-btn text-dark">
+                            <div className={`qa-circle ${a.bg}`}>{a.icon}</div>
+                            <small className="d-block mt-1">{a.title}</small>
+                        </Link>
+                    )
+                )}
+            </div>
+
+            {/* ✅ Desktop: tarjetas como antes */}
+            <div className="d-none d-md-flex flex-wrap justify-content-center gap-4">
+                {actions.map((a, i) =>
                     a.onClick ? (
                         <div
                             key={i}
@@ -68,7 +90,7 @@ export const QuickActionsEncargado = ({ onNuevaVenta }) => {
                             </div>
                         </Link>
                     )
-                ))}
+                )}
             </div>
         </div>
     );
