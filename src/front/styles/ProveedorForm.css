@@ -1,86 +1,83 @@
- h5 {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center;
-  background-color: #ff5d1d;
-  color: white !important;
-  font-weight: 600;
-  padding: 8px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  margin-top: -20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  font-family: "Inter", sans-serif;
-} 
+/* ProveedorForm.css — tokenizado con brand.css */
 
-form {
-  background: #ffffff;
-  padding: 20px 2px;
-  border-radius: 14px;
-  width: 95%;
-  max-width: 480px;
-  margin: 0 auto;
-  animation: fadeIn 0.3s ease-in-out;
-  font-family: "Inter", sans-serif;
+/* ===== Modal ===== */
+.pm-dialog .modal-content.pm-content {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
 }
 
-.form-control,
-.form-select {
+/* Cabecera degradada azul + texto blanco */
+.pm-header {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand-600) 90%, #fff 10%),
+    var(--color-primary)
+  );
+  color: #fff;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-primary) 75%, #000 25%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+.pm-header .btn-close {
+  filter: invert(1) grayscale(1) contrast(2); /* icono de cierre blanco */
+}
+.pm-title {
+  width: 100%;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff !important;
+  text-align: center;
+}
+
+/* ===== Form ===== */
+.pm-form {
+  padding: 0.25rem 0.25rem 0;
+}
+
+.pm-form .form-control,
+.pm-form .form-select {
   padding: 12px 14px;
   font-size: 15px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background-color: #f9f9f9;
-  transition: all 0.2s ease;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: color-mix(in srgb, var(--brand-50) 60%, #fff 40%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.2s ease;
+  color: var(--color-text);
 }
-
-.form-control:focus,
-.form-select:focus {
-  border-color: #ff5d1d;
-  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.15);
+.pm-form .form-control:focus,
+.pm-form .form-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.2rem var(--focus-ring);
   background-color: #fff;
   outline: none;
 }
 
-.mb-3 {
-  margin-bottom: 15px;
-}
-
-.d-flex.justify-content-end {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.btn-primary {
-  --bs-btn-color: #fff;
-  --bs-btn-bg: #ff5d1d;
-}
-
-.btn-secondary {
-  --bs-btn-color: #fff;
-  --bs-btn-bg: #dc3545;
-}
-
-.btn {
-  padding: 10px 18px;
+.pm-form .form-label {
+  color: var(--color-text);
   font-weight: 600;
-  font-size: 15px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background-color: #ff5d1d;
+}
+
+.pm-form .alert {
+  border-radius: var(--radius-md);
+}
+
+/* Botones */
+.pm-form .btn-gastock,
+.pm-form .btn-gastock-outline {
+  min-width: 120px;
+}
+
+/* Ajustes responsive */
+@media (max-width: 420px) {
+  .pm-form .btn-gastock,
+  .pm-form .btn-gastock-outline {
+    min-width: unset;
+  }
 }

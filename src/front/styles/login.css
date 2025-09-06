@@ -1,0 +1,257 @@
+/* ===========================
+   LOGIN — estilos dedicados
+   =========================== */
+
+/* Layout split */
+.auth-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100svh;
+}
+@media (min-width: 992px) {
+  .auth-split {
+    grid-template-columns: 520px 1fr;
+  }
+}
+
+/* Panel izquierdo */
+.auth-left {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand-900) 55%, #0b1d3a 45%),
+    color-mix(in srgb, var(--brand-600) 55%, #0b1d3a96 45%)
+  );
+  color: var(--login-text);
+  display: flex; /* centra el bloque interno */
+  justify-content: center;
+  align-items: center;
+}
+
+/* Contenedor (logo + card) centrado */
+.auth-left-inner {
+  width: 100%;
+  max-width: 480px;
+  margin: auto;
+  padding: 2rem 1.25rem;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* centro vertical */
+  align-items: center; /* centro horizontal */
+}
+
+/* Card glass */
+.auth-panel {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.06)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.233);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Logo (fuera de la card, encima) */
+.auth-logo {
+  height: 100px; /* tu tamaño */
+  width: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 2rem auto; /* espacio limpio sobre la card */
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.48));
+}
+
+/* Form (mantengo tus paddings; solo lo hago fluido en móviles) */
+.auth-panel form {
+  width: min(92vw, 400px); /* 400px máx + seguro en móvil */
+  padding: 20px;
+  display: grid;
+  gap: 0.5rem;
+}
+.auth-panel .form-group {
+  margin: 0;
+}
+
+.auth-panel .form-label {
+  color: var(--login-text);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.auth-panel .form-control {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0b1d3a;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.8rem;
+}
+.auth-panel .form-control::placeholder {
+  color: #7b8796;
+}
+.auth-panel .form-control:focus {
+  border-color: var(--brand-600);
+  box-shadow: 0 0 0 0.2rem var(--focus-ring);
+}
+
+/* Botón primario */
+.auth-panel button[type="submit"],
+.auth-panel .btn-auth {
+  width: 100%;
+  background: linear-gradient(180deg, #0d2a55d4, #0b1d3a 70%);
+  color: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--brand-900) 65%, #000 35%);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 1rem;
+  font-weight: 700;
+}
+.auth-panel button[type="submit"]:hover,
+.auth-panel .btn-auth:hover {
+  filter: brightness(1.06);
+}
+
+/* Enlaces auxiliares */
+.auth-panel .text-muted,
+.auth-panel a {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Compatibilidad con tus clases existentes */
+.auth-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0.5rem 0 1rem 0;
+}
+.auth-card-body {
+  background: transparent;
+  border-radius: var(--radius-md);
+  padding: 0;
+  box-shadow: none;
+  color: var(--color-text);
+}
+.auth-card-body form {
+  display: grid;
+  gap: 0.9rem;
+}
+.auth-card-body .form-label {
+  color: var(--login-text);
+  font-weight: 700;
+}
+
+/* Panel derecho (hero centrado) */
+.auth-right {
+  position: relative;
+  background: var(--brand-50);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+}
+.auth-right::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(114, 161, 187, 0.098),
+    rgba(18, 79, 177, 0.222)
+  );
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.auth-right-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: auto;
+  padding: 0 clamp(1rem, 4vw, 3rem);
+  text-align: center;
+}
+.hero-title {
+  color: #0b1d3a;
+  font-weight: 800;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  line-height: 1.05;
+  margin-bottom: 0.6rem;
+}
+.hero-subtitle {
+  color: #00060e;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  margin: 0;
+}
+
+/* Responsivo fino */
+@media (max-width: 991.98px) {
+  .auth-left-inner {
+    padding-block: 2.25rem;
+  }
+  .auth-right-inner {
+    padding-block: 2rem;
+  }
+}
+/* ====== Ajustes móvil / zoom ====== */
+@media (max-width: 991.98px) {
+  /* Oculta el hero en móvil para evitar scroll largo y solapamientos */
+  .auth-right {
+    display: none;
+  }
+
+  /* La grilla se queda en una sola columna (ya lo tienes, lo reforzamos) */
+  .auth-split {
+    grid-template-columns: 1fr;
+  }
+
+  /* Asegura altura completa y centrado del bloque izquierdo */
+  .auth-left {
+    min-height: 100svh;
+  }
+  .auth-left-inner {
+    padding: 1.25rem 1rem;
+    gap: 1rem;
+  }
+
+  /* Logo más compacto en pantallas pequeñas */
+  .auth-logo {
+    height: 56px;
+    margin-bottom: 1rem;
+  }
+
+  /* Card y form fluidos */
+  .auth-panel {
+    width: 100%;
+    max-width: 420px;
+    padding: 1rem 1rem;
+    margin-inline: auto;
+  }
+  .auth-panel form {
+    width: 100%;
+    padding: 12px;
+    gap: 0.65rem;
+  }
+  .auth-panel .form-control {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.95rem;
+  }
+  .auth-panel button[type="submit"] {
+    padding: 0.65rem 0.9rem;
+  }
+}
+
+/* Extra pequeño (≤360px) por si el usuario hace mucho zoom */
+@media (max-width: 360px) {
+  .auth-logo {
+    height: 50px;
+  }
+  .auth-panel {
+    max-width: 360px;
+  }
+}

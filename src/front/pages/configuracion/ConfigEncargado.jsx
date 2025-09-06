@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { DatosPersonales } from "./Datos/DatosPersonales.jsx";
 import { CambiarContrasena } from "./Datos/CambiarContrasena.jsx";
 import { MonedaPrincipal } from "./Datos/MonedaPrincipal.jsx";
+import Configuracion from "../configuracion/Configuracion";
 
 const ConfigEncargado = () => {
 
@@ -12,11 +13,10 @@ const ConfigEncargado = () => {
 
   return (
     <div className="dashboard-container ">
-      <h1 className="dashboard-title mb-4">Configuración del Encargado</h1>
+
       <div className="d-flex flex-wrap">
-        <DatosPersonales />
-        <CambiarContrasena />
-        <MonedaPrincipal />
+        <Configuracion />
+
       </div>
     </div>
   );

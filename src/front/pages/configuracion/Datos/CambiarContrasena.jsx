@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../../../styles/Ajustes.css";
 
 export const CambiarContrasena = () => {
   const [actual, setActual] = useState("");
@@ -7,12 +8,10 @@ export const CambiarContrasena = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (nueva !== confirmar) {
       alert("Las contraseñas no coinciden");
       return;
     }
-
     try {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/cambiar-password`, {
         method: "PUT",
@@ -22,15 +21,10 @@ export const CambiarContrasena = () => {
         },
         body: JSON.stringify({ actual, nueva }),
       });
-
       const data = await response.json();
-
       if (!response.ok) throw new Error(data.msg || "Error al cambiar la contraseña");
-
       alert(data.msg || "Contraseña cambiada correctamente");
-      setActual("");
-      setNueva("");
-      setConfirmar("");
+      setActual(""); setNueva(""); setConfirmar("");
     } catch (error) {
       console.error("Error cambiando contraseña:", error);
       alert(error.message);
@@ -38,42 +32,43 @@ export const CambiarContrasena = () => {
   };
 
   return (
-    <div className="card col-sm-12 col-md-12 col-lg-10 me-4 col-xl-4 p-4 mb-4">
+    <div className="aj-card mb-4">
       <h4>Cambiar contraseña</h4>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Contraseña actual</label>
+      <form onSubmit={handleSubmit} className="aj-row">
+        <div className="mb-2">
+          <label className="form-label aj-label">Contraseña actual</label>
           <input
             type="password"
             className="form-control"
             value={actual}
             onChange={(e) => setActual(e.target.value)}
-            placeholder="Contraseña actual"
+            placeholder="••••••••"
           />
         </div>
-        <div className="mb-3">
-          <label className="form-label">Nueva contraseña</label>
+        <div className="mb-2">
+          <label className="form-label aj-label">Nueva contraseña</label>
           <input
             type="password"
             className="form-control"
             value={nueva}
             onChange={(e) => setNueva(e.target.value)}
-            placeholder="Nueva contraseña"
+            placeholder="••••••••"
           />
         </div>
-        <div className="mb-3">
-          <label className="form-label">Confirmar nueva contraseña</label>
+        <div className="mb-2">
+          <label className="form-label aj-label">Confirmar nueva contraseña</label>
           <input
             type="password"
             className="form-control"
             value={confirmar}
             onChange={(e) => setConfirmar(e.target.value)}
-            placeholder="Repite nueva contraseña"
+            placeholder="••••••••"
           />
         </div>
-        <button type="submit" className="btn text-white">Actualizar contraseña</button>
+        <div className="mt-2">
+          <button type="submit" className="btn-gastock">Actualizar contraseña</button>
+        </div>
       </form>
     </div>
   );
 };
-

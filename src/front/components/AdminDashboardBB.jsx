@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import adminService from "../services/adminService";
 import "../styles/AdminDashboardBB.css";
 import { QuickActionsAdmin } from "../components/QuickActionsAdmin";
-import { MonedaSimbolo } from "../services/MonedaSimbolo"; // símbolo dinámico (EUR/USD/GBP)
-
+import { MonedaSimbolo } from "../services/MonedaSimbolo";
 
 const AdminDashboardBB = () => {
   const navigate = useNavigate();
@@ -14,7 +13,15 @@ const AdminDashboardBB = () => {
   const [ultimaVentaPorRest, setUltimaVentaPorRest] = useState({});
   const [cargando, setCargando] = useState(false);
 
-  // Control de mes/año (selector + flechas)
+  // Fija --navbar-h según el header real
+  useEffect(() => {
+    const nav = document.querySelector(".navbar.sticky-top");
+    if (nav) {
+      const h = nav.getBoundingClientRect().height;
+      document.documentElement.style.setProperty("--navbar-h", `${h}px`);
+    }
+  }, []);
+
   const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
     const hoy = new Date();
     return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
@@ -36,12 +43,10 @@ const AdminDashboardBB = () => {
     const cargar = async () => {
       setCargando(true);
       try {
-        // 1) Resumen por restaurante del mes seleccionado
         const data = await adminService.getResumenGeneral(mes, ano);
         const lista = Array.isArray(data) ? data : [];
         setResumenes(lista);
 
-        // 2) Para cada restaurante, obtener ventas diarias y tomar la fecha más reciente
         const packs = await Promise.all(
           lista.map((r) =>
             adminService.getVentasDiarias(r.restaurante_id, mes, ano).then((ventas) => ({
@@ -63,7 +68,6 @@ const AdminDashboardBB = () => {
   }, [mes, ano]);
 
   const getColorClasses = (porcentaje) => {
-    // Colores sutiles (sin headers ni outlines especiales)
     if (porcentaje > 36) return ["bg-danger-subtle", "text-danger", "🚨"];
     if (porcentaje > 33) return ["bg-warning-subtle", "text-warning", "⚠️"];
     return ["bg-success-subtle", "text-success", "✅"];
@@ -78,28 +82,52 @@ const AdminDashboardBB = () => {
     }
   };
 
-  return (
-    <div className="dashboard-container">
-      <h1 className="dashboard-welcome text-center mb-3">Vista General</h1>
+  const scrollToAcciones = () => {
+    const el = document.getElementById("acciones-rapidas");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
-      {/* Selector de mes */}
-      <div className="selector-mes d-flex align-items-center justify-content-center gap-2 mb-4 mx-auto">
+  return (
+    <div className="dashboard-container admin-bb p-6">
+
+      {/* Toolbar móvil pegada al navbar */}
+      <div className="ad-toolbar d-md-none">
+        <button className="ad-ctrl" onClick={retrocederMes} aria-label="Mes anterior">←</button>
+        <input
+          type="month"
+          className="form-control ad-month"
+          value={fechaSeleccionada}
+          onChange={(e) => setFechaSeleccionada(e.target.value)}
+          aria-label="Seleccionar mes"
+        />
+        <button className="ad-ctrl" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
+      </div>
+
+      {/* Header */}
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <h1 className="dashboard-title m-0">Vista General</h1>
+        <button onClick={() => navigate(-1)} className="btn-gastock-outline d-none d-md-inline-flex">
+          ← Volver
+        </button>
+      </div>
+
+      {/* Desktop: selector de mes */}
+      <div className="selector-mes d-none d-md-flex align-items-center justify-content-center gap-2 mb-3 mx-auto">
         <label className="fw-bold mb-0">Fecha:</label>
-        <button className="btn btn-sm btn-naranja" aria-label="Mes anterior" onClick={retrocederMes}>←</button>
+        <button className="btn-gastock-outline btn-sm" onClick={retrocederMes} aria-label="Mes anterior">←</button>
         <input
           type="month"
           className="form-control text-center selector-mes__input"
           value={fechaSeleccionada}
           onChange={(e) => setFechaSeleccionada(e.target.value)}
         />
-        <button className="btn btn-sm btn-naranja" aria-label="Mes siguiente" onClick={avanzarMes}>→</button>
+        <button className="btn-gastock btn-sm" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
       </div>
 
-      {/* Un solo contenedor que agrupa todo */}
-      <div className="card shadow-sm border rounded-4 p-3 p-md-4 mb-4">
+      {/* Contenido */}
+      <div className="gf-panel p-3 p-md-4 mb-4">
         {cargando && <div className="w-100 text-center py-3">Cargando…</div>}
 
-        {/* Bloques visuales por restaurante, simulando cards separadas */}
         <div className="rest-list">
           {[...resumenes]
             .sort((a, b) => b.venta_total - a.venta_total)
@@ -113,13 +141,11 @@ const AdminDashboardBB = () => {
                     <span title={r.nombre}>{r.nombre}</span>
                   </h4>
 
-                  {/* mini leyenda */}
                   <p className="text-center text-muted mb-3 rest-block__legend">
                     Últ. venta: {formateaFechaCorta(lastDate)}
                   </p>
 
                   <div className="d-flex flex-column flex-sm-row gap-2 gap-md-3 justify-content-between text-center">
-                    {/* Ventas */}
                     <div className="rest-stat bg-info-subtle">
                       <div className="icono-circular">💰</div>
                       <p className="fw-bold text-info mb-1 small">Ventas</p>
@@ -128,7 +154,6 @@ const AdminDashboardBB = () => {
                       </p>
                     </div>
 
-                    {/* % Gasto */}
                     <div className={`rest-stat ${bgClass}`}>
                       <div className="icono-circular" aria-hidden="true">{icono}</div>
                       <p className={`fw-bold mb-1 small ${textClass}`}>% Gasto</p>
@@ -140,7 +165,7 @@ const AdminDashboardBB = () => {
 
                   <div className="text-center mt-3">
                     <button
-                      className="btn btn-sm enlacevertodo"
+                      className="btn-gastock-outline btn-sm"
                       onClick={() => navigate(`/admin/restaurante/${r.restaurante_id}?mes=${mes}&ano=${ano}`)}
                     >
                       Ver todo
@@ -152,16 +177,22 @@ const AdminDashboardBB = () => {
         </div>
       </div>
 
-      {/* Acciones rápidas */}
-      <div className="card mt-4 shadow-sm border rounded p-4 px-0 pt-0">
+      <div id="acciones-rapidas" className="gf-panel mt-4 p-3 p-md-4">
         <QuickActionsAdmin />
       </div>
+
+      <button
+        className="ad-fab d-md-none"
+        onClick={scrollToAcciones}
+        aria-label="Acciones rápidas"
+        title="Acciones rápidas"
+      >
+        <i className="bi bi-lightning-charge"></i>
+      </button>
     </div>
   );
 };
 
-
-// Helpers
 function getUltimaFecha(ventas = []) {
   if (!Array.isArray(ventas) || ventas.length === 0) return null;
   const fechas = ventas.map((v) => (v.fecha ? new Date(v.fecha) : null)).filter(Boolean);

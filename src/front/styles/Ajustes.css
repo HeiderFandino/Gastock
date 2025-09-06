@@ -1,0 +1,180 @@
+/* ===== AJUSTES — página estilo Facebook (panel único) ===== */
+:root {
+  --aj-card-bg: #fff;
+  --aj-card-br: var(--radius-lg, 16px);
+  --aj-card-bd: 1px solid var(--color-border, #b7c7da);
+  --aj-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --navbar-h: 56px;
+}
+
+.config-page .page-title {
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+}
+.config-page .page-subtitle {
+  color: #475569;
+  margin: 0;
+}
+
+/* Layout: menú a la izquierda, contenido a la derecha */
+.aj-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 992px) {
+  .aj-layout {
+    grid-template-columns: 260px 1fr;
+    align-items: start;
+  }
+}
+
+/* Menú lateral propio (quedará junto al sidebar general de la app, es normal) */
+.aj-sidenav {
+  position: sticky;
+  top: calc(var(--navbar-h) + 10px);
+  z-index: 10;
+}
+
+/* Tabs móviles */
+.aj-tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+.aj-tab {
+  white-space: nowrap;
+  border: 1px solid var(--color-border);
+  background: var(--brand-50);
+  color: var(--color-primary);
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+}
+.aj-tab.is-active {
+  background: color-mix(in srgb, var(--brand-200) 60%, var(--brand-600) 40%);
+  color: #fff;
+  border-color: color-mix(in srgb, var(--color-primary) 65%, #000 35%);
+}
+
+/* Menú vertical desktop */
+.aj-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 0.25rem;
+}
+.aj-menu-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-primary);
+  border-radius: var(--radius-md, 10px);
+  padding: 0.6rem 0.75rem;
+  font-weight: 700;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.aj-menu-item:hover {
+  background: var(--brand-50);
+}
+.aj-menu-item.is-active {
+  background: linear-gradient(
+    180deg,
+    var(--brand-600),
+    var(--color-primary) 78%
+  );
+  color: #fff;
+  border-color: color-mix(in srgb, var(--color-primary) 65%, #000 35%);
+}
+
+/* CONTENIDO: panel único */
+.aj-content {
+  display: block;
+}
+.aj-panel {
+  background: var(--aj-card-bg);
+  border: var(--aj-card-bd);
+  border-radius: var(--aj-card-br);
+  box-shadow: var(--aj-card-shadow);
+  padding: 1rem 1.25rem;
+}
+
+/* Bloques dentro del panel (no más tarjetas por sección) */
+.aj-block {
+  scroll-margin-top: calc(var(--navbar-h) + 14px);
+}
+.aj-block-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 0.75rem;
+}
+
+.aj-divider {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: 1rem 0 1.25rem 0;
+}
+
+/* Formato de inputs/botones ya unificado */
+.aj-row {
+  display: grid;
+  gap: 0.75rem;
+}
+@media (min-width: 576px) {
+  .aj-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.aj-label {
+  font-weight: 600;
+}
+.aj-panel .form-control,
+.aj-panel .form-select {
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid var(--color-border, #b7c7da);
+}
+.aj-panel .form-control:focus,
+.aj-panel .form-select:focus {
+  border-color: var(--brand-600);
+  box-shadow: 0 0 0 0.18rem var(--focus-ring, rgba(96, 139, 193, 0.28));
+}
+.btn-gastock {
+  background: linear-gradient(
+    180deg,
+    var(--brand-600),
+    var(--color-primary) 78%
+  );
+  color: #fff !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 65%, #000 35%);
+  border-radius: var(--radius-md, 10px);
+  padding: 0.6rem 1rem;
+  font-weight: 700;
+}
+.btn-gastock:hover {
+  filter: brightness(1.07);
+}
+
+/* Vista sin menú: panel centrado y ancho cómodo */
+.aj-content {
+  display: block;
+}
+.aj-panel--center {
+  max-width: 980px; /* ancho cómodo tipo Facebook */
+  margin-inline: auto; /* centrado */
+  padding: 1rem 1.25rem;
+}
+
+/* Por si quedó alguna referencia al menú, lo ocultamos */
+.aj-sidenav,
+.aj-tabs {
+  display: none !important;
+}
+.aj-layout {
+  display: block;
+}

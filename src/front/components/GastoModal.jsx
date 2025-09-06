@@ -44,7 +44,6 @@ const GastoModal = ({ gasto, proveedores, onClose, onSave }) => {
       payload.archivo_adjunto = gasto.archivo_adjunto;
     }
 
-    console.log("🟡 Datos enviados al backend:", payload);
     onSave({ ...gasto, ...payload });
   };
 
@@ -53,24 +52,14 @@ const GastoModal = ({ gasto, proveedores, onClose, onSave }) => {
       <div className="modaal">
         <h2 className="titulo">Editar Gasto</h2>
         <form onSubmit={handleSubmit} className="modaal-form px-0">
-          <select
-            name="proveedor_id"
-            value={form.proveedor_id}
-            onChange={handleChange}
-            required
-          >
+          <select name="proveedor_id" value={form.proveedor_id} onChange={handleChange} required>
             <option value="">Selecciona proveedor</option>
             {proveedores.map((p) => (
               <option key={p.id} value={p.id}>{p.nombre}</option>
             ))}
           </select>
 
-          <select
-            name="categoria"
-            value={form.categoria}
-            onChange={handleChange}
-            required
-          >
+          <select name="categoria" value={form.categoria} onChange={handleChange} required>
             <option value="">Selecciona categoría</option>
             <option value="alimentos">Alimentos</option>
             <option value="bebidas">Bebidas</option>
@@ -78,22 +67,8 @@ const GastoModal = ({ gasto, proveedores, onClose, onSave }) => {
             <option value="otros">Otros</option>
           </select>
 
-          <input
-            type="number"
-            name="monto"
-            value={form.monto}
-            onChange={handleChange}
-            placeholder="Monto"
-            required
-          />
-
-          <input
-            type="text"
-            name="nota"
-            value={form.nota}
-            onChange={handleChange}
-            placeholder="Nota"
-          />
+          <input type="number" name="monto" value={form.monto} onChange={handleChange} placeholder="Monto" required />
+          <input type="text" name="nota" value={form.nota} onChange={handleChange} placeholder="Nota" />
 
           <div className="modaal-actions">
             <button type="button" onClick={onClose}>Cancelar</button>

@@ -1,35 +1,50 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import './index.css'  // Global styles for your application
-import { RouterProvider } from "react-router-dom";  // Import RouterProvider to use the router
-import './styles/nabvar.css'
-import './styles/nabvar-left.css'
-import './styles/chefventas.css'
-import { router } from "./routes";  // Import the router configuration
-import { StoreProvider } from './hooks/useGlobalReducer';  // Import the StoreProvider for global state management
-import { BackendURL } from './components/BackendURL';
+
+// 1) Framework primero (para que tus estilos puedan sobrescribir)
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './styles/admin-analytics.css'
+
+// 2) Design system: variables globales (antes de TODO)
+import './styles/brand.css';
+
+// 3) Resto de estilos de la app (ya consumen tokens)
+import './index.css';
+import './styles/nabvar.css';
+import './styles/nabvar-left.css';
+import './styles/QuickActionCard.css';
+import './styles/EncargadoDashboard.css';
+import './styles/Encargado.css';
+import './styles/UserModal.css';
+import './styles/EncargadoGastos.mobile.css';
+import './styles/EncargadoVentasMobile.css';
+import './styles/AdminDashboardBB.css';
+import './styles/AdminRestauranteComponent.css';
+import "./styles/login.css";
+
+// (Si usas este)
+import './styles/chefventas.css';
+
+import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
+import { StoreProvider } from './hooks/useGlobalReducer';
+import { BackendURL } from './components/BackendURL';
 
 const Main = () => {
-
-    if (! import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_BACKEND_URL == "") return (
-        <React.StrictMode>
-            <BackendURL />
-        </React.StrictMode>
-    );
+    if (!import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_BACKEND_URL === "") {
+        return (
+            <React.StrictMode>
+                <BackendURL />
+            </React.StrictMode>
+        );
+    }
     return (
         <React.StrictMode>
-            {/* Provide global state to all components */}
             <StoreProvider>
-                {/* Set up routing for the application */}
-                <RouterProvider router={router}>
-
-                </RouterProvider>
+                <RouterProvider router={router} />
             </StoreProvider>
         </React.StrictMode>
     );
-}
+};
 
-// Render the Main component into the root DOM element.
 ReactDOM.createRoot(document.getElementById('root')).render(<Main />)
+b

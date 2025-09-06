@@ -1,5 +1,5 @@
 import React from "react";
-import "../../styles/landing_styles.css";
+
 import forgotBg from "../../assets/img/forgot_bg.png";
 import ForgotPassword from "./ForgotPassword.jsx";
 import { FooterLanding } from "../../components/FooterLanding.jsx";

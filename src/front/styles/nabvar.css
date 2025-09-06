@@ -1,15 +1,27 @@
-/* --- Navbar compacto --- */
+/* nabvar.css — gradiente sutil */
 .navbar {
-  height: auto;
+  height: 100px; /* altura consistente */
+  display: flex;
+  align-items: center; /* centra verticalmente todo dentro */
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--brand-900) 20%, #ffffff),
+    color-mix(in srgb, var(--brand-600) 20%, #ffffff)
+  );
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
 }
 
-/* Logo + texto siempre alineados */
+/* Marca */
 .navbar-brand {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .brand-logo {
   height: 28px;
   width: auto;
@@ -20,47 +32,33 @@
     height: 32px;
   }
 }
-
 .brand-text {
   font-size: 1.1rem;
   font-weight: 600;
   line-height: 1;
-  display: flex;
-  align-items: center;
+  color: var(--color-text);
 }
 
-/* Avatar */
-/* Botón que envuelve el icono del usuario */
+/* Avatar + texto usuario */
 .avatar-btn {
-  background: transparent !important; /* sin fondo */
-  border: none !important; /* sin borde */
-  padding: 0 !important; /* sin padding extra */
-  box-shadow: none !important; /* sin sombra de Bootstrap */
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  transition: background 0.15s ease;
 }
-
-/* Icono del usuario */
-.bi-person-circle {
-  font-size: 32px;
-  color: #ff5d1d; /* solo el icono en naranja */
-}
-@media (min-width: 768px) {
-  .bi-person-circle {
-    font-size: 38px;
-  }
-}
-
-/* Hover opcional: fondo gris claro para indicar que es clicable */
 .avatar-btn:hover {
-  background: #f5f5f5 !important;
-  border-radius: 50%; /* opcional, redondeado */
+  background: color-mix(in srgb, var(--brand-50) 25%, transparent) !important;
 }
+
 .bi-person-circle {
   font-size: 32px;
-  color: #dfdad8;
+  color: var(--color-secondary);
 }
 @media (min-width: 768px) {
   .bi-person-circle {
@@ -68,13 +66,15 @@
   }
 }
 
-/* Texto usuario */
 .user-name {
   max-width: 220px;
   font-size: 1rem;
+  color: var(--color-text);
+  font-weight: 600;
 }
 .user-restaurant {
   max-width: 220px;
+  color: var(--color-text-weak);
 }
 @media (max-width: 991.98px) {
   .user-name,
@@ -83,43 +83,26 @@
   }
 }
 
-/* Móvil: ocultamos info redundante (queda en dropdown) */
+/* Móvil */
 @media (max-width: 767.98px) {
   .navbar .name,
   .navbar .restaurant,
   .navbar .role {
     display: none !important;
   }
-
   .navbar .container-fluid {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
 }
 
-/* Botón del avatar (quita fondo y borde) */
-.avatar-btn {
-  background-color: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-/* El icono del usuario (solo color) */
-.avatar-btn .bi-person-circle {
-  font-size: 32px;
-  color: #d34b15;
-  background: none !important;
+.brand-logo {
+  height: 40px; /* aquí controlas SOLO el logo */
+  width: auto;
+  object-fit: contain;
 }
 @media (min-width: 768px) {
-  .avatar-btn .bi-person-circle {
-    font-size: 38px;
+  .brand-logo {
+    height: 48px; /* más grande en escritorio */
   }
-}
-
-/* Hover opcional para mejor UX */
-.avatar-btn:hover {
-  background-color: #f5f5f5 !important; /* gris claro */
-  border-radius: 50%;
 }

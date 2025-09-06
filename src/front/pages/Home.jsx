@@ -1,32 +1,42 @@
 import React from "react";
-import "../styles/landing_styles.css";
 import { Login } from "../components/Login.jsx";
-import { FooterLanding } from "../components/FooterLanding.jsx";
-import bgforgot from "../assets/img/forgot_bg.png";
+import gastockfondo from "../assets/img/fondo-pantalla.png";
+import logo from "../assets/img/gastock2.png";
+
+import "../styles/login.css";
 
 export const Home = () => {
   return (
-    <>
-      <div
-        className="container-fluid landing-container"
-        style={{ backgroundImage: `url(${bgforgot})` }}
-      >
-        <div className="row align-items-center main-row mx-auto">
-          <div className="col-lg-6 col-12 text-center text-lg-start landing-message">
-            <h1>Gestiona tus gastos</h1>
-            <p className="fw-semibold text-dark">Inicia sesión para llevar un control de tu inversión culinaria.</p>
-          </div>
+    <div className="auth-split">
 
-          <div className="d-flex justify-content-center col-12 col-sm-12 col-md-9 col-lg-6 col-xl-5 col-xxl-4 mx-auto login-overlay ">
-            <Login />
-          </div>
+      {/* PANEL IZQUIERDO */}
+      <section className="auth-left">
+        <div className="auth-left-inner text-center">
+          {/* Logo arriba */}
+          <img src={logo} alt="Gastock" className="auth-logo" />
+
+          {/* Formulario de login */}
+          <Login />
         </div>
-        <FooterLanding />
-      </div>
-    </>
+      </section>
+
+      {/* PANEL DERECHO */}
+      <section
+        className="auth-right"
+        style={{ backgroundImage: `url(${gastockfondo})` }}
+      >
+        <div className="auth-right-inner">
+          <h1 className="hero-title">
+            Gestiona<br />
+            tus gastos
+          </h1>
+          <p className="hero-subtitle">
+            Inicia sesión para llevar un control de tu inversión culinaria.
+          </p>
+        </div>
+      </section>
+    </div>
   );
 };
 
-
-
-
+export default Home;

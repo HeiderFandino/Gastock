@@ -1,17 +1,22 @@
-/* ===== SOLO MÓVIL (no afecta desktop) ===== */
-@media (max-width: 767.98px) {
-  :root {
-    --navbar-h: 56px;
-  }
+/* EncargadoGastos.mobile.css – tokenizado a brand.css (look: fondo blanco con bordes azules) */
 
-  /* Título compacto */
+/* Variables globales útiles */
+:root {
+  --navbar-h: 56px;
+  --bottom-nav-h: 68px;
+  --eg-toolbar-h: 44px;
+  --eg-totalbar-h: 52px;
+}
+
+/* ===== SOLO MÓVIL ===== */
+@media (max-width: 767.98px) {
   .dashboard-title {
     font-size: 1.05rem !important;
     margin: 0.25rem 0 !important;
     font-weight: 700;
   }
 
-  /* Tabs móviles */
+  /* ===== Tabs ===== */
   .eg-tabs {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -19,56 +24,84 @@
     padding: 0.4rem 0.6rem;
   }
   .eg-tab {
-    border: 1px solid #eee;
+    border: 1px solid var(--color-border);
     background: #fff;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     padding: 0.45rem 0;
     font-weight: 600;
+    color: var(--color-text);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
   }
   .eg-tab.active {
-    border-color: #ff5b00;
-    color: #ff5b00;
-    background: #fff5ef;
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
   }
 
-  /* Toolbars sticky */
+  /* ===== Toolbar fija (bajo navbar) ===== */
   .eg-toolbar {
-    position: sticky;
+    position: fixed !important;
     top: var(--navbar-h);
-    z-index: 1020;
+    left: 0;
+    right: 0;
+    z-index: var(--z-sticky);
     background: #fff;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border);
     padding: 0.35rem 0.6rem;
     display: flex;
     align-items: center;
     gap: 0.45rem;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
   }
   .eg-toolbar-spacer {
-    height: 0.25rem;
+    height: var(--eg-toolbar-h);
+    margin-bottom: 0.25rem;
   }
 
   .eg-month,
   .eg-date {
     height: 34px;
     font-size: 0.95rem;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     padding: 0.25rem 0.55rem;
     flex: 1;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-text);
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
+  .eg-month:focus,
+  .eg-date:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem var(--focus-ring);
+    outline: none;
+  }
+
   .eg-ctrl {
     height: 34px;
     padding: 0 0.6rem;
-    border: 1px solid #eee;
-    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
     background: #fff;
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s, border-color 0.15s, transform 0.05s;
   }
-  .eg-ctrl-success {
-    border-color: #cde9da;
-    background: #f3fff8;
-    color: #198754;
+  .eg-ctrl:hover {
+    background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
+  }
+  .eg-ctrl:active {
+    transform: translateY(1px);
   }
 
-  /* KPIs */
+  .eg-ctrl-success {
+    border-color: var(--stroke-success-45);
+    background: var(--tint-success-12);
+    color: var(--color-success);
+  }
+
+  /* ===== KPIs ===== */
   .eg-kpis {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -77,22 +110,24 @@
   }
   .eg-chip {
     background: #fff;
-    border: 1px solid #eee;
-    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     padding: 0.5rem 0.6rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
   }
   .eg-chip-title {
     font-size: 0.82rem;
     font-weight: 700;
     margin-bottom: 0.15rem;
+    color: var(--color-text-weak);
   }
   .eg-chip-value {
     font-size: 1rem;
     font-weight: 800;
+    color: var(--color-primary);
   }
 
-  /* Lista (cards) */
+  /* ===== Lista ===== */
   .eg-list {
     list-style: none;
     padding: 0 0.6rem 5rem;
@@ -100,23 +135,26 @@
   }
   .eg-item {
     background: #fff;
-    border: 1px solid #eee;
+    border: 1px solid var(--color-border);
     border-radius: 14px;
     padding: 0.6rem 0.7rem;
     margin-bottom: 0.55rem;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .eg-item:hover {
+    background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
   }
   .eg-item-main {
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-  .eg-item-title {
-    font-weight: 800;
-    font-size: 0.98rem;
-  }
+  .eg-item-title,
   .eg-item-amount {
     font-weight: 800;
     font-size: 0.98rem;
+    color: var(--color-text);
   }
   .eg-item-sub {
     margin-top: 0.25rem;
@@ -127,13 +165,13 @@
   }
   .eg-meta {
     font-size: 0.85rem;
-    color: #6b7280;
+    color: var(--color-text-weak);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
-  /* Acciones icono */
+  /* ===== Acciones ===== */
   .eg-actions {
     display: inline-flex;
     gap: 0.35rem;
@@ -144,11 +182,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #eaeaea;
+    border: 1px solid var(--color-border);
     background: #fff;
-    color: #333;
-    border-radius: 10px;
+    color: var(--color-text);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     transition: background 0.15s, border-color 0.15s, transform 0.05s;
+  }
+  .eg-icon-btn:hover {
+    background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
   }
   .eg-icon-btn:active {
     transform: translateY(1px);
@@ -156,112 +198,151 @@
   .eg-icon-btn i {
     font-size: 1rem;
   }
+
   .eg-icon-btn.eg-danger {
-    color: #d43c2f;
-    border-color: #ffd6d6;
+    color: var(--color-danger);
+    border-color: var(--stroke-danger-45);
   }
   .eg-icon-btn.eg-danger:hover {
-    background: #fff1f1;
-    border-color: #ffdddd;
+    background: var(--tint-danger-12);
+    border-color: var(--stroke-danger-45);
   }
 
-  /* Total bar (diario) */
-  .eg-totalbar {
-    position: sticky;
-    bottom: 68px; /* por encima de la bottom nav */
-    background: #fff;
-    border-top: 1px solid #eee;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.6rem 0.9rem;
-    font-size: 0.95rem;
-  }
-
-  /* FAB registrar gasto */
-  .eg-fab {
-    position: fixed;
-    right: 16px;
-    bottom: 84px;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: none;
-    background: #ff5b00;
-    color: #fff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    box-shadow: 0 8px 18px rgba(255, 91, 0, 0.3);
-    z-index: 1050;
-  }
-  .eg-fab:active {
-    transform: translateY(1px);
-  }
-}
-/* Variables globales útiles */
-:root {
-  --navbar-h: 56px; /* alto de tu navbar superior */
-  --bottom-nav-h: 68px; /* alto de la bottom nav en móvil */
-}
-
-/* Alturas de los elementos fijos (ajústalas si cambias paddings) */
-:root {
-  --navbar-h: 56px; /* navbar superior */
-  --bottom-nav-h: 68px; /* tu bottom nav de tabs en móvil */
-  --eg-toolbar-h: 44px; /* alto aprox de la barra de fecha */
-  --eg-totalbar-h: 52px; /* alto aprox de “Total del día” */
-}
-
-/* ===== SOLO MÓVIL ===== */
-@media (max-width: 767.98px) {
-  /* Barra de FECHA/Hoy FIJA (arriba del viewport, bajo el navbar) */
-  .eg-toolbar {
-    position: fixed !important;
-    top: var(--navbar-h);
-    left: 0;
-    right: 0;
-    z-index: 1030;
-    background: #fff;
-    border-bottom: 1px solid #eee;
-    padding: 0.35rem 0.6rem;
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-  }
-
-  /* Espaciador para que la lista no quede debajo de la toolbar fija */
-  .eg-toolbar-spacer {
-    height: var(--eg-toolbar-h);
-    /* un pelín más si hiciste la toolbar más alta */
-    margin-bottom: 0.25rem;
-  }
-
-  /* Barra “TOTAL DEL DÍA” FIJA (encima de la bottom nav) */
+  /* ===== Total bar fija ===== */
   .eg-totalbar {
     position: fixed !important;
     left: 0;
     right: 0;
     bottom: var(--bottom-nav-h);
-    z-index: 1020;
+    z-index: var(--z-sticky);
     background: #fff;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0.6rem 0.9rem;
     font-size: 0.95rem;
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
   }
 
-  /* Espaciador inferior para que el scroll no tape el último item */
   .eg-bottom-spacer {
     height: calc(var(--eg-totalbar-h) + var(--bottom-nav-h) + 8px);
   }
 
-  /* Por si el contenedor usa RTL para la barra de scroll */
+  /* Garantiza dirección coherente */
   .eg-toolbar,
   .eg-totalbar {
     direction: ltr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .eg-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(
+      var(--bottom-nav-h) + max(env(safe-area-inset-bottom), 12px)
+    ); /* <- igual que Ventas */
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-modal);
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+  .eg-fab:hover {
+    filter: brightness(1.06);
+    transform: scale(1.04);
+  }
+  .eg-fab:active {
+    transform: scale(0.96);
+  }
+  .eg-fab i {
+    line-height: 1;
+  }
+}
+
+/* ===== Admin – móvil: toolbar FIJA bajo el navbar (estilo Encargado) ===== */
+:root {
+  --navbar-h: 56px; /* se recalcula en runtime desde el Navbar */
+  --ad-toolbar-h: 44px; /* alto visual de la toolbar (spacer) */
+}
+
+@media (max-width: 767.98px) {
+  /* El contenedor no empuja nada: la toolbar es fixed y el spacer compensa */
+  .dashboard-container.admin-bb {
+    padding-top: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Toolbar fija bajo el navbar */
+  .ad-toolbar {
+    position: fixed !important;
+    top: var(--navbar-h);
+    left: 0;
+    right: 0;
+    z-index: var(--z-sticky);
+    background: #fff;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.35rem 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    margin: 0 !important;
+  }
+
+  /* Spacer que “abre camino” al contenido justo debajo de la toolbar fija */
+  .ad-toolbar-spacer {
+    display: block !important;
+    height: var(--ad-toolbar-h) !important;
+    margin: 0 0 0.25rem 0;
+  }
+
+  /* Inputs/controles coherentes */
+  .ad-month {
+    height: 36px;
+    font-size: 0.95rem;
+    border-radius: var(--radius-md);
+    padding: 0.25rem 0.55rem;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    flex: 1;
+  }
+  .ad-month:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem var(--focus-ring);
+    outline: 0;
+  }
+  .ad-ctrl {
+    height: 36px;
+    padding: 0 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s, transform 0.05s;
+  }
+  .ad-ctrl:hover {
+    background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
+  }
+  .ad-ctrl:active {
+    transform: translateY(1px);
+  }
+
+  /* Título normal (ya no necesitamos order hacks ni padding-top global) */
+  .admin-bb .dashboard-title {
+    margin: 0.5rem 0.75rem 0 !important;
   }
 }

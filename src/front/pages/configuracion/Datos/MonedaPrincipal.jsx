@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
+import "../../../styles/Ajustes.css";
+
 export const MonedaPrincipal = () => {
   const restaurante_id = sessionStorage.getItem("restaurante_id");
   const [moneda, setMoneda] = useState(sessionStorage.getItem("restaurante_moneda") || "");
+
   useEffect(() => {
     const monedaGuardada = sessionStorage.getItem("restaurante_moneda");
     if (monedaGuardada) setMoneda(monedaGuardada);
   }, []);
-  const handleChange = (e) => {
-    setMoneda(e.target.value);
-  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -21,7 +22,7 @@ export const MonedaPrincipal = () => {
         body: JSON.stringify({ moneda }),
       });
       if (!resp.ok) throw new Error("Error al actualizar la moneda");
-      const data = await resp.json();
+      await resp.json();
       sessionStorage.setItem("restaurante_moneda", moneda);
       alert("Moneda actualizada correctamente");
     } catch (error) {
@@ -29,18 +30,23 @@ export const MonedaPrincipal = () => {
       alert("Hubo un problema al guardar la moneda");
     }
   };
+
   return (
-    <div className="card col-sm-12 col-md-12 col-lg-10 me-4 col-xl-4 p-4 mb-4">
+    <div className="aj-card mb-4">
       <h4>Moneda principal</h4>
-      <form onSubmit={handleSubmit}>
-        <label className="form-label">Selecciona tu moneda</label>
-        <select className="form-select" value={moneda} onChange={handleChange}>
-          <option value="">Selecciona</option>
-          <option value="EUR">€ Euro</option>
-          <option value="USD">$ Dólar</option>
-          <option value="GBP">£ Libra</option>
-        </select>
-        <button type="submit" className="btn mt-3 text-white">Guardar cambio</button>
+      <form onSubmit={handleSubmit} className="aj-row">
+        <div className="mb-2">
+          <label className="form-label aj-label">Selecciona tu moneda</label>
+          <select className="form-select" value={moneda} onChange={(e) => setMoneda(e.target.value)}>
+            <option value="">Selecciona</option>
+            <option value="EUR">€ Euro</option>
+            <option value="USD">$ Dólar</option>
+            <option value="GBP">£ Libra</option>
+          </select>
+        </div>
+        <div className="mt-2">
+          <button type="submit" className="btn-gastock">Guardar cambio</button>
+        </div>
       </form>
     </div>
   );
