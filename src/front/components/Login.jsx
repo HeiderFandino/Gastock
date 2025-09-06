@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react";
 import userServices from "../services/userServices";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import logo from "../assets/img/logo.svg";
+import logo from "../assets/img/gastock2.png";
 import { useNavigate, Link } from "react-router-dom";
 
-
 export const Login = () => {
-
   const { dispatch } = useGlobalReducer();
   const navigate = useNavigate();
   const [FormData, setFormData] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (errorMessage) {
@@ -18,11 +17,15 @@ export const Login = () => {
       return () => clearTimeout(timer);
     }
   }, [errorMessage]);
+
   const handleChange = (e) => {
     setFormData({ ...FormData, [e.target.name]: e.target.value });
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
+
     userServices
       .login(FormData)
       .then((data) => {
@@ -37,36 +40,39 @@ export const Login = () => {
           navigate(`/${data.user.rol}/dashboard`);
         }
       })
-      .catch(() => setErrorMessage("Hubo un error en el login"));
+      .catch(() => setErrorMessage("Hubo un error en el login"))
+      .finally(() => setLoading(false));
   };
+
   return (
-    <div className="auth-overlay text-center mt-sm-0 mb-sm-4 mt-md-0">
-      <img
-        src={logo}
-        alt="Chef Logo"
-        className="img-fluid mb-3"
-        style={{ height: "100px" }}
-      />
-      <h2 className="text-dark mb-4 fw-bold">Iniciar sesión</h2>
+    <div className="auth-panel">
+      <h2 className="auth-title">Iniciar sesión</h2>
+
       {errorMessage && (
-        <div className="alert alert-danger">{errorMessage}</div>
+        <div className="alert">{errorMessage}</div>
       )}
-      <form onSubmit={handleSubmit} style={{ backgroundColor: 'transparent' }}>
-        <div className="mb-3 text-start">
-          <label htmlFor="username" className="form-label">Correo electrónico</label>
+
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="email" className="form-label">
+            Correo electrónico
+          </label>
           <input
             type="email"
             name="email"
-            id="username"
+            id="email"
             className="form-control"
             placeholder="Introduce tu email"
             value={FormData.email}
             onChange={handleChange}
+            required
           />
-          <small className="text-muted">Tu usuario único</small>
         </div>
-        <div className="mb-3 text-start">
-          <label htmlFor="password" className="form-label">Contraseña</label>
+
+        <div className="form-group">
+          <label htmlFor="password" className="form-label">
+            Contraseña
+          </label>
           <input
             type="password"
             name="password"
@@ -75,33 +81,22 @@ export const Login = () => {
             placeholder="Introduce tu contraseña"
             value={FormData.password}
             onChange={handleChange}
+            required
           />
-          <small className="text-muted">Tu contraseña segura</small>
         </div>
-        <button type="submit" className="btn bg-orange text-white w-100">
-          Entrar
+
+        <button
+          type="submit"
+          className="btn-primary"
+          disabled={loading}
+        >
+          {loading ? "Entrando..." : "Entrar"}
         </button>
-        <div className="mt-3">
-          <p className="text-center mt-2">
-            <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
-          </p>
-        </div>
+
+        <Link to="/forgot-password" className="forgot-password">
+          ¿Olvidaste tu contraseña?
+        </Link>
       </form>
     </div>
   );
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

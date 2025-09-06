@@ -5,7 +5,6 @@ import { MonedaSimbolo } from "../../services/MonedaSimbolo";
 import VentaModal from "./VentaModal";
 import "../../styles/Encargado.css";
 
-
 export const EncargadoVentas = () => {
   const simbolo = MonedaSimbolo();
   const { store } = useGlobalReducer();
@@ -49,7 +48,6 @@ export const EncargadoVentas = () => {
   const diasUnicos = useMemo(() => [...new Set(ventas.map(v => v.fecha))], [ventas]);
   const promedio = diasUnicos.length ? total / diasUnicos.length : 0;
 
-  // acciones
   const abrirModalEdicion = (venta) => {
     setVentaSeleccionada(venta);
     setNuevoMonto(venta.monto);
@@ -93,17 +91,15 @@ export const EncargadoVentas = () => {
       setMostrarModal(false);
       cargarVentas();
     } catch (error) {
-      throw error; // deja que el modal maneje errores (409, etc.)
+      throw error;
     }
   };
 
   return (
     <div className="dashboard-container">
-      {/* ====== Encabezado ====== */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h1 className="dashboard-title m-0">Ventas del restaurante</h1>
-        {/* En móvil mostramos un FAB, en desktop dejamos el botón normal */}
-        <button className="btn d-none d-md-inline-flex" onClick={() => setMostrarModal(true)}>
+        <button className="btn-gastock" onClick={() => setMostrarModal(true)}>
           <i className="bi bi-plus-circle me-2"></i> Registrar nueva venta
         </button>
       </div>
@@ -114,7 +110,6 @@ export const EncargadoVentas = () => {
         </div>
       )}
 
-      {/* ====== FILTROS: sticky en móvil, inline en desktop ====== */}
       <div className="ev-sticky">
         <div className="ev-toolbar d-md-none">
           <input
@@ -145,9 +140,7 @@ export const EncargadoVentas = () => {
       </div>
       <div className="ev-toolbar-spacer d-md-none" />
 
-      {/* ====== KPIs ====== */}
-      <div className="d-none d-md-block rounded shadow-sm p-2 col-sm-12 col-md-7 col-lg-6 col-xl-4 col-xxl-3 text-center bg-info-subtle d-flex flex-direction-row">
-        <div className="icono-circular ms-2 me-4 rounded-circle bg-white text-info mt-1">📈</div>
+      <div className="d-none d-md-block rounded shadow-sm p-2 col-sm-12 col-md-7 col-lg-6 col-xl-4 col-xxl-3 text-center bg-info-subtle d-flex flex-direction-row mt-4">
         <div className="d-flex flex-column text-start">
           <h6 className="fw-bold text-info strong">
             Promedio diario: <span className="fw-bold">{simbolo}{promedio.toFixed(2)}</span>
@@ -158,7 +151,6 @@ export const EncargadoVentas = () => {
         </div>
       </div>
 
-      {/* KPIs móviles: chips compactos */}
       <div className="ev-kpis d-md-none">
         <div className="ev-chip">
           <div className="ev-chip-title text-info">Promedio diario</div>
@@ -174,8 +166,7 @@ export const EncargadoVentas = () => {
         </div>
       </div>
 
-      {/* ====== LISTA ====== */}
-      {/* Desktop: tu tabla actual */}
+      {/* Desktop */}
       <div className="d-none d-md-block">
         {loading ? (
           <p>Cargando...</p>
@@ -210,7 +201,7 @@ export const EncargadoVentas = () => {
         )}
       </div>
 
-      {/* Móvil: lista tipo “inbox” */}
+      {/* Móvil */}
       <div className="d-md-none">
         {loading ? (
           <p className="px-2">Cargando...</p>
@@ -244,11 +235,11 @@ export const EncargadoVentas = () => {
       </div>
 
       {/* FAB móvil */}
-      <button className="ev-fab d-md-none" onClick={() => setMostrarModal(true)} aria-label="Registrar venta">
+      <button className="btn-fab d-md-none" onClick={() => setMostrarModal(true)} aria-label="Registrar venta">
         <i className="bi bi-plus-lg"></i>
       </button>
 
-      {/* ====== Modal edición ====== */}
+      {/* Modal edición */}
       <div className="modal fade" id="editarModal" tabIndex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
@@ -268,7 +259,6 @@ export const EncargadoVentas = () => {
         </div>
       </div>
 
-      {/* Modal nueva venta */}
       {mostrarModal && (
         <VentaModal onSave={guardarVenta} onClose={() => setMostrarModal(false)} />
       )}

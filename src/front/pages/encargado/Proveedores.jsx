@@ -79,8 +79,11 @@ export const Proveedores = () => {
     <div className="dashboard-container ">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h1 className="dashboard-title">Proveedores</h1>
-        <button className="btn" onClick={abrirModalCrear}>
-          + Nuevo Proveedor
+        <button
+          className="btn-gastock"
+          onClick={abrirModalCrear}
+        >
+          <i className="bi bi-plus-circle me-2"></i> Nuevo Proveedor
         </button>
       </div>
 

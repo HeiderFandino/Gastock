@@ -86,6 +86,23 @@ export const EncargadoDashboard = () => {
     if (el) el.scrollTo(0, 0);
   }, [fechaSeleccionada]);
 
+  // Altura real del navbar para que el sticky no se solape (móvil/zoom)
+  useEffect(() => {
+    const nav = document.querySelector('nav.navbar.sticky-top');
+    const setVar = () => {
+      const h = nav ? Math.ceil(nav.getBoundingClientRect().height) : 56;
+      // guardamos en :root; sirve en toda la app
+      document.documentElement.style.setProperty('--navbar-h', `${h}px`);
+    };
+    setVar();
+    window.addEventListener('resize', setVar);
+    window.addEventListener('orientationchange', setVar);
+    return () => {
+      window.removeEventListener('resize', setVar);
+      window.removeEventListener('orientationchange', setVar);
+    };
+  }, []);
+
   const porcentaje = resumenMensual?.porcentaje || 0;
   const gasto = resumenMensual?.gastos || 0;
   const totalVentas = ventas.reduce((acc, item) => acc + item.monto, 0);
@@ -111,15 +128,12 @@ export const EncargadoDashboard = () => {
 
       <h1 className="dashboard-title">Resumen De Tu Restaurante</h1>
 
-      {/* ========== CONTROLES FECHA (sticky, con flechas también en móvil) ========== */}
-      <div
-        className="dm-sticky-controls d-flex align-items-center gap-2 mb-3 ms-md-3"
-
-      >
+      {/* CONTROLES FECHA — MÓVIL (SIN CAMBIOS) */}
+      <div className="dm-sticky-controls d-flex d-md-none align-items-center gap-2 mb-3 ms-md-3">
         <label className="fw-bold mb-0 d-none d-md-inline">Fecha:</label>
         <button
           className="btn btn-sm px-2 py-1 text-white"
-          style={{ backgroundColor: "#ff5b00", borderRadius: "8px" }}
+          style={{ backgroundColor: "var(--color-primary)", borderRadius: "var(--radius-md)" }}
           onClick={retrocederMes}
           aria-label="Mes anterior"
         >
@@ -135,7 +149,36 @@ export const EncargadoDashboard = () => {
         />
         <button
           className="btn btn-sm px-2 py-1 text-white"
-          style={{ backgroundColor: "#ff5b00", borderRadius: "8px" }}
+          style={{ backgroundColor: "var(--color-primary)", borderRadius: "var(--radius-md)" }}
+          onClick={avanzarMes}
+          aria-label="Mes siguiente"
+        >
+          →
+        </button>
+      </div>
+
+      {/* CONTROLES FECHA — DESKTOP (TOKENS) */}
+      <div className="dm-sticky-controls d-none d-md-flex align-items-center gap-2 mb-3 ms-md-3">
+        <label className="fw-bold mb-0">Fecha:</label>
+        <button
+          className="btn btn-sm px-2 py-1 text-white"
+          style={{ backgroundColor: "var(--color-primary)", borderRadius: "var(--radius-md)" }}
+          onClick={retrocederMes}
+          aria-label="Mes anterior"
+        >
+          ←
+        </button>
+        <input
+          type="month"
+          className="form-control text-center border"
+          style={{ flex: 1 }}
+          value={fechaSeleccionada}
+          onChange={(e) => setFechaSeleccionada(e.target.value)}
+          aria-label="Seleccionar mes"
+        />
+        <button
+          className="btn btn-sm px-2 py-1 text-white"
+          style={{ backgroundColor: "var(--color-primary)", borderRadius: "var(--radius-md)" }}
           onClick={avanzarMes}
           aria-label="Mes siguiente"
         >
@@ -226,16 +269,18 @@ export const EncargadoDashboard = () => {
 
       {/* ========== DESKTOP: igual que ya tenías ========== */}
       <div className="d-none d-md-block">
-        {/* VENTAS */}
-        <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
-          <h5 className="mb-3 fw-bold barralarga">VENTAS</h5>
-          <div className="row align-items-center ms-3">
-            <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center">
+        <div className="section-title">VENTAS</div>
+        <div className="section-wrapper">
+          <div className="row align-items-center ms-md-3">
+            <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center mt-2">
               <div className="rounded shadow-sm p-3 text-center bg-warning-subtle w-100">
-                <div className="icono-circular rounded-circle bg-white text-warning d-inline-flex align-items-center justify-content-center mb-2">💰</div>
+                <div className="icono-circular bg-white text-warning mb-2">💰</div>
                 <h6 className="fw-bold text-warning">Ventas actuales</h6>
-                <div className="fs-4 fw-bold text-warning" style={{ textShadow: "0 0 1px white" }}>
-                  {parseFloat(totalVentas).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <div className="fs-4 fw-bold text-warning">
+                  {parseFloat(totalVentas).toLocaleString("es-ES", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                   {simbolo}
                 </div>
               </div>
@@ -270,15 +315,18 @@ export const EncargadoDashboard = () => {
         </div>
 
         {/* GASTOS */}
-        <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
-          <h5 className="mb-3 fw-bold barralarga">GASTOS</h5>
-          <div className="row align-items-center ms-3">
-            <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center">
+        <div className="section-title">GASTOS</div>
+        <div className="section-wrapper">
+          <div className="row align-items-center ms-md-3">
+            <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center mt-2">
               <div className="rounded shadow-sm p-3 text-center bg-info-subtle w-100">
-                <div className="icono-circular rounded-circle bg-white text-info d-inline-flex align-items-center justify-content-center mb-2">💸</div>
-                <h6 className="fw-bold text-info">Gastos Actuales</h6>
-                <div className="fs-4 fw-bold text-info" style={{ textShadow: "0 0 1px white" }}>
-                  {parseFloat(gasto).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <div className="icono-circular bg-white text-info mb-2">💸</div>
+                <h6 className="fw-bold text-info">Gastos actuales</h6>
+                <div className="fs-4 fw-bold text-info">
+                  {parseFloat(gasto).toLocaleString("es-ES", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                   {simbolo}
                 </div>
               </div>

@@ -1,39 +1,52 @@
-/* ===== SOLO MÓVIL ===== */
+/* EncargadoVentasMobile.css – SOLO MÓVIL (estilo Gastock: fondo blanco con bordes azules) */
 @media (max-width: 767.98px) {
   :root {
     --navbar-h: 56px;
   }
 
-  /* Título compacto */
   .dashboard-title {
     font-size: 1.05rem !important;
     margin: 0.25rem 0 !important;
     font-weight: 700;
   }
 
-  /* Toolbar mes (fija) */
+  /* ===== Toolbar (sticky bajo navbar) ===== */
   .ev-sticky {
     position: relative;
   }
+
   .ev-toolbar {
     position: sticky;
     top: var(--navbar-h);
-    z-index: 1020;
+    z-index: var(--z-sticky);
     background: #fff;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border);
     padding: 0.35rem 0.6rem;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
   }
   .ev-toolbar-spacer {
     height: 0.25rem;
-  } /* ligero respiro */
-  .ev-month {
-    height: 34px;
-    font-size: 0.95rem;
-    border-radius: 10px;
-    padding: 0.25rem 0.55rem;
   }
 
-  /* KPIs */
+  /* Inputs de toolbar coherentes al brand */
+  .ev-month,
+  .ev-toolbar .form-control {
+    height: 34px;
+    font-size: 0.95rem;
+    border-radius: var(--radius-md);
+    padding: 0.25rem 0.55rem;
+    border: 1px solid var(--color-border);
+    background: #fff;
+  }
+  .ev-month:focus,
+  .ev-toolbar .form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem var(--focus-ring);
+    outline: none;
+  }
+
+  /* ===== KPIs ===== */
   .ev-kpis {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -42,22 +55,24 @@
   }
   .ev-chip {
     background: #fff;
-    border: 1px solid #eee;
-    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     padding: 0.5rem 0.6rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
   }
   .ev-chip-title {
     font-size: 0.82rem;
     font-weight: 700;
     margin-bottom: 0.15rem;
+    color: var(--color-text-weak);
   }
   .ev-chip-value {
     font-size: 1rem;
     font-weight: 800;
+    color: var(--color-primary);
   }
 
-  /* Lista (tipo inbox) */
+  /* ===== Lista ===== */
   .ev-list {
     list-style: none;
     padding: 0 0.6rem 4rem;
@@ -65,23 +80,27 @@
   }
   .ev-item {
     background: #fff;
-    border: 1px solid #eee;
-    border-radius: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     padding: 0.6rem 0.7rem;
     margin-bottom: 0.55rem;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .ev-item:hover {
+    background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
+    border-color: var(--color-border);
   }
   .ev-item-main {
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-  .ev-item-date {
-    font-weight: 800;
-    font-size: 0.98rem;
-  }
+  .ev-item-date,
   .ev-item-amount {
     font-weight: 800;
     font-size: 0.98rem;
+    color: var(--color-text);
   }
   .ev-item-sub {
     margin-top: 0.25rem;
@@ -91,10 +110,10 @@
   }
   .ev-turno {
     font-size: 0.85rem;
-    color: #6b7280;
+    color: var(--color-text-weak);
   }
 
-  /* Acciones por icono */
+  /* ===== Acciones ===== */
   .ev-actions {
     display: inline-flex;
     gap: 0.35rem;
@@ -105,11 +124,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #eaeaea;
+    border: 1px solid var(--color-border);
     background: #fff;
-    color: #333;
-    border-radius: 10px;
+    color: var(--color-text);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     transition: background 0.15s, border-color 0.15s, transform 0.05s;
+  }
+  .ev-icon-btn:hover {
+    background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
   }
   .ev-icon-btn:active {
     transform: translateY(1px);
@@ -117,34 +140,73 @@
   .ev-icon-btn i {
     font-size: 1rem;
   }
+
+  /* Variante de peligro coherente a tokens */
   .ev-icon-btn.ev-danger {
-    color: #d43c2f;
-    border-color: #ffd6d6;
+    color: var(--color-danger);
+    border-color: var(--stroke-danger-45);
   }
   .ev-icon-btn.ev-danger:hover {
-    background: #fff1f1;
-    border-color: #ffdddd;
+    background: var(--tint-danger-12);
+    border-color: var(--stroke-danger-45);
   }
 
-  /* FAB (botón flotante registrar venta) */
+  /* ===== FAB registrar venta (ahora azul corporativo) ===== */
   .ev-fab {
     position: fixed;
     right: 16px;
-    bottom: 84px; /* encima de bottom nav */
+    bottom: 84px;
     width: 52px;
     height: 52px;
     border-radius: 50%;
     border: none;
-    background: #ff5b00;
+    background: var(--color-primary);
     color: #fff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    box-shadow: 0 8px 18px rgba(255, 91, 0, 0.3);
-    z-index: 1050;
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-modal);
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+  .ev-fab:hover {
+    filter: brightness(1.06);
+    transform: scale(1.04);
   }
   .ev-fab:active {
-    transform: translateY(1px);
+    transform: scale(0.96);
+  }
+}
+/* ==== FAB móvil en Ventas (btn-fab) ==== */
+@media (max-width: 767.98px) {
+  .btn-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(var(--bottom-nav-h) + max(env(safe-area-inset-bottom), 12px));
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-primary) !important; /* forzar azul */
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-modal);
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+  .btn-fab:hover {
+    filter: brightness(1.06);
+    transform: scale(1.04);
+  }
+  .btn-fab:active {
+    transform: scale(0.96);
+  }
+  .btn-fab i {
+    line-height: 1;
   }
 }
