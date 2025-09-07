@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import userServices from "../services/userServices";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import logo from "../assets/img/gastock2.png";
+import logo from "../assets/img/gastock2_tmp.png";
 import { useNavigate, Link } from "react-router-dom";
 
 export const Login = () => {
