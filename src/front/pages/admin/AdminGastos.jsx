@@ -60,7 +60,7 @@ const AdminGastos = () => {
       <div className="row mt-3">
         <div className="col-12 col-lg-6 mb-4">
           <div className="card-plain p-3 h-100">
-            <div className="block-title">Gasto por restaurante</div>
+            <div className="block-title">Gastos por restaurante</div>
             <div className="chart-wrap">
               <GastoPorRestauranteChart mes={mes} ano={ano} />
             </div>
