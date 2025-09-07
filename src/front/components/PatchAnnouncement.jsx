@@ -3,7 +3,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
 export const PatchAnnouncement = () => {
-    const STORAGE_KEY = "patchViewed_v6"; // misma clave en todos los sitios
+    const STORAGE_KEY = "patchViewed_v8"; // misma clave en todos los sitios
     const [show, setShow] = useState(false);
 
     useEffect(() => {
