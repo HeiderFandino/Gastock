@@ -1,4 +1,4 @@
-// components/shared/ProveedorForm.jsx
+// src/front/components/shared/ProveedorForm.jsx
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
 import proveedorServices from "../../services/proveedorServices";
@@ -12,7 +12,7 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
     nombre: "",
     categoria: "",
     direccion: "",
-    telefono: ""
+    telefono: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -21,24 +21,23 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
 
   useEffect(() => {
     if (proveedor) {
-      console.log("🧾 Proveedor recibido:", proveedor);
       setForm({
         nombre: proveedor.nombre || "",
         categoria: proveedor.categoria || "",
         direccion: proveedor.direccion || "",
-        telefono: proveedor.telefono || ""
+        telefono: proveedor.telefono || "",
       });
     }
   }, [proveedor]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
+    if (loading) return;
 
     setLoading(true);
     setError("");
@@ -52,27 +51,26 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
         await proveedorServices.crearProveedor(payload);
       }
 
-      setSuccessMsg("Proveedor guardado exitosamente");
-      setForm({ nombre: "", categoria: "", direccion: "", telefono: "" });
+      setSuccessMsg("Proveedor guardado correctamente ✅");
       setTimeout(() => {
-        if (onSuccess) onSuccess();
-      }, 1000);
+        onSuccess && onSuccess();
+      }, 900);
     } catch (err) {
-      setError("Ocurrió un error al guardar el proveedor");
+      setError("❌ Ocurrió un error al guardar el proveedor");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    
-    <form onSubmit={handleSubmit}>
-      <h5>{proveedor ? "Editar Proveedor" : "Nuevo Proveedor"}</h5>
-      {error && <div className="alert alert-danger">{error}</div>}
-      {successMsg && <div className="alert alert-success">{successMsg}</div>}
+    <form className="pm-form" onSubmit={handleSubmit}>
+      {/* Alertas */}
+      {error && <div className="alert alert-danger text-center fw-bold">{error}</div>}
+      {successMsg && <div className="alert alert-success text-center fw-bold">{successMsg}</div>}
+
+      {/* Campos */}
       <div className="mb-3">
         <label className="form-label">Nombre</label>
-        
         <input
           type="text"
           name="nombre"
@@ -80,8 +78,10 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
           value={form.nombre}
           onChange={handleChange}
           required
+          disabled={loading}
         />
       </div>
+
       <div className="mb-3">
         <label className="form-label">Categoría</label>
         <select
@@ -90,6 +90,7 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
           value={form.categoria}
           onChange={handleChange}
           required
+          disabled={loading}
         >
           <option value="">Seleccione</option>
           <option value="alimentos">Alimentos</option>
@@ -98,6 +99,7 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
           <option value="otros">Otros</option>
         </select>
       </div>
+
       <div className="mb-3">
         <label className="form-label">Dirección</label>
         <input
@@ -106,8 +108,10 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
           className="form-control"
           value={form.direccion}
           onChange={handleChange}
+          disabled={loading}
         />
       </div>
+
       <div className="mb-3">
         <label className="form-label">Teléfono</label>
         <input
@@ -116,15 +120,23 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
           className="form-control"
           value={form.telefono}
           onChange={handleChange}
+          disabled={loading}
         />
       </div>
-      <div className="d-flex justify-content-end">
+
+      {/* Acciones */}
+      <div className="d-flex justify-content-end gap-2 mt-3">
         {onCancel && (
-          <button type="button" className="btn btn-secondary" onClick={onCancel}>
+          <button
+            type="button"
+            className="btn-gastock-outline"
+            onClick={onCancel}
+            disabled={loading}
+          >
             Cancelar
           </button>
         )}
-        <button type="submit" className="btn btn-primary" disabled={loading}>
+        <button type="submit" className="btn-gastock" disabled={loading}>
           {loading ? "Guardando..." : "Guardar"}
         </button>
       </div>

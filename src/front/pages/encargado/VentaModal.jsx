@@ -21,50 +21,34 @@ const VentaModal = ({ onSave, onClose }) => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!form.monto || parseFloat(form.monto) < 0) {
-    setMensaje("⚠️ El monto debe ser mayor o igual a 0.");
-    return;
-  }
+    if (!form.monto || parseFloat(form.monto) < 0) {
+      setMensaje("⚠️ El monto debe ser mayor o igual a 0.");
+      return;
+    }
 
-  setMensaje("");
+    setMensaje("");
 
-  try {
-    await onSave(form);
-  } catch (error) {
-    const status = error?.response?.status || error?.status || error?.code;
-
-    if (status === 409) {
-      setMensaje("⚠️ Ya hay una venta registrada para ese día y turno.");
-    } else {
-      setMensaje("⚠️ Ya hay una venta registrada para ese día y turno..");
+    try {
+      await onSave(form);
+    } catch (error) {
+      const status = error?.response?.status || error?.status || error?.code;
+      if (status === 409) {
+        setMensaje("⚠️ Ya hay una venta registrada para ese día y turno.");
+      } else {
+        setMensaje("⚠️ Ya hay una venta registrada para ese día y turno..");
+      }
     }
   }
-}
 
   return (
     <div className="modaal-backdrop">
       <div className="modaal">
-        <h2 className="titulo">Registrar Venta</h2>
+        <h2 className="titulo text-brand">Registrar Venta</h2>
         <form onSubmit={handleSubmit} className="modaal-form px-0">
-          <input
-            type="date"
-            name="fecha"
-            value={form.fecha}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="number"
-            name="monto"
-            placeholder={`Monto (${simbolo})`}
-            value={form.monto}
-            onChange={handleChange}
-            min="0"
-            step="0.01"
-            required
-          />
+          <input type="date" name="fecha" value={form.fecha} onChange={handleChange} required />
+          <input type="number" name="monto" placeholder={`Monto (${simbolo})`} value={form.monto} onChange={handleChange} min="0" step="0.01" required />
           <select name="turno" value={form.turno} onChange={handleChange}>
             <option value="mañana">Mañana</option>
             <option value="tarde">Tarde</option>
@@ -78,12 +62,8 @@ const VentaModal = ({ onSave, onClose }) => {
           )}
 
           <div className="modaal-actions mt-3">
-            <button type="button" onClick={onClose} className="btn-cancelar">
-              Cancelar
-            </button>
-            <button type="submit" className="btn-guardar">
-              Guardar
-            </button>
+            <button type="button" onClick={onClose} className="btn-cancelar">Cancelar</button>
+            <button type="submit" className="btn-guardar">Guardar</button>
           </div>
         </form>
       </div>

@@ -1,25 +1,49 @@
-/* =========================================================
-   EncargadoDashboard – Mobile-first refinado
-   ========================================================= */
+/* EncargadoDashboard.css – tokenizado a brand.css */
 
-/* --- Variables útiles --- */
+/* Variables útiles */
 :root {
-  --navbar-h: 56px; /* alto de tu navbar superior */
-  --bottom-nav-h: 68px; /* tabs inferiores en móvil (Home/Ventas/...) */
+  --navbar-h: 56px;
+  --bottom-nav-h: 68px;
 }
 
-/* ============ MÓVIL (≤ md) ============ */
+/* Título/Sección */
+.section-title {
+  margin: 0 0 0.75rem 0.5rem;
+  padding-bottom: 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Wrapper “glass” */
+.section-wrapper {
+  background: linear-gradient(145deg, #ffffff, var(--brand-50));
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  transition: all 0.25s ease;
+}
+.section-wrapper:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ======== MÓVIL ======== */
 @media (max-width: 767.98px) {
-  /* Barra de mes SIEMPRE visible + flechas */
   .dm-sticky-controls {
     position: fixed !important;
     top: var(--navbar-h);
     left: 0;
     right: 0;
-    z-index: 1030;
+    z-index: var(--z-sticky);
     background: #fff;
-    border-bottom: 1px solid #eee;
-    padding: 0.35rem 0.75rem; /* padding lateral para que abarque todo */
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.35rem 0.75rem;
   }
   .dm-sticky-controls .dm-month {
     display: flex;
@@ -33,6 +57,7 @@
     font-size: 0.95rem;
     border-radius: 10px;
     padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-border);
   }
   .dm-ctrl:active {
     transform: translateY(1px);
@@ -41,14 +66,12 @@
     opacity: 0.6;
   }
 
-  /* Título más discreto */
   .dashboard-title {
     font-size: 1.05rem !important;
     font-weight: 700;
     margin: 0.25rem 0.5rem 0.5rem !important;
   }
 
-  /* KPIs en chips horizontales scrolleables */
   .dm-kpi-row {
     display: flex;
     gap: 0.5rem;
@@ -59,10 +82,10 @@
   .dm-chip {
     min-width: 160px;
     background: #fff;
-    border: 1px solid #eee;
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 0.55rem 0.65rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
   }
   .dm-chip h6 {
     margin: 0 0 0.25rem 0;
@@ -73,16 +96,15 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 700;
+    color: var(--color-primary);
   }
 
-  /* Gráficos compactos */
   .dm-chart {
     width: 100%;
-    height: 190px; /* alto agradable para móvil */
+    height: 190px;
     padding: 0.4rem 0.5rem 0.6rem;
   }
 
-  /* Acordeón (si lo usas en otras pantallas) más denso */
   .dm-accordion .accordion-button {
     padding: 0.6rem 0.9rem;
     font-weight: 600;
@@ -91,25 +113,120 @@
     padding: 0.5rem 0.75rem 0.75rem;
   }
 
-  /* Quitar brillos/sombras para que “pese” menos visualmente */
   .dm-no-shadow,
   .dm-no-shadow * {
     text-shadow: none !important;
     box-shadow: none !important;
   }
 
-  /* Encabezados de tarjetas (ej. “Acciones rápidas”) compactos */
   .barralarga {
     font-size: 0.95rem;
     padding: 0.5rem 0.75rem !important;
     margin-bottom: 0.5rem !important;
   }
+
+  .section-wrapper {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0.5rem 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+  .section-title {
+    margin: 0.25rem 0.5rem 0.5rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--color-border) 80%, transparent);
+  }
+  .section-wrapper .row {
+    margin-left: 0 !important;
+  }
+  .section-wrapper .row > [class*="col-"] {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .section-wrapper .dm-chart {
+    height: 180px;
+    margin: 0.25rem 0.5rem 0;
+  }
 }
 
-/* ============ DESKTOP (≥ md) ============ */
-/* No tocamos tu layout de escritorio. Solo un pequeño plus: altura de charts */
+/* ======== DESKTOP ======== */
 @media (min-width: 768px) {
   .dm-chart {
     height: 250px;
+  }
+  .section-wrapper:hover {
+    transform: translateY(-2px);
+  }
+  .ms-md-3 {
+    margin-left: 1rem !important;
+  }
+}
+
+/* Fixes QA cards en desktop */
+@media (min-width: 768px) {
+  .qa-card {
+    display: inline-block;
+    color: inherit !important;
+    text-decoration: none !important;
+    border: 1px solid var(--color-border) !important;
+    background: linear-gradient(145deg, #ffffff, var(--brand-50));
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem;
+    width: 230px;
+    min-height: 150px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .qa-card * {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+  .qa-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .qa-card:focus {
+    outline: none;
+  }
+  .qa-card:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-info) 60%, transparent);
+    outline-offset: 2px;
+  }
+
+  .qa-card__icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 0.75rem;
+    border-radius: 999px;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--brand-50);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06),
+      0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+  .qa-card__title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.15rem;
+  }
+  .qa-card__sub {
+    font-size: 0.85rem;
+    color: var(--color-text-weak);
+  }
+
+  .qa-card--primary {
+    border-color: var(--stroke-info-45) !important;
+  }
+  .qa-card--success {
+    border-color: var(--stroke-success-45) !important;
+  }
+  .qa-card--warning {
+    border-color: var(--stroke-warning-45) !important;
   }
 }

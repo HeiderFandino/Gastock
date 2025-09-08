@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import logo from "../assets/img/logo.svg"; // ⚠️ Ajusta la ruta según tu proyecto
+import logo from "../assets/img/gastock2.png";
 
 export const Navbar = () => {
   const { store, dispatch } = useGlobalReducer();
   const navigate = useNavigate();
   const user = store?.user;
+  const navRef = useRef(null);
 
   if (!user) return null;
 
@@ -20,9 +21,31 @@ export const Navbar = () => {
     navigate("/");
   };
 
+  // Medir el alto del navbar y setear --navbar-h (para toolbars sticky móviles)
+  useEffect(() => {
+    const setNavbarH = () => {
+      const el = navRef.current || document.querySelector(".navbar.sticky-top");
+      if (!el) return;
+      const h = Math.round(el.getBoundingClientRect().height);
+      document.documentElement.style.setProperty("--navbar-h", `${h}px`);
+    };
+    setNavbarH();
+    window.addEventListener("resize", setNavbarH);
+    document.addEventListener("shown.bs.dropdown", setNavbarH);
+    document.addEventListener("hidden.bs.dropdown", setNavbarH);
+    return () => {
+      window.removeEventListener("resize", setNavbarH);
+      document.removeEventListener("shown.bs.dropdown", setNavbarH);
+      document.removeEventListener("hidden.bs.dropdown", setNavbarH);
+    };
+  }, []);
+
   return (
-    <nav className="navbar navbar-light bg-white border-bottom py-2 sticky-top">
-      <div className="container-fluid align-items-center px-3">
+    <nav
+      ref={navRef}
+      className="navbar navbar-light bg-white border-bottom py-2 sticky-top"
+    >
+      <div className="container-fluid align-items-center">
         {/* Brand */}
         <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
           <img
@@ -33,9 +56,6 @@ export const Navbar = () => {
               e.currentTarget.style.display = "none";
             }}
           />
-          <span className="fw-semibold text-dark brand-text">
-            Gastock
-          </span>
         </Link>
 
         {/* Bloque usuario */}
@@ -43,7 +63,7 @@ export const Navbar = () => {
           {/* Texto usuario (≥ md) */}
           <div className="text-end d-none d-md-block me-1">
             <p
-              className="mb-0 name color-orange text-truncate user-name"
+              className="mb-0 name text-brand text-truncate user-name"
               title={nombre}
             >
               {nombre}
@@ -62,7 +82,7 @@ export const Navbar = () => {
           {/* Avatar + dropdown */}
           <div className="dropdown">
             <button
-              className=" p-0 avatar-btn"
+              className="p-0 avatar-btn"
               type="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"

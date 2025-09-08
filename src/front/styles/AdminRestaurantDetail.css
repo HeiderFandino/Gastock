@@ -1,0 +1,193 @@
+/* AdminRestaurantDetail.css (v2)
+   Conectado a brand.css (tokens), sin overlay que tape el sidebar,
+   con fondo "difuminado" como Encargado y toolbar móvil pegada al navbar.
+*/
+
+:root {
+  --ad-toolbar-h: 44px;
+}
+
+/* ===== Fondo con "scrim" suave SIN pseudo-elementos ===== */
+.dashboard-container.admin-detail {
+  /* mismo efecto suave del Encargado pero como background, no overlay */
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #ffffff 92%, var(--brand-50) 8%),
+    #ffffff
+  );
+}
+
+/* ===== Cards / paneles (fondo blanco + borde azul) ===== */
+.admin-detail .gf-panel,
+.admin-detail .card-brand,
+.admin-detail .panel,
+.admin-detail .rest-block,
+.admin-detail .stats-card {
+  background: linear-gradient(
+    280deg,
+    color-mix(in srgb, #c6d9e8 92%, var(--brand-50) 8%),
+    #ffffff
+  );
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+}
+.admin-detail .rest-block:hover,
+.admin-detail .stats-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
+}
+
+/* Métricas internas */
+.admin-detail .rest-stat {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.admin-detail .rest-stat__value {
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+/* Icono circular (coincide con Encargado) */
+.admin-detail .icono-circular {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--brand-50);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Grid de cards */
+.admin-detail .rest-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 576px) {
+  .admin-detail .rest-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 992px) {
+  .admin-detail .rest-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1400px) {
+  .admin-detail .rest-list {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ===== Toolbar móvil pegada al navbar ===== */
+@media (max-width: 767.98px) {
+  /* empuja el contenido para que no lo tape el navbar; no afecta al sidebar */
+  .dashboard-container.admin-detail {
+    padding-top: var(--navbar-h) !important;
+  }
+
+  .admin-detail .ad-toolbar {
+    position: fixed !important;
+    top: var(--navbar-h);
+    left: 0;
+    right: 0;
+    z-index: var(--z-sticky);
+    background: #fff;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.35rem 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  /* si usas spacer debajo de la toolbar en el JSX */
+  .admin-detail .ad-toolbar-spacer {
+    height: var(--ad-toolbar-h);
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+
+  /* Inputs/botones con tokens del brand */
+  .admin-detail .ad-month,
+  .admin-detail .ad-toolbar .form-control {
+    height: 36px;
+    font-size: 0.95rem;
+    border-radius: var(--radius-md);
+    padding: 0.25rem 0.55rem;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-text);
+    flex: 1;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .admin-detail .ad-month:focus,
+  .admin-detail .ad-toolbar .form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem var(--focus-ring);
+    outline: none;
+  }
+
+  .admin-detail .ad-ctrl {
+    height: 36px;
+    padding: 0 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s, transform 0.05s;
+  }
+  .admin-detail .ad-ctrl:hover {
+    background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
+  }
+  .admin-detail .ad-ctrl:active {
+    transform: translateY(1px);
+  }
+
+  /* Título debajo de la toolbar */
+  .admin-detail .dashboard-title {
+    margin: 0.5rem 0.75rem 0 !important;
+  }
+}
+
+/* Desktop: selector de mes coherente */
+@media (min-width: 768px) {
+  .admin-detail .selector-mes__input {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+/* Utilidades mapeadas a tokens (brand.css) */
+.bg-info-subtle {
+  background: var(--bs-info-bg-subtle) !important;
+}
+.bg-warning-subtle {
+  background: var(--bs-warning-bg-subtle) !important;
+}
+.bg-danger-subtle {
+  background: var(--bs-danger-bg-subtle) !important;
+}
+.text-info {
+  color: var(--bs-info-text-emphasis) !important;
+}
+.text-warning {
+  color: var(--bs-warning-text-emphasis) !important;
+}
+.text-danger {
+  color: var(--bs-danger-text-emphasis) !important;
+}

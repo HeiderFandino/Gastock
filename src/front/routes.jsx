@@ -10,15 +10,15 @@ import { RutaPrivada } from "./components/RutaPrivada.jsx";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 
 import { CrearRestaurante } from "./pages/admin/CrearRestaurante";
-import  AdminVentas  from "./pages/admin/AdminVentas";
-import  AdminGastos  from "./pages/admin/AdminGastos";
+import AdminVentas from "./pages/admin/AdminVentas";
+import AdminGastos from "./pages/admin/AdminGastos";
 import { UsuariosDashboard } from "./pages/admin/UsuariosDashboard";
 import { CrearUsuario } from "./pages/admin/CrearUsuario";
 import { ConfigAdmin } from "./pages/configuracion/ConfigAdmin.jsx";
-import { ProveedoresDashboard } from "./pages/admin/ProveedoresDashboard";
+
 import { ProveedorRestauranteDetail } from "./pages/admin/ProveedorRestauranteDetail";
 import AdminRestaurantDetail from "./pages/admin/AdminRestaurantDetail";
-import {AdminVentasDetalle} from "./pages/admin/AdminVentasDetalle";
+import { AdminVentasDetalle } from "./pages/admin/AdminVentasDetalle";
 import AdminGastosDetalle from "./pages/admin/AdminGastosDetalle";
 
 
@@ -45,6 +45,7 @@ import { GastoForm } from "./components/GastoForm";
 import ForgotPage from "./pages/configuracion/ForgotPage.jsx";
 import ResetPassword from "./pages/configuracion/ResetPassword.jsx";
 
+
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -69,7 +70,8 @@ export const router = createBrowserRouter(
           <Route path="admin/usuarios" element={<UsuariosDashboard />} />
           <Route path="admin/crear-usuario" element={<CrearUsuario />} />
           <Route path="admin/settings" element={<ConfigAdmin />} />
-          <Route path="admin/proveedores" element={<ProveedoresDashboard />} />
+
+
           <Route path="admin/proveedores/restaurante/:id" element={<ProveedorRestauranteDetail />} />
           <Route path="admin/restaurante/:id" element={<AdminRestaurantDetail />} />
 
@@ -84,6 +86,7 @@ export const router = createBrowserRouter(
           <Route path="encargado/gastos" element={<DetalleGastosMensual />} />
           <Route path="/encargado/settings" element={<ConfigEncargado />} />
 
+
           {/* Chef */}
           <Route path="chef/dashboard" element={<ChefDashboard />} />
           <Route path="chef/facturas" element={<Facturas />} />
@@ -91,6 +94,7 @@ export const router = createBrowserRouter(
           <Route path="chef/gastos" element={<DetalleGastosMensual />} />
           <Route path="chef/gastos/registrar" element={<GastoForm />} />
           <Route path="chef/proveedores" element={<ChefProveedores />} />
+
         </Route>
       </Route>
     </>

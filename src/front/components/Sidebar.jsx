@@ -39,21 +39,7 @@ export const Sidebar = () => {
           className={`sidebar menu d-flex flex-column p-3 ${menuall ? "w-72" : "w-240"
             }`}
         >
-          {/* Header + botón colapsar */}
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            {!menuall && (
-              <span className="fs-5 fw-bold">Menú</span>
-            )}
-            <button
-              className="btn btn-light btn-sm"
-              type="button"
-              onClick={toggleRail}
-              aria-label={menuall ? "Expandir menú" : "Colapsar menú"}
-              title={menuall ? "Expandir menú" : "Colapsar menú"}
-            >
-              <i className={`bi ${menuall ? "bi-chevron-double-right" : "bi-chevron-double-left"}`}></i>
-            </button>
-          </div>
+
 
           <ul className="nav nav-pills flex-column gap-1">
             {rol === "admin" && (

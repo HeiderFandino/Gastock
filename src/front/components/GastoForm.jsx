@@ -14,23 +14,33 @@ export const GastoForm = () => {
     { proveedor_id: "", categoria: "", monto: "", nota: "" },
   ]);
   const [activo, setActivo] = useState(false);
-  const [proveedores, setProveedores] = useState([]);
-  const [mensaje, setMensaje] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mensaje, setMensaje] = useState("");
+  const [proveedores, setProveedores] = useState([]);
 
-  const nombreMes = new Date(fecha).toLocaleString("es", {
-    month: "long",
-    year: "numeric",
-  });
-
+  // Carga de proveedores depende de restaurante_id
   useEffect(() => {
-    if (user?.restaurante_id) {
-      gastoServices
-        .getProveedores(user.restaurante_id)
-        .then(setProveedores)
-        .catch(() => setMensaje("Error al cargar proveedores"));
-    }
-  }, []);
+    const fetchProveedores = async () => {
+      try {
+        if (!user?.restaurante_id) return;
+        const data = await gastoServices.getProveedores(user.restaurante_id);
+        setProveedores(data);
+      } catch (error) {
+        console.error("Error al obtener proveedores:", error);
+        setMensaje("Error al cargar proveedores");
+      }
+    };
+    fetchProveedores();
+  }, [user?.restaurante_id]);
+
+  const agregarGasto = () => {
+    setGastos([...gastos, { proveedor_id: "", categoria: "", monto: "", nota: "" }]);
+    setActivo(true);
+  };
+
+  const eliminarGasto = (index) => {
+    setGastos((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleInputChange = (index, field, value) => {
     const nuevosGastos = [...gastos];
@@ -42,23 +52,15 @@ export const GastoForm = () => {
     const nuevosGastos = [...gastos];
     nuevosGastos[index].proveedor_id = proveedorId;
 
-    const proveedor = proveedores.find((p) => p.id === parseInt(proveedorId));
-    nuevosGastos[index].categoria = proveedor ? proveedor.categoria : "";
-
+    const proveedor = proveedores.find((p) => p.id === parseInt(proveedorId, 10));
+    // Si el proveedor trae categoria, úsala; si no, no pises lo que el usuario haya escrito
+    if (proveedor?.categoria) {
+      nuevosGastos[index].categoria = proveedor.categoria;
+    }
     setGastos(nuevosGastos);
   };
 
-  const agregarGasto = () => {
-    setGastos([...gastos, { proveedor_id: "", categoria: "", monto: "", nota: "" }]);
-    setActivo(true);
-  };
-
-  const eliminarGasto = (index) => {
-    const nuevosGastos = [...gastos];
-    nuevosGastos.splice(index, 1);
-    setGastos(nuevosGastos);
-  };
-
+  // Eval simple para permitir sumas/restas en monto (p.ej. "10+2-1,5")
   const safeEval = (expression) => {
     const validChars = /^[0-9+\-.\s]+$/;
     if (!validChars.test(expression)) {
@@ -73,7 +75,7 @@ export const GastoForm = () => {
         operator = token;
       } else {
         const num = parseFloat(token);
-        if (isNaN(num)) throw new Error("Número inválido en expresión.");
+        if (!Number.isFinite(num)) throw new Error("Número inválido en expresión.");
         result = operator === "+" ? result + num : result - num;
       }
     });
@@ -82,171 +84,152 @@ export const GastoForm = () => {
 
   const registrarGastos = async () => {
     if (loading) return;
+    setMensaje("");
 
-    const camposIncompletos = gastos.some(
-      (g) => !g.proveedor_id || !g.monto
-    );
-    if (camposIncompletos) {
-      setMensaje("Completa proveedor y monto en todos los gastos antes de registrar ❌");
+    // Validaciones básicas
+    const errores = [];
+    if (!user?.restaurante_id) errores.push("Falta restaurante_id del usuario.");
+    if (!fecha) errores.push("La fecha es obligatoria.");
+
+    gastos.forEach((g, i) => {
+      if (!g.proveedor_id) errores.push(`Fila ${i + 1}: selecciona un proveedor.`);
+      if (!g.monto && g.monto !== 0) errores.push(`Fila ${i + 1}: ingresa un monto.`);
+      if (!g.categoria?.trim()) errores.push(`Fila ${i + 1}: la categoría es obligatoria.`);
+      // Nota opcional, no validar
+    });
+
+    if (errores.length) {
+      setMensaje("Corrige estos errores:\n• " + errores.join("\n• "));
       return;
     }
 
-    let datos;
+    // Construcción de payload normalizado
+    let payload;
     try {
-      datos = gastos.map((g) => {
-        let montoCalculado = 0;
-        try {
-          montoCalculado = safeEval(g.monto.replace(/,/g, "."));
-        } catch (e) {
-          console.error("Expresión inválida en el monto:", g.monto);
-          setMensaje(`Monto inválido en una de las filas: "${g.monto}"`);
-          throw new Error("Monto inválido");
+      payload = gastos.map((g) => {
+        const montoCalculado = safeEval(String(g.monto).replace(/,/g, "."));
+        if (!Number.isFinite(montoCalculado) || montoCalculado <= 0) {
+          throw new Error(`Monto inválido "${g.monto}"`);
         }
+        const categoriaNormalizada = g.categoria
+          ? g.categoria.charAt(0).toUpperCase() + g.categoria.slice(1).toLowerCase()
+          : "General";
+
         return {
-          ...g,
-          fecha,
-          monto: parseFloat(montoCalculado.toFixed(2)),
-          usuario_id: user.id,
-          restaurante_id: user.restaurante_id,
+          restaurante_id: Number(user.restaurante_id),
+          usuario_id: Number(user.id),
+          fecha, // YYYY-MM-DD
+          proveedor_id: Number(g.proveedor_id),
+          monto: Number(montoCalculado.toFixed(2)),
+          categoria: categoriaNormalizada,
+          nota: g.nota ?? "",
         };
       });
     } catch (e) {
-      return; 
+      setMensaje(`Error en montos: ${e.message}`);
+      return;
     }
 
     try {
       setLoading(true);
-      await gastoServices.registrarGastoMultiple(datos);
+      // usar el método existente del service (bulk)
+      await gastoServices.registrarGastoMultiple(payload);
       setMensaje("Gastos registrados correctamente ✅");
-
+      setGastos([{ proveedor_id: "", categoria: "", monto: "", nota: "" }]);
+      setActivo(false);
+      // Navega tras un pequeño respiro visual
       setTimeout(() => {
         navigate(`/${user.rol}/gastos`, {
           state: { registrado: true, view: "diario" },
         });
-      }, 1200);
+      }, 900);
     } catch (error) {
       console.error("Error al registrar:", error);
-      setMensaje("Error al registrar los gastos ❌");
+      setMensaje(`Error al registrar los gastos ❌`);
     } finally {
-      setTimeout(() => setLoading(false), 5000);
+      setLoading(false);
     }
   };
 
   return (
     <div className="container-fluid px-4 py-4">
-      <button
-        onClick={() => navigate(-1)}
-        className="btn btn-outline-secondary mb-3"
-      >
+      <button onClick={() => navigate(-1)} className="btn-gastock-outline mb-3">
         ← Volver
       </button>
 
-      <h3 className="mb-2">Registrar Gastos del día</h3>
-      <div className="bg-orange d-inline-block text-white py-2 px-3 mb-4 rounded">
-        Mes actual: {nombreMes.toUpperCase()}
-      </div>
-
-      <div className="bg-white col-12 col-sm-12 col-md-12 col-lg-10 col-xx-9 p-4 shadow rounded">
-        <div className="mb-4 col-12 col-sm-12 col-md-6 col-lg-3">
-          <label className="form-label fw-semibold">Fecha</label>
+      <h2 className="mb-2">Registrar Gastos</h2>
+      <div className="card p-3 shadow-sm">
+        <div className="d-flex align-items-center gap-2 mb-3">
+          <label className="fw-semibold">Fecha:</label>
           <input
             type="date"
-            className="form-control"
+            className="form-control w-auto"
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
           />
         </div>
 
+        {/* Listado de gastos */}
         {gastos.map((gasto, index) => (
-          <div
-            key={index}
-            className="d-flex flex-wrap align-items-end mb-3 border-bottom pb-3 gap-2"
-          >
-            <div className="flex-grow-1 min-w-0" style={{ flexBasis: "25%" }}>
+          <div className="row g-2 align-items-end mb-2" key={index}>
+            <div className="col-12 col-md-4">
               <label className="form-label fw-semibold">Proveedor</label>
-              <Select
-                options={proveedores.map((prov) => ({
-                  value: prov.id,
-                  label: prov.nombre,
-                }))}
-                value={
-                  gasto.proveedor_id
-                    ? {
-                        value: gasto.proveedor_id,
-                        label:
-                          proveedores.find((p) => p.id === parseInt(gasto.proveedor_id))?.nombre ||
-                          gasto.proveedor_id,
-                      }
-                    : null
-                }
-                onChange={(selected) => handleProveedorChange(index, selected.value)}
-                placeholder="Selecciona un proveedor..."
-                isSearchable
-                styles={{
-                  control: (provided, state) => ({
-                    ...provided,
-                    borderColor: state.isFocused ? "#fd7e14" : "#ced4da",
-                    boxShadow: state.isFocused ? "0 0 0 0.2rem rgba(253, 126, 20, 0.25)" : "none",
-                    height: "38px",
-                    minHeight: "38px",
-                    fontSize: "0.9rem",
-                  }),
-                  option: (provided) => ({
-                    ...provided,
-                    fontSize: "0.9rem",
-                  }),
-                  singleValue: (provided) => ({
-                    ...provided,
-                    fontSize: "0.9rem",
-                  }),
-                  dropdownIndicator: (provided) => ({
-                    ...provided,
-                    padding: "6px",
-                  }),
-                  clearIndicator: (provided) => ({
-                    ...provided,
-                    padding: "6px",
-                  }),
-                }}
-              />
+              <select
+                className="form-select"
+                value={gasto.proveedor_id}
+                onChange={(e) => handleProveedorChange(index, e.target.value)}
+              >
+                <option value="">Seleccione un proveedor</option>
+                {proveedores.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div className="flex-grow-1 min-w-0" style={{ flexBasis: "20%" }}>
+            <div className="col-12 col-md-3">
               <label className="form-label fw-semibold">Categoría</label>
               <input
                 type="text"
                 className="form-control"
                 value={gasto.categoria}
-                readOnly
+                onChange={(e) => handleInputChange(index, "categoria", e.target.value)}
+                placeholder="Ej: alimentos"
               />
             </div>
 
-            <div className="flex-grow-1 min-w-0" style={{ flexBasis: "15%" }}>
-              <label className="form-label fw-semibold">Monto (€)</label>
+            <div className="col-12 col-md-3">
+              <label className="form-label fw-semibold">Monto</label>
               <input
                 type="text"
                 className="form-control"
                 value={gasto.monto}
                 onChange={(e) => handleInputChange(index, "monto", e.target.value)}
+                placeholder="0.00 (permite 10+2-1,5)"
               />
             </div>
 
-            <div className="flex-grow-1 min-w-0" style={{ flexBasis: "25%" }}>
+            <div className="col-12 col-md-2">
               <label className="form-label fw-semibold">Nota</label>
               <input
                 type="text"
                 className="form-control"
                 value={gasto.nota}
                 onChange={(e) => handleInputChange(index, "nota", e.target.value)}
+                placeholder="Opcional"
               />
             </div>
 
-            <div className="ms-auto">
+            {/* Botón Eliminar */}
+            <div className="col-12 d-flex justify-content-end mt-2">
               {gastos.length > 1 && (
                 <button
                   type="button"
-                  className="btn btn-outline-danger mt-4"
+                  className="btn-gastock-outline"
                   onClick={() => eliminarGasto(index)}
+                  aria-label="Eliminar gasto"
+                  title="Eliminar gasto"
                 >
                   Eliminar
                 </button>
@@ -256,23 +239,17 @@ export const GastoForm = () => {
         ))}
 
         <div className="d-flex gap-3 mt-4">
-          <button
-            className={`btn btn-outline-orange ${activo ? "active" : "nobg"}`}
-            onClick={agregarGasto}
-            disabled={loading}
-          >
+          <button className="btn-gastock-outline" onClick={agregarGasto} disabled={loading}>
             + Añadir otro gasto
           </button>
-          <button
-            className={`btn btn-outline-orange ${!activo ? "active" : "nobg"}`}
-            onClick={registrarGastos}
-            disabled={loading}
-          >
+          <button className="btn-gastock" onClick={registrarGastos} disabled={loading}>
             {loading ? "Registrando..." : "Registrar Gastos"}
           </button>
         </div>
 
-        {mensaje && <div className="alert alert-info mt-3">{mensaje}</div>}
+        {mensaje && <div className="alert alert-info mt-3" style={{ whiteSpace: "pre-line" }}>
+          {mensaje}
+        </div>}
       </div>
     </div>
   );

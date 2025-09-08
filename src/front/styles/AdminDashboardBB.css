@@ -1,191 +1,223 @@
-/* Tipografía fluida y espaciamiento agradable */
+/* AdminDashboardBB.css – fecha pegada al navbar (móvil) + look Gastock */
+
 :root {
-  --brand: #ff5b00;
-  --radius: 1rem;
+  --rest-radius: var(--radius-lg);
+  --navbar-h: 56px;
+  --ad-toolbar-h: 44px;
 }
 
-.btn-naranja {
-  background-color: var(--brand);
-  color: #fff;
-  border-radius: 8px;
-  padding-inline: 10px;
-}
-.btn-naranja:hover {
-  opacity: 0.95;
-}
+/* ===== Toolbar móvil pegada al navbar ===== */
+@media (max-width: 767.98px) {
+  .ad-toolbar {
+    position: sticky;
+    top: var(--navbar-h);
+    z-index: var(--z-sticky);
+    background: #fff;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.35rem 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    margin: 0; /* sin separación */
+  }
+  /* sin spacer */
+  .admin-bb .ad-toolbar-spacer {
+    display: none;
+    height: 0;
+  }
 
-.selector-mes {
-  max-width: 520px;
-}
-.selector-mes__input {
-  max-width: 220px;
-  min-width: 160px;
-}
+  .ad-month {
+    height: 36px;
+    font-size: 0.95rem;
+    border-radius: var(--radius-md);
+    padding: 0.25rem 0.55rem;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    flex: 1;
+  }
+  .ad-month:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem var(--focus-ring);
+    outline: 0;
+  }
+  .ad-ctrl {
+    height: 36px;
+    padding: 0 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s, transform 0.05s;
+  }
+  .ad-ctrl:hover {
+    background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
+  }
+  .ad-ctrl:active {
+    transform: translateY(1px);
+  }
 
-/* Card restaurante */
-.rest-card {
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: var(--radius);
-  padding: clamp(12px, 2vw, 18px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-  background: #fff;
-}
-.rest-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
-}
-.rest-card--top {
-  outline: 2px dashed rgba(255, 91, 0, 0.35);
-  outline-offset: 6px;
-}
+  .admin-bb {
+    padding-top: 0.3rem;
+  }
 
-.rest-card__title {
-  font-size: clamp(1rem, 2.5vw, 1.15rem);
-  line-height: 1.2;
-}
-.rest-card__legend {
-  font-size: clamp(0.72rem, 1.8vw, 0.8rem);
-}
+  /* FAB */
+  .ad-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(
+      var(--bottom-nav-h, 68px) + max(env(safe-area-inset-bottom), 12px)
+    );
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-modal);
+    transition: transform 0.15s, filter 0.15s;
+  }
+  .ad-fab:hover {
+    filter: brightness(1.06);
+    transform: scale(1.04);
+  }
+  .ad-fab:active {
+    transform: scale(0.96);
+  }
 
-/* Subcards de stats */
-.stat-card {
-  border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-.stat-card__inner {
-  padding: clamp(10px, 2.2vw, 14px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.stat-card__value {
-  font-size: clamp(0.95rem, 2.2vw, 1.05rem);
-}
+  /* Cards compactas */
+  .rest-list {
+    gap: 10px;
+  }
+  .rest-block {
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: #fff;
+    padding: 10px 12px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+  }
+  .rest-block:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  .rest-block__title {
+    font-size: 1.02rem;
+    font-weight: 800;
+  }
+  .rest-block__legend {
+    font-size: 0.78rem;
+    margin-bottom: 0.4rem;
+  }
 
-/* Icono circular */
-.icono-circular {
-  width: 32px;
-  height: 32px;
-  background: #fff;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 6px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
-}
-
-/* CTA */
-.enlacevertodo {
-  color: var(--brand);
-  font-weight: 600;
-  text-decoration: none;
-}
-.enlacevertodo:hover {
-  text-decoration: underline;
-}
-
-/* Mejoras móviles */
-@media (max-width: 576px) {
-  .stat-card__inner {
-    padding: 10px;
+  .rest-stat {
+    min-height: 92px;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 8px 10px;
+    background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .rest-stat__value {
+    font-size: 0.98rem;
+    font-weight: 800;
   }
   .icono-circular {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--brand-50);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+    box-shadow: var(--shadow-sm);
   }
 }
 
-:root {
-  --brand: #ff5b00;
-  --radius: 16px;
-}
-
-.btn-naranja {
-  background-color: var(--brand);
-  color: #fff;
-  border-radius: 8px;
-  padding-inline: 10px;
-}
-.btn-naranja:hover {
-  opacity: 0.95;
-}
-
+/* Desktop */
 .selector-mes {
   max-width: 520px;
 }
 .selector-mes__input {
   max-width: 220px;
   min-width: 160px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
-
-/* Contenedor de toda la lista */
+.gf-panel {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
 .rest-list {
   display: grid;
   grid-template-columns: 1fr;
   gap: 14px;
 }
-
-/* Bloque visual por restaurante (simula una card) */
 .rest-block {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: var(--radius);
-  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    290deg,
+    color-mix(in srgb, #c6d9e8 92%, var(--brand-50) 8%) 0%,
+    #ffffff 100%
+  );
   padding: clamp(14px, 2.2vw, 18px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
 }
 .rest-block:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
+  box-shadow: var(--shadow-md);
+  background: color-mix(in srgb, #fff 96%, var(--brand-50) 4%);
 }
-
 .rest-block__title {
   font-size: clamp(1rem, 2.3vw, 1.15rem);
-  line-height: 1.2;
+  color: var(--color-text);
 }
 .rest-block__legend {
   font-size: clamp(0.72rem, 1.8vw, 0.8rem);
+  color: var(--color-text-weak);
 }
-
-/* Subtarjetas de stats dentro de cada bloque */
 .rest-stat {
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   padding: clamp(10px, 2.2vw, 14px);
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: var(--brand-50);
 }
 .rest-stat__value {
   font-size: clamp(0.95rem, 2.1vw, 1.05rem);
+  color: var(--color-primary);
 }
-
 .icono-circular {
   width: 32px;
   height: 32px;
-  background: #fff;
   border-radius: 999px;
+  background: var(--brand-50);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 6px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
-/* CTA */
-.enlacevertodo {
-  color: var(--brand);
-  font-weight: 600;
-  text-decoration: none;
-}
-.enlacevertodo:hover {
-  text-decoration: underline;
-}
-
-/* Responsive: 2 y 3 columnas en pantallas grandes */
 @media (min-width: 576px) {
   .rest-list {
     grid-template-columns: repeat(2, 1fr);
@@ -199,5 +231,62 @@
 @media (min-width: 1400px) {
   .rest-list {
     grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.bg-info-subtle {
+  background: var(--bs-info-bg-subtle) !important;
+}
+.bg-warning-subtle {
+  background: var(--bs-warning-bg-subtle) !important;
+}
+.bg-danger-subtle {
+  background: var(--bs-danger-bg-subtle) !important;
+}
+
+/* === FIX: Toolbar pegada al navbar en móvil (Admin) === */
+@media (max-width: 767.98px) {
+  /* quita el padding superior del contenedor solo en esta vista */
+  .dashboard-container.admin-bb {
+    padding-top: 0 !important;
+  }
+
+  /* asegura que la toolbar no tenga ningún margen arriba y respete el navbar */
+  .admin-bb .ad-toolbar {
+    position: sticky;
+    top: var(--navbar-h);
+    margin-top: 0 !important;
+    z-index: var(--z-sticky);
+  }
+
+  /* el título ya bajo la toolbar con un margen pequeño */
+  .admin-bb .dashboard-title {
+    margin-top: 0.4rem !important;
+  }
+}
+/* ===== AdminBB Dashboard – Mobile fix ===== */
+@media (max-width: 767.98px) {
+  /* resetea paddings heredados de .dashboard-container */
+  .dashboard-container.admin-bb {
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* toolbar pegada al navbar */
+  .admin-bb .ad-toolbar {
+    position: sticky;
+    top: var(--navbar-h);
+    margin-top: 0 !important;
+    z-index: var(--z-sticky);
+    background: #fff;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* el título ahora justo debajo de la toolbar */
+  .admin-bb .dashboard-title {
+    margin-top: 0.5rem !important;
+    padding-left: 0.9rem;
   }
 }

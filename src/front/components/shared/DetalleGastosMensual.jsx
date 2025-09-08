@@ -155,17 +155,28 @@ export const DetalleGastosMensual = () => {
       {/* ======= Header ======= */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h1 className="dashboard-title m-0">Detalle de Gastos</h1>
-        <button className="btn d-none d-md-inline-flex" onClick={() => navigate(`/${user.rol}/gastos/registrar`)}>
+        <button
+          className="btn-gastock d-none d-md-inline-flex"
+          onClick={() => navigate(`/${user.rol}/gastos/registrar`)}
+        >
           <i className="bi bi-plus-circle me-2"></i> Registrar gasto
         </button>
+
       </div>
 
       {/* Tabs (desktop y móvil) */}
       <div className="btn-group col-12 col-sm-12 col-lg-6 col-xl-5 mb-3 d-none d-md-inline-flex">
-        <button className={`btn btn-outline-orange ${view === "mensual" ? "active" : "nobg"}`} onClick={() => setView("mensual")}>
+        <button
+          className={`btn btn-tab ${view === "mensual" ? "active" : "nobg"}`}
+          onClick={() => setView("mensual")}
+        >
           Resumen Mensual
         </button>
-        <button className={`btn btn-outline-orange ${view === "diario" ? "active" : "nobg"}`} onClick={() => setView("diario")}>
+
+        <button
+          className={`btn btn-tab ${view === "diario" ? "active" : "nobg"}`}
+          onClick={() => setView("diario")}
+        >
           Detalle Diario
         </button>
       </div>
@@ -215,7 +226,7 @@ export const DetalleGastosMensual = () => {
           <div className="d-none d-md-block">
             <div className="mb-3 justify-content-start">
               <div className="d-flex justify-content-start flex-wrap align-items-center mb-3 mt-2">
-                <h5 className="me-4">Mes seleccionado: {nombreMes.toUpperCase()}</h5>
+
                 <input
                   type="month"
                   className="form-control w-auto"

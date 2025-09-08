@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "../styles/QuickActionCard.css"; // agrega estilos específicos
+import "../styles/QuickActionCard.css";
 
 export const QuickActionsEncargado = ({ onNuevaVenta }) => {
     const actions = [
@@ -8,86 +8,82 @@ export const QuickActionsEncargado = ({ onNuevaVenta }) => {
             title: "Registrar Venta",
             subtitle: "Agregar ventas diarias",
             onClick: onNuevaVenta,
-            bg: "bg-warning-subtle",
+            tone: "warning",
         },
         {
             icon: "📅",
             title: "Ver Ventas",
             subtitle: "Historial mensual",
             link: "/encargado/ventas",
-            bg: "bg-primary-subtle",
+            tone: "primary",
         },
         {
             icon: "📈",
             title: "Resumen de Gastos",
             subtitle: "Gasto mensual",
             link: "/encargado/gastos",
-            bg: "bg-success-subtle",
+            tone: "success",
         },
     ];
 
     return (
-        <div className="mt-0 text-center">
-            <h5 className="mb-3 fw-bold barralarga">⚡ Acciones Rápidas</h5>
+        <div className="qa-wrapper">
+            {/* Título sutil alineado con el resto de secciones */}
+            <div className="section-title">⚡ Acciones Rápidas</div>
 
-            {/* ✅ Móvil: grid simple */}
-            <div className="d-flex d-md-none justify-content-around gap-2">
+            {/* ====== Móvil: pills horizontales compactas ====== */}
+            <div className="d-flex d-md-none qa-pills">
                 {actions.map((a, i) =>
                     a.onClick ? (
                         <button
                             key={i}
-                            className="qa-icon-btn"
+                            className={`qa-pill qa-pill--${a.tone}`}
                             onClick={a.onClick}
                             title={a.title}
+                            aria-label={a.title}
                         >
-                            <div className={`qa-circle ${a.bg}`}>{a.icon}</div>
-                            <small className="d-block mt-1">{a.title}</small>
+                            <span className="qa-pill__icon">{a.icon}</span>
+                            <span className="qa-pill__text">{a.title}</span>
                         </button>
                     ) : (
-                        <Link key={i} to={a.link} className="qa-icon-btn text-dark">
-                            <div className={`qa-circle ${a.bg}`}>{a.icon}</div>
-                            <small className="d-block mt-1">{a.title}</small>
+                        <Link
+                            key={i}
+                            to={a.link}
+                            className={`qa-pill qa-pill--${a.tone}`}
+                            title={a.title}
+                            aria-label={a.title}
+                        >
+                            <span className="qa-pill__icon">{a.icon}</span>
+                            <span className="qa-pill__text">{a.title}</span>
                         </Link>
                     )
                 )}
             </div>
 
-            {/* ✅ Desktop: tarjetas como antes */}
+            {/* ====== Desktop: tarjetas suaves con hover ====== */}
             <div className="d-none d-md-flex flex-wrap justify-content-center gap-4">
                 {actions.map((a, i) =>
                     a.onClick ? (
-                        <div
+                        <button
                             key={i}
-                            className="card shadow-sm rounded p-3 h-100 text-center hover-shadow"
-                            style={{ flex: "1 1 200px", maxWidth: "230px", cursor: "pointer" }}
+                            className={`qa-card qa-card--${a.tone}`}
                             onClick={a.onClick}
+                            title={a.title}
                         >
-                            <div
-                                className={`rounded-circle ${a.bg} d-flex align-items-center justify-content-center mx-auto mb-3`}
-                                style={{ width: "60px", height: "60px", fontSize: "1.5rem" }}
-                            >
-                                {a.icon}
-                            </div>
-                            <h6 className="fw-bold">{a.title}</h6>
-                            <small className="text-muted">{a.subtitle}</small>
-                        </div>
+                            <div className="qa-card__icon">{a.icon}</div>
+                            <div className="qa-card__title">{a.title}</div>
+                            <div className="qa-card__sub">{a.subtitle}</div>
+                        </button>
                     ) : (
                         <Link
-                            to={a.link}
                             key={i}
-                            className="text-decoration-none text-dark"
-                            style={{ flex: "1 1 200px", maxWidth: "230px" }}
+                            to={a.link}
+                            className={`qa-card qa-card--${a.tone}`}
+                            title={a.title}
                         >
-                            <div className="card shadow-sm rounded p-3 h-100 text-center hover-shadow">
-                                <div
-                                    className={`rounded-circle ${a.bg} d-flex align-items-center justify-content-center mx-auto mb-3`}
-                                    style={{ width: "60px", height: "60px", fontSize: "1.5rem" }}
-                                >
-                                    {a.icon}
-                                </div>
-                                <h6 className="fw-bold">{a.title}</h6>
-                                <small className="text-muted">{a.subtitle}</small>
-                            </div>
+                            <div className="qa-card__icon">{a.icon}</div>
+                            <div className="qa-card__title">{a.title}</div>
+                            <div className="qa-card__sub">{a.subtitle}</div>
                         </Link>
                     )
                 )}

@@ -1,110 +1,117 @@
+/* UserModal.css — Modal estilo Gastock (fondo blanco + bordes azules) */
+
+/* Backdrop */
 .modaal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(3px);
+  background: rgba(0, 14, 34, 0.25);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 9999;
+  justify-content: center;
+  z-index: 2000;
 }
 
+/* Panel */
 .modaal {
-  background: #ffffff;
-  padding: 35px 30px;
-  border-radius: 14px;
-  width: 95%;
-  max-width: 480px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-in-out;
-  font-family: "Inter", sans-serif;
+  width: min(520px, 92vw);
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 1rem 1.1rem;
+  color: var(--color-text);
 }
 
-.modaal h2 {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center;
+/* Título */
+
+/* Título con fondo blanco + borde azul (chip) */
+.titulo,
+.modaal .titulo {
+  display: block;
+  background: color-mix(in srgb, #1c4a6b 92%, var(--brand-50) 8%);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
 }
 
-.modaal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+/* Form */
+.modaal-form > * {
+  width: 100%;
+  margin-bottom: 0.6rem;
 }
-
 .modaal-form input,
-.modaal-form select {
-  padding: 12px 14px;
-  font-size: 15px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background-color: #f9f9f9;
-  transition: all 0.2s ease;
+.modaal-form select,
+.modaal-form textarea {
+  background: #fff;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.7rem;
+  font-size: 1rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-
 .modaal-form input:focus,
-.modaal-form select:focus {
-  border-color: #ff5722;
-  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.15);
-  background-color: #fff;
+.modaal-form select:focus,
+.modaal-form textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.2rem var(--focus-ring);
   outline: none;
 }
 
+/* Acciones */
 .modaal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
-.modaal-actions button {
-  padding: 10px 18px;
-  font-weight: 600;
-  font-size: 15px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+/* Botón Cancelar = outline azul */
+.modaal-actions .btn-cancelar {
+  background: #fff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.9rem;
+  font-weight: 700;
+  transition: background 0.15s ease, filter 0.15s ease, transform 0.05s;
+}
+.modaal-actions .btn-cancelar:hover {
+  background: color-mix(in srgb, var(--color-primary) 6%, #fff);
+}
+.modaal-actions .btn-cancelar:active {
+  transform: translateY(1px);
 }
 
-.modaal-actions button[type="button"] {
-  background-color: #d3d3d3;
-  color: #333;
+/* Botón Guardar = primario azul */
+.modaal-actions .btn-guardar {
+  background: var(--color-primary);
+  color: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 85%, #000 15%);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.9rem;
+  font-weight: 700;
+  transition: filter 0.15s ease, transform 0.05s;
+}
+.modaal-actions .btn-guardar:hover {
+  filter: brightness(1.06);
+}
+.modaal-actions .btn-guardar:active {
+  transform: translateY(1px);
 }
 
-.modaal-actions button[type="button"]:hover {
-  background-color: #bbb;
-}
-
-.modaal-actions button[type="submit"] {
-  background-color: var(--primary-color, #ff5722);
-  color: white;
-}
-
-.modaal-actions button[type="submit"]:hover {
-  background-color: #e04a1f;
-}
-.titulo {
-  background-color: #e04a1f;
-  color: white!important;
-  font-size: 20px;
-  font-weight: 600;
-  text-align: center;
-  padding: 15px 20px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  margin: -20px -20px 20px -20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+/* Responsive: separa del borde inferior en móviles con notch */
+@media (max-width: 575.98px) {
+  .modaal {
+    margin: max(env(safe-area-inset-top), 12px) 12px
+      max(env(safe-area-inset-bottom), 12px);
+    width: auto;
   }
 }
