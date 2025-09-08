@@ -1,1 +1,0 @@
-export const FacturaList = () => <div>Listado de facturas</div>;

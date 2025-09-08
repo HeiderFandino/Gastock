@@ -1,1 +1,0 @@
-export const UserList = () => <div>Listado de usuarios</div>;

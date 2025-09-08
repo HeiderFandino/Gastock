@@ -1,1 +1,0 @@
-export const ProveedorList = () => <div>Lista de proveedores</div>;

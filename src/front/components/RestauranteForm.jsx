@@ -1,1 +1,0 @@
-export const RestauranteForm = () => <form>Formulario de restaurante</form>;

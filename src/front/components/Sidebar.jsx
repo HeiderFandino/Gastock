@@ -13,9 +13,17 @@ export const Sidebar = () => {
   const toggleRail = () => setMenuall(!menuall);
 
   const handleLogout = () => {
+    // 🔒 Limpia todo lo relacionado a la sesión
     sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("lastPrivatePath"); // opcional: evita volver a la última privada tras reloguear
+    localStorage.removeItem("adminEmail");        // opcional: si lo usas para recordar el email del admin
+
+    // 🧹 Limpia el estado global
     dispatch({ type: "get_user_info", payload: null });
-    navigate("/");
+
+    // 🔁 Navega al Home y reemplaza el histórico
+    navigate("/", { replace: true });
   };
 
   // helpers de activo
@@ -36,11 +44,8 @@ export const Sidebar = () => {
       <div className="sidebar-container d-none d-md-flex">
         <nav
           id="sidebar"
-          className={`sidebar menu d-flex flex-column p-3 ${menuall ? "w-72" : "w-240"
-            }`}
+          className={`sidebar menu d-flex flex-column p-3 ${menuall ? "w-72" : "w-240"}`}
         >
-
-
           <ul className="nav nav-pills flex-column gap-1">
             {rol === "admin" && (
               <>
@@ -162,8 +167,7 @@ export const Sidebar = () => {
 
           <div className="logout mt-auto">
             <button
-              className={`nav-link text-muted d-flex align-items-center bg-transparent border-0 ${menuall ? "logout-column" : "logout-row"
-                }`}
+              className={`nav-link text-muted d-flex align-items-center bg-transparent border-0 ${menuall ? "logout-column" : "logout-row"}`}
               onClick={handleLogout}
               title="Cerrar sesión"
             >

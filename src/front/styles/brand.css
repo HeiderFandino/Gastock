@@ -669,3 +669,164 @@
 .gf-row {
   margin-bottom: 0.75rem;
 }
+/* ===== Loading Screen (Gastock) ===== */
+.loading-screen {
+  /* Usa tus tokens del brand */
+  background: radial-gradient(
+    circle at 20% 20%,
+    color-mix(in srgb, var(--brand-50) 85%, #ffffff 15%),
+    var(--brand-50) 70%
+  );
+  min-height: 100vh;
+  color: var(--color-ink, #0b1220);
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-logo {
+  display: block;
+  filter: drop-shadow(
+    0 6px 18px color-mix(in srgb, var(--brand-600) 35%, transparent)
+  );
+  animation: logoPulse 1.8s ease-in-out infinite;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.loading-text {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--color-primary, #4ba1db);
+}
+
+/* Spinner minimalista en color de marca */
+.brand-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--brand-600) 25%, transparent);
+  border-top-color: var(--brand-600);
+  animation: spin 0.9s linear infinite;
+  opacity: 0.9;
+}
+
+/* Animaciones */
+@keyframes logoPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.92;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Modo oscuro (si usas prefers-color-scheme o una clase .dark) */
+@media (prefers-color-scheme: dark) {
+  .loading-screen {
+    background: radial-gradient(
+      circle at 20% 20%,
+      color-mix(in srgb, var(--brand-900) 12%, #000 88%),
+      #0a0f18 70%
+    );
+    color: #eaf4ff;
+  }
+  .loading-text {
+    color: color-mix(in srgb, var(--brand-200) 75%, #ffffff 25%);
+  }
+  .brand-spinner {
+    border: 3px solid color-mix(in srgb, var(--brand-200) 25%, transparent);
+    border-top-color: var(--brand-200);
+  }
+}
+
+/* ===== Loading Screen (Gastock) ===== */
+.loading-screen {
+  /* Usa tus tokens del brand */
+  background: radial-gradient(
+    circle at 20% 20%,
+    color-mix(in srgb, var(--brand-50) 85%, #ffffff 15%),
+    var(--brand-50) 70%
+  );
+  min-height: 100vh;
+  color: var(--color-ink, #0b1220);
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-logo {
+  display: block;
+  filter: drop-shadow(
+    0 6px 18px color-mix(in srgb, var(--brand-600) 35%, transparent)
+  );
+  animation: logoPulse 1.8s ease-in-out infinite;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.loading-text {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--color-primary, #4ba1db);
+}
+
+/* Spinner minimalista en color de marca */
+.brand-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--brand-600) 25%, transparent);
+  border-top-color: var(--brand-600);
+  animation: spin 0.9s linear infinite;
+  opacity: 0.9;
+}
+
+/* Animaciones */
+@keyframes logoPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.92;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Modo oscuro (si usas prefers-color-scheme o una clase .dark) */
+@media (prefers-color-scheme: dark) {
+  .loading-screen {
+    background: radial-gradient(
+      circle at 20% 20%,
+      color-mix(in srgb, var(--brand-900) 12%, #ffffff 88%),
+      #4466a9 70%
+    );
+    color: #eaf4ff;
+  }
+  .loading-text {
+    color: color-mix(in srgb, var(--brand-200) 75%, #ffffff 25%);
+  }
+  .brand-spinner {
+    border: 3px solid color-mix(in srgb, var(--brand-200) 25%, transparent);
+    border-top-color: var(--brand-200);
+  }
+}

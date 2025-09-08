@@ -9,47 +9,93 @@ export const RutaPrivada = () => {
   const [cargando, setCargando] = useState(true);
   const token = sessionStorage.getItem("token");
   const location = useLocation();
-
   const path = location.pathname;
 
-  const accesoPorRol = {
-    "/admin": "admin",
-    "/encargado": "encargado",
-    "/ventas": "encargado",
-    "/chef/gastos": "chef",
-    "/chef": "chef"
-  };
-
-  const rutaBase = Object.keys(accesoPorRol).find((prefix) =>
-    path.startsWith(prefix)
-  );
-
-  const rolPermitido = accesoPorRol[rutaBase] || null;
+  // Prefijos protegidos -> roles permitidos (match más largo primero)
+  const ACL = [
+    { prefix: "/chef/gastos", roles: ["chef"] },
+    { prefix: "/admin", roles: ["admin"] },
+    { prefix: "/encargado", roles: ["encargado"] },
+    { prefix: "/chef", roles: ["chef"] },
+    { prefix: "/ventas", roles: ["encargado"] },
+  ];
+  const match = ACL.filter(r => path.startsWith(r.prefix))
+    .sort((a, b) => b.prefix.length - a.prefix.length)[0] || null;
+  const rolesPermitidos = match ? match.roles : null;
 
   useEffect(() => {
-    console.log("Ruta actual:", path);
-    console.log("Usuario cargado:", store.user);
-    console.log("Rol del usuario:", store.user?.rol);
-    console.log("Rol permitido para esta ruta:", rolPermitido);
-    if (token && !store.user) {
-      userServices
-        .getUserinfo()
-        .then((data) => {
-          dispatch({ type: "get_user_info", payload: data.user });
-          setCargando(false);
-        })
-        .catch(() => {
-          sessionStorage.removeItem("token");
-          setCargando(false);
-        });
-    } else {
-      setCargando(false);
-    }
-  }, [token]);
+    let cancel = false;
+
+    const hydrateFromStorage = () => {
+      try {
+        const raw = sessionStorage.getItem("user");
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed?.id && parsed?.rol) {
+          dispatch({ type: "get_user_info", payload: parsed });
+          return parsed;
+        }
+      } catch { }
+      return null;
+    };
+
+    const boot = async () => {
+      if (!token) {
+        setCargando(false);
+        return;
+      }
+
+      // 1) hidratar rápido desde sessionStorage para evitar salto al Home
+      const cached = hydrateFromStorage();
+      if (cached) {
+        setCargando(false);
+        // refresco silencioso (sin bloquear la vista)
+        userServices.getUserinfo()
+          .then(r => {
+            if (!cancel && r?.user) {
+              sessionStorage.setItem("user", JSON.stringify(r.user));
+              dispatch({ type: "get_user_info", payload: r.user });
+            }
+          })
+          .catch(() => { });
+        return;
+      }
+
+      // 2) fallback al backend
+      try {
+        const r = await userServices.getUserinfo();
+        if (!cancel && r?.user) {
+          sessionStorage.setItem("user", JSON.stringify(r.user));
+          dispatch({ type: "get_user_info", payload: r.user });
+        }
+      } catch {
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+      } finally {
+        if (!cancel) setCargando(false);
+      }
+    };
+
+    boot();
+    return () => { cancel = true; };
+  }, [token, path, dispatch]);
+
+  // Guardar última ruta privada válida (útil tras login o refresh)
+  useEffect(() => {
+    if (token) sessionStorage.setItem("lastPrivatePath", path);
+  }, [token, path]);
 
   if (cargando) return <LoadingScreen />;
-  if (!token || !store.user) return <Navigate to="/" replace />;
-  if (rolPermitido && store.user.rol !== rolPermitido) return <Navigate to="/" replace />;
+
+  if (!token || !store.user) {
+    return <Navigate to="/" replace state={{ from: location }} />;
+  }
+
+  if (rolesPermitidos && !rolesPermitidos.includes(store.user.rol)) {
+    return <Navigate to="/" replace />;
+  }
 
   return <Outlet />;
 };
+
+export default RutaPrivada;
