@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import logo from "../assets/img/gastock2_tmp.png";
@@ -8,6 +8,8 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const user = store?.user;
   const navRef = useRef(null);
+  const menuRef = useRef(null);
+  const [open, setOpen] = useState(false);
 
   if (!user) return null;
 
@@ -21,7 +23,7 @@ export const Navbar = () => {
     navigate("/");
   };
 
-  // Medir el alto del navbar y setear --navbar-h (para toolbars sticky móviles)
+  // Altura navbar → CSS var para posicionar el menú fijo
   useEffect(() => {
     const setNavbarH = () => {
       const el = navRef.current || document.querySelector(".navbar.sticky-top");
@@ -31,20 +33,23 @@ export const Navbar = () => {
     };
     setNavbarH();
     window.addEventListener("resize", setNavbarH);
-    document.addEventListener("shown.bs.dropdown", setNavbarH);
-    document.addEventListener("hidden.bs.dropdown", setNavbarH);
-    return () => {
-      window.removeEventListener("resize", setNavbarH);
-      document.removeEventListener("shown.bs.dropdown", setNavbarH);
-      document.removeEventListener("hidden.bs.dropdown", setNavbarH);
-    };
+    return () => window.removeEventListener("resize", setNavbarH);
   }, []);
 
+  // Cerrar al hacer click fuera
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!open) return;
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, [open]);
+
   return (
-    <nav
-      ref={navRef}
-      className="navbar navbar-light bg-white border-bottom py-2 sticky-top"
-    >
+    <nav ref={navRef} className="navbar navbar-light bg-white border-bottom py-2 sticky-top">
       <div className="container-fluid align-items-center">
         {/* Brand */}
         <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
@@ -52,88 +57,67 @@ export const Navbar = () => {
             src={logo}
             alt="Gastock Logo"
             className="brand-logo"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
         </Link>
 
-        {/* Bloque usuario */}
-        <div className="d-flex align-items-center gap-2 ms-auto">
-          {/* Texto usuario (≥ md) */}
-          <div className="text-end d-none d-md-block me-1">
-            <p
-              className="mb-0 name text-brand text-truncate user-name"
-              title={nombre}
-            >
-              {nombre}
-            </p>
-            <p className="mb-0 small text-capitalize fw-bold">{rol}</p>
+        {/* Bloque compacto: texto pegado al icono (SIEMPRE, móvil y desktop) */}
+        <div className="user-compact d-flex align-items-center ms-auto">
+          <div className="user-lines me-2 text-end">
+            <div className="user-name fw-semibold text-truncate" title={nombre}>{nombre}</div>
+            <div className="user-role extra-small text-capitalize">{rol}</div>
             {rol !== "admin" && (
-              <p
-                className="mb-0 restaurant text-secondary small text-truncate user-restaurant"
-                title={restaurante}
-              >
+              <div className="user-restaurant extra-small text-muted text-truncate" title={restaurante}>
                 {restaurante}
-              </p>
+              </div>
             )}
           </div>
 
-          {/* Avatar + dropdown */}
-          <div className="dropdown">
-            <button
-              className="p-0 avatar-btn"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-              aria-label="Menú de usuario"
-            >
-              <i className="bi bi-person-circle"></i>
-            </button>
-            <ul className="dropdown-menu dropdown-menu-end shadow-sm">
-              {/* Info usuario en móvil */}
-              <li className="d-md-none px-3 py-2">
-                <div className="small fw-semibold text-truncate" title={nombre}>
-                  {nombre}
-                </div>
-                <div className="small text-muted text-capitalize">{rol}</div>
-                {rol !== "admin" && (
-                  <div
-                    className="small text-muted text-truncate"
-                    title={restaurante}
-                  >
-                    {restaurante}
-                  </div>
-                )}
-              </li>
-              <li>
-                <hr className="dropdown-divider d-md-none" />
-              </li>
-
-              <li>
-                <Link className="dropdown-item" to="/profile">
-                  <i className="bi bi-person me-2" /> Perfil
-                </Link>
-              </li>
-              <li>
-                <Link className="dropdown-item" to={`/${rol}/settings`}>
-                  <i className="bi bi-gear me-2" /> Ajustes
-                </Link>
-              </li>
-              <li>
-                <hr className="dropdown-divider" />
-              </li>
-              <li>
-                <button
-                  className="dropdown-item text-danger"
-                  onClick={handleLogout}
-                >
-                  <i className="bi bi-box-arrow-right me-2" /> Cerrar sesión
-                </button>
-              </li>
-            </ul>
-          </div>
+          {/* Botón avatar (toggle menú propio) */}
+          <button
+            type="button"
+            className="avatar-btn"
+            aria-haspopup="menu"
+            aria-expanded={open ? "true" : "false"}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen((v) => !v);
+            }}
+          >
+            <i className="bi bi-person-circle" />
+          </button>
         </div>
+
+        {/* Menú fijo superpuesto */}
+        {open && (
+          <>
+            {/* Fondo clicable para cerrar */}
+            <div className="user-menu-backdrop" />
+            <div ref={menuRef} className="user-menu">
+              {/* Cabecera con datos (útil en pantallas pequeñas) */}
+
+
+              <ul className="list-unstyled mb-0">
+                <li>
+                  <Link className="user-menu-item" to="/profile" onClick={() => setOpen(false)}>
+                    <i className="bi bi-person me-2" /> Perfil
+                  </Link>
+                </li>
+                <li>
+                  <Link className="user-menu-item" to={`/${rol}/settings`} onClick={() => setOpen(false)}>
+                    <i className="bi bi-gear me-2" /> Ajustes
+                  </Link>
+                </li>
+                <li><hr className="my-2" /></li>
+                <li>
+                  <button className="user-menu-item text-danger" onClick={handleLogout}>
+                    <i className="bi bi-box-arrow-right me-2" /> Cerrar sesión
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </>
+        )}
       </div>
     </nav>
   );

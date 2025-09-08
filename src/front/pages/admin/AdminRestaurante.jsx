@@ -125,7 +125,7 @@ const AdminRestaurante = () => {
             style={{ maxWidth: 360 }}
           />
           <button
-            className="btn btn-primary"
+            className="ag-monthbtn"
             onClick={() => { setModalOpen(true); setCurrentRestaurante(null); }}
           >
             <FiPlus className="me-2" /> Añadir Restaurante

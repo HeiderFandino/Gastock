@@ -1,19 +1,29 @@
+/* ===== Variables globales de capas (z-index) ===== */
+:root {
+  --z-sticky: 3000; /* toolbars pegadas (fecha) */
+  --z-nav: 10000; /* navbar */
+  --z-dropdown: 10050; /* menús dependientes del nav (usuario) */
+  --z-modal: 11000; /* modales/toasts si los hubiera */
+}
+
 /* nabvar.css — gradiente sutil */
 .navbar {
   height: 100px; /* altura consistente */
   display: flex;
   align-items: center; /* centra verticalmente todo dentro */
   background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--brand-900) 20%, #ffffff),
-    color-mix(in srgb, var(--brand-600) 20%, #ffffff)
+    35deg,
+    color-mix(in srgb, var(--brand-900) 20%, #98b9d4),
+    color-mix(in srgb, var(--brand-600) 20%, #dfe4e6)
   );
   color: var(--color-text);
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   position: sticky;
   top: 0;
-  z-index: var(--z-nav);
+  z-index: var(--z-nav, 10000); /* ⬅️ por encima de la barra de fecha */
+  transform: none !important; /* evita stacking contexts inesperados */
+  filter: none !important;
 }
 
 /* Marca */
@@ -23,14 +33,14 @@
   gap: 8px;
 }
 .brand-logo {
-  height: 28px;
+  height: 40px; /* controla SOLO el logo */
   width: auto;
   object-fit: contain;
 }
 @media (min-width: 768px) {
   .brand-logo {
-    height: 32px;
-  }
+    height: 48px;
+  } /* más grande en escritorio */
 }
 .brand-text {
   font-size: 1.1rem;
@@ -46,7 +56,7 @@
   padding: 0 !important;
   box-shadow: none !important;
   line-height: 1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
@@ -55,26 +65,48 @@
 .avatar-btn:hover {
   background: color-mix(in srgb, var(--brand-50) 25%, transparent) !important;
 }
-
-.bi-person-circle {
-  font-size: 32px;
-  color: var(--color-secondary);
+/* Avatar (ícono de usuario) */
+.avatar-btn .bi-person-circle {
+  font-size: 1.9rem;
+  color: var(--brand-600, #0d6efd); /* ⬅️ vuelve al azul brand */
 }
 @media (min-width: 768px) {
-  .bi-person-circle {
-    font-size: 38px;
+  .avatar-btn .bi-person-circle {
+    font-size: 2.2rem;
   }
 }
 
+/* Bloque de usuario */
 .user-name {
   max-width: 220px;
   font-size: 1rem;
-  color: var(--color-text);
   font-weight: 600;
+  color: var(--brand-600, #0d6efd); /* ⬅️ azul brand */
+}
+.user-role {
+  color: var(--brand-500, #0a58ca); /* ⬅️ rol también en tono azul */
 }
 .user-restaurant {
   max-width: 220px;
-  color: var(--color-text-weak);
+  color: var(--text-medium, #666); /* ⬅️ gris medio para diferenciar */
+}
+
+/* Menú desplegable (links) */
+.user-menu-item {
+  width: 100%;
+  display: block;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--brand-600, #0d6efd); /* ⬅️ azul brand */
+  text-decoration: none;
+  font-weight: 500;
+}
+.user-menu-item:hover {
+  background: var(--bg-light, #f5f6f8);
+  color: var(--brand-700, #084298); /* ⬅️ azul más fuerte en hover */
 }
 @media (max-width: 991.98px) {
   .user-name,
@@ -83,26 +115,70 @@
   }
 }
 
-/* Móvil */
+/* Móvil: padding del contenedor */
 @media (max-width: 767.98px) {
-  .navbar .name,
-  .navbar .restaurant,
-  .navbar .role {
-    display: none !important;
-  }
   .navbar .container-fluid {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
 }
 
-.brand-logo {
-  height: 40px; /* aquí controlas SOLO el logo */
-  width: auto;
-  object-fit: contain;
+/* Tipografía pequeña reutilizable */
+.extra-small {
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
-@media (min-width: 768px) {
-  .brand-logo {
-    height: 48px; /* más grande en escritorio */
-  }
+
+/* Bloque compacto: texto pegado al icono */
+.user-compact .user-lines {
+  line-height: 1.1;
+  max-width: 48vw;
+}
+.user-compact .user-name {
+  font-size: 0.95rem;
+}
+
+/* ===== Menú fijo superpuesto (sin Bootstrap dropdown) ===== */
+.user-menu {
+  position: fixed;
+  top: var(--navbar-h, 56px);
+  right: 0.75rem;
+  width: 280px; /* ancho fijo */
+  max-width: 90vw; /* en móvil que no rompa */
+  background: #fff;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  z-index: var(--z-dropdown, 10050);
+  overflow: hidden;
+}
+
+/* Backdrop para capturar clic y cerrar */
+.user-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: calc(var(--z-dropdown, 10050) - 1);
+}
+/* Items del menú */
+.user-menu-item {
+  width: 100%;
+  display: block;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-dark, #333);
+  text-decoration: none;
+}
+.user-menu-item:hover {
+  background: var(--bg-light, #f5f6f8);
+  cursor: pointer;
+}
+
+/* Evitar que contenedores oculten el menú */
+.navbar,
+.navbar * {
+  overflow: visible !important;
 }
