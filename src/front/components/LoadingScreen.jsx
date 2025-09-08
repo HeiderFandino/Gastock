@@ -1,5 +1,5 @@
 import React from "react";
-import brandLogo from "../assets/img/gastock2.PNG";
+import brandLogo from "../assets/img/gastock2.png";
 
 export const LoadingScreen = () => {
   return (
