@@ -1,3 +1,4 @@
+// src/front/components/RutaPrivada.jsx
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
@@ -19,8 +20,12 @@ export const RutaPrivada = () => {
     { prefix: "/chef", roles: ["chef"] },
     { prefix: "/ventas", roles: ["encargado"] },
   ];
-  const match = ACL.filter(r => path.startsWith(r.prefix))
-    .sort((a, b) => b.prefix.length - a.prefix.length)[0] || null;
+
+  const match =
+    ACL.filter((r) => path.startsWith(r.prefix)).sort(
+      (a, b) => b.prefix.length - a.prefix.length
+    )[0] || null;
+
   const rolesPermitidos = match ? match.roles : null;
 
   useEffect(() => {
@@ -35,7 +40,9 @@ export const RutaPrivada = () => {
           dispatch({ type: "get_user_info", payload: parsed });
           return parsed;
         }
-      } catch { }
+      } catch {
+        /* ignore */
+      }
       return null;
     };
 
@@ -45,30 +52,34 @@ export const RutaPrivada = () => {
         return;
       }
 
-      // 1) hidratar rápido desde sessionStorage para evitar salto al Home
+      // 1) Hidrata rápido desde sessionStorage para evitar parpadeos/redirecciones
       const cached = hydrateFromStorage();
       if (cached) {
         setCargando(false);
-        // refresco silencioso (sin bloquear la vista)
-        userServices.getUserinfo()
-          .then(r => {
-            if (!cancel && r?.user) {
-              sessionStorage.setItem("user", JSON.stringify(r.user));
-              dispatch({ type: "get_user_info", payload: r.user });
+        // Refresco silencioso para validar token/usuario actual
+        userServices
+          .getUserinfo()
+          .then((u) => {
+            if (!cancel && u) {
+              sessionStorage.setItem("user", JSON.stringify(u));
+              dispatch({ type: "get_user_info", payload: u });
             }
           })
-          .catch(() => { });
+          .catch(() => {
+            // Si falla, handleUnauthorized en services hace la limpieza/redirección
+          });
         return;
       }
 
-      // 2) fallback al backend
+      // 2) Sin cache local: pedir al backend
       try {
-        const r = await userServices.getUserinfo();
-        if (!cancel && r?.user) {
-          sessionStorage.setItem("user", JSON.stringify(r.user));
-          dispatch({ type: "get_user_info", payload: r.user });
+        const u = await userServices.getUserinfo();
+        if (!cancel && u) {
+          sessionStorage.setItem("user", JSON.stringify(u));
+          dispatch({ type: "get_user_info", payload: u });
         }
       } catch {
+        // handleUnauthorized ya responde: limpiará y enviará a "/"
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("user");
       } finally {
@@ -77,20 +88,24 @@ export const RutaPrivada = () => {
     };
 
     boot();
-    return () => { cancel = true; };
+    return () => {
+      cancel = true;
+    };
   }, [token, path, dispatch]);
 
-  // Guardar última ruta privada válida (útil tras login o refresh)
+  // Guardar última ruta privada válida (para volver tras login/refresh)
   useEffect(() => {
     if (token) sessionStorage.setItem("lastPrivatePath", path);
   }, [token, path]);
 
   if (cargando) return <LoadingScreen />;
 
+  // Si no hay token o no está el user en store, manda a Home (tu login está en "/")
   if (!token || !store.user) {
     return <Navigate to="/" replace state={{ from: location }} />;
   }
 
+  // Chequeo de ACL por rol
   if (rolesPermitidos && !rolesPermitidos.includes(store.user.rol)) {
     return <Navigate to="/" replace />;
   }

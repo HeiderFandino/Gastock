@@ -75,14 +75,22 @@ export const Proveedores = () => {
     setTimeout(() => setMensajeExito(""), 3000);
   };
 
+
   return (
-    <div className="dashboard-container ">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h1 className="dashboard-title">Proveedores</h1>
-        <button
-          className="btn-gastock"
-          onClick={abrirModalCrear}
-        >
+    <div className="dashboard-container">
+      {/* HEADER */}
+      <div className="d-flex align-items-center justify-content-between gap-2 mb-3">
+        <h1 className="dashboard-title m-0">Proveedores</h1>
+
+        {/* Botón en desktop */}
+        <button className="btn-gastock d-none d-sm-inline-flex" onClick={abrirModalCrear}>
+          <i className="bi bi-plus-circle me-2"></i> Nuevo Proveedor
+        </button>
+      </div>
+
+      {/* Botón ancho en móvil */}
+      <div className="d-grid d-sm-none mb-2">
+        <button className="btn-gastock" onClick={abrirModalCrear}>
           <i className="bi bi-plus-circle me-2"></i> Nuevo Proveedor
         </button>
       </div>
@@ -95,62 +103,84 @@ export const Proveedores = () => {
       ) : proveedores.length === 0 ? (
         <p>No hay proveedores registrados.</p>
       ) : (
-        <div className="table-responsive">
-          <table className="table table-striped users-table ">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {proveedores.map(p => (
-                <tr key={p.id}>
-                  <td>{p.nombre}</td>
-                  <td>{p.categoria}</td>
-                  <td>
-
-
-                    <button class="action-icon-button edit-button"
+        <>
+          {/* LISTA MÓVIL (xs–sm) */}
+          <ul className="prov-list list-unstyled d-sm-none">
+            {proveedores.map((p) => (
+              <li key={p.id} className="prov-item">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <div className="prov-name">{p.nombre}</div>
+                    <div className="prov-cat">{p.categoria || "—"}</div>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="action-icon-button edit-button"
                       onClick={() => abrirModalEditar(p.id)}
-                      title="Edit User"><svg xmlns="http://www.w3.org/2000/svg"
-                        width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" strokeLinejoin="round"
-                        class="feather feather-edit-2">
-                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z">
-                        </path>
-                      </svg>
+                      aria-label="Editar proveedor"
+                      title="Editar"
+                    >
+                      <i className="bi bi-pencil-square"></i>
                     </button>
-                    <button class="action-icon-button delete-button"
+                    <button
+                      className="action-icon-button delete-button"
                       onClick={() => eliminar(p.id)}
-                      title="Delete User">
-
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20"
-                        height="20" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round"
-                        strokeLinejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6">
-                        </polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                        </path><line x1="10" y1="11" x2="10" y2="17">
-                        </line>
-                        <line x1="14" y1="11" x2="14" y2="17">
-                        </line>
-                      </svg>
+                      aria-label="Eliminar proveedor"
+                      title="Eliminar"
+                    >
+                      <i className="bi bi-trash"></i>
                     </button>
 
-                  </td>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* TABLA DESKTOP (≥ md) */}
+          <div className="table-responsive d-none d-sm-block">
+            <table className="table table-striped users-table mb-0">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th className="text-end">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {proveedores.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.nombre}</td>
+                    <td>{p.categoria}</td>
+                    <td className="text-end">
+                      <button
+                        className="action-icon-button edit-button me-2"
+                        onClick={() => abrirModalEditar(p.id)}
+                        title="Editar"
+                      >
+                        <i className="bi bi-pencil-square"></i>
+                      </button>
+                      <button
+                        className="action-icon-button delete-button"
+                        onClick={() => eliminar(p.id)}
+                        title="Eliminar"
+                      >
+                        <i className="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
+
+
       {mostrarModal && (
-        <div className="modal d-block" style={{ backgroundColor: "#00000066" }}>
-          <div className="modal-dialog">
+        <div className="modal d-block prov-modal-backdrop">
+          <div className="modal-dialog prov-modal-dialog">
             <div className="modal-content p-3">
               <ProveedorForm
                 proveedor={proveedorEditando}
@@ -161,6 +191,17 @@ export const Proveedores = () => {
           </div>
         </div>
       )}
+      {!mostrarModal && (
+        <button
+          className="fab-proveedor"
+          onClick={abrirModalCrear}
+          aria-label="Crear nuevo proveedor"
+          title="Nuevo proveedor"
+        >
+          <span className="fab-plus">+</span>
+        </button>
+      )}
     </div>
   );
+
 };

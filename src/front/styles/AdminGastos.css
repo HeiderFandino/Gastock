@@ -1,0 +1,406 @@
+/* =========================================
+   AdminGastos.css — Mobile-first + Brand
+   Usa variables del brand y evita hardcodes
+   ========================================= */
+
+/* ——— Acentos (si tu brand no define naranja) ——— */
+:root {
+  --accent: var(--brand-accent, #ff5b00); /* botón primario/acento */
+  --brand-surface: var(--brand-50, #f4f9ff); /* fondos suaves */
+  --brand-primary: var(--color-primary, #4ba1db); /* azul principal */
+  --ink-900: #0f172a; /* texto fuerte */
+  --ink-600: #334155; /* texto medio */
+  --ink-500: #64748b; /* texto secondary */
+  --border-100: rgba(0, 0, 0, 0.06);
+  --shadow-100: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* ——— Controles ——— */
+.ag-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem 0.25rem;
+  max-width: 420px;
+  flex-wrap: wrap;
+}
+.ag-month {
+  max-width: 170px;
+}
+
+.ag-btn-orange {
+  background-color: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  padding: 2px 10px;
+  border: none;
+}
+.ag-btn-orange:hover {
+  filter: brightness(0.95);
+}
+
+/* ——— Sección genérica ——— */
+.ag-section {
+  margin-top: 0.5rem;
+}
+
+/* ——— Grid responsive ——— */
+.ag-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 768px) {
+  .ag-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ——— Card ——— */
+.ag-card {
+  background: #fff;
+  border: 1px solid var(--border-100);
+  border-radius: 14px;
+  box-shadow: var(--shadow-100);
+  overflow: hidden;
+}
+.ag-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  background: var(--brand-surface);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.ag-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ——— Charts ——— */
+.ag-chart-wrap {
+  padding: 0.75rem 1rem 1rem;
+  min-height: 260px;
+  height: 320px;
+}
+@media (max-width: 575.98px) {
+  .ag-chart-wrap {
+    height: 280px;
+  }
+}
+
+/* ——— Tablas ——— */
+.ag-card table thead th {
+  background: var(--brand-surface);
+  color: var(--ink-600);
+  font-weight: 700;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.ag-card table tbody tr:hover {
+  /* si tienes --brand-900, úsala con transparencia */
+  background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+}
+
+/* ——— Helpers de títulos ——— */
+.dashboard-title {
+  margin-left: 0.25rem;
+  color: var(--ink-900);
+}
+.dashboard-welcome {
+  margin-left: 0.25rem;
+  color: var(--ink-500);
+}
+
+/* ——— Ajustes extra para móvil ——— */
+@media (max-width: 575.98px) {
+  .ag-card .p-3,
+  .ag-card .ag-chart-wrap {
+    padding: 0.75rem !important;
+  }
+
+  .ag-card-header h5 {
+    font-size: 0.95rem;
+  }
+
+  .ag-card table td,
+  .ag-card table th {
+    padding: 0.45rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .ag-controls {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .ag-month {
+    max-width: 160px;
+    flex: 1;
+  }
+}
+
+/* =========================================
+   Header compacto v2 (móvil primero)
+   Reutilizable para Gastos/Ventas
+   ========================================= */
+.ag-header {
+  padding: 0.25rem 0.25rem 0;
+}
+
+.ag-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ag-back {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  background: #fff;
+  color: var(--ink-600);
+}
+.ag-brand-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  opacity: 0.35;
+}
+
+.ag-title-wrap {
+  margin: 0.5rem 0;
+}
+.ag-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: var(--ink-900);
+}
+.ag-subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--ink-500);
+  font-size: 0.9rem;
+}
+
+/* ——— Selector de mes en “píldora” ——— */
+.ag-monthbar {
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.ag-monthbtn {
+  background: var(--color-primary); /* azul corporativo */
+  color: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 85%, #000 15%);
+  border: 0;
+  border-radius: 10px;
+  padding: 6px 10px;
+  line-height: 1;
+  font-weight: 700;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.ag-monthbtn:active {
+  transform: translateY(1px);
+}
+
+.ag-monthpill {
+  position: relative;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-weight: 600;
+  min-width: 210px;
+  text-align: center;
+  box-shadow: var(--shadow-100);
+  color: var(--ink-900);
+}
+/* input nativo oculto pero clicable encima */
+.ag-month-hidden {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 575.98px) {
+  .ag-title {
+    font-size: 1rem;
+  }
+  .ag-subtitle {
+    font-size: 0.88rem;
+  }
+  .ag-monthpill {
+    min-width: 190px;
+  }
+}
+
+/* ===== AdminRestaurante — ajustes mobile-first ===== */
+
+/* icon buttons coherentes con brand */
+.action-icon-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+.edit-button {
+  color: var(--color-primary, #4ba1db);
+}
+.delete-button {
+  color: var(--color-danger, #dc3545);
+}
+
+/* FAB solo móvil */
+.fab-rest {
+  position: fixed;
+  right: 16px;
+  bottom: calc(
+    84px + env(safe-area-inset-bottom, 0px)
+  ); /* despega de la bottom-nav */
+  z-index: 1050;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--color-primary, #4ba1db);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.fab-rest:active {
+  transform: translateY(1px) scale(0.96);
+}
+.fab-plus {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+@media (min-width: 768px) {
+  .fab-rest {
+    display: none;
+  }
+}
+
+/* compacta un poco la tabla en pantallas pequeñas >=sm */
+@media (min-width: 576px) and (max-width: 768px) {
+  .users-table td,
+  .users-table th {
+    padding: 0.55rem 0.6rem;
+  }
+}
+
+/* ===== Usuarios — Mobile-first & Brand ===== */
+
+/* avatar circular */
+.user-avatar-pill {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-50, #f4f9ff);
+  color: var(--color-primary, #4ba1db);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* roles con brand */
+.badge-role {
+  display: inline-block;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fff;
+  color: var(--ink-600, #334155);
+}
+.badge-encargado {
+  color: var(--color-primary, #4ba1db);
+}
+.badge-chef {
+  color: #16a34a;
+} /* puedes mapear a otro token si lo tienes */
+
+/* icon buttons coherentes con brand */
+.action-icon-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+.edit-button {
+  color: var(--color-primary, #4ba1db);
+}
+.delete-button {
+  color: var(--color-danger, #dc3545);
+}
+
+/* separador puntito */
+.dot-sep {
+  color: #94a3b8;
+}
+
+/* FAB móvil */
+.fab-users {
+  position: fixed;
+  right: 16px;
+  bottom: calc(
+    84px + env(safe-area-inset-bottom, 0px)
+  ); /* despega de bottom-nav */
+  z-index: 1050;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--color-primary, #4ba1db);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.fab-users:active {
+  transform: translateY(1px) scale(0.96);
+}
+.fab-plus {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+@media (min-width: 576px) {
+  .fab-users {
+    display: none;
+  }
+}
+
+/* compacta tabla en sm/md */
+@media (min-width: 576px) and (max-width: 768px) {
+  .users-table td,
+  .users-table th {
+    padding: 0.55rem 0.6rem;
+  }
+}

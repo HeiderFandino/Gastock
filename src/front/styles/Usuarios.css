@@ -1,389 +1,258 @@
-:root {
-  --primary-color: #ff5722;
-  --text-dark: #333;
-  --text-medium: #666;
-  --text-light: #999;
-  --border-color: #e0e0e0;
-  --bg-light: #f5f6f8;
-  --card-bg: #ffffff;
-  --shadow-light: rgba(0, 0, 0, 0.05);
-  --shadow-medium: rgba(0, 0, 0, 0.1);
+/* ======================================================
+   USUARIOS — BRAND UNIFICADO (mobile-first, ag-*)
+   - Sin duplicados
+   - Sin naranjas hardcode
+   - Respeta brand.css (azul/amarillo) y tus overrides
+   ====================================================== */
 
-  --badge-admin-bg: #d03151;
-  --badge-admin-text: #e0004c;
-  --badge-chef-bg: #eb9539;
-  --badge-chef-text: #e08000;
+/* ---------- Bridge de tokens (lee brand.css y tus overrides) ---------- */
+:root {
+  /* Base brand (si tienes brand.css estos ya existen) */
+  --brand-surface: var(--brand-50, #f4f9ff);
+  --brand-primary: var(--color-primary, #4ba1db);
+  --ink-900: var(--ink-900, #0f172a);
+  --ink-600: var(--ink-600, #334155);
+  --ink-500: var(--ink-500, #64748b);
+  --border-100: rgba(0, 0, 0, 0.06);
+  --shadow-100: 0 3px 12px rgba(0, 0, 0, 0.04);
+
+  /* Tu antigua paleta -> usada solo como fallback */
+  --primary-color: var(--brand-primary);
+  --text-dark: var(--ink-900);
+  --text-medium: var(--ink-600);
+  --text-light: #9aa3af;
+  --border-color: var(--border-100);
+  --card-bg: #fff;
+
+  /* Roles (puedes sobreescribir en :root con tus hex) */
+  --badge-admin-bg: var(--brand-primary);
+  --badge-admin-text: #fff;
+  --badge-encargado-bg: #fff;
+  --badge-encargado-text: var(--brand-primary);
+  --badge-chef-bg: #fff;
+  --badge-chef-text: #16a34a;
+  --badge-viewer-bg: #fff;
+  --badge-viewer-text: var(--ink-600);
   --badge-active-bg: #37a570;
-  --badge-active-text: #008000;
-  --badge-inactive-bg: #898787;
-  --badge-inactive-text: #606060;
-  --badge-viewer-bg: #28649b;
-  --badge-viewer-text: #0060e0;
-  --badge-encargado-bg: #25387c;
-  --badge-encargado-text: #155724;
+  --badge-active-text: #ffffff;
+  --badge-inactive-bg: #9aa0a6;
+  --badge-inactive-text: #ffffff;
 }
 
+/* ---------- Contenedor ---------- */
 .users-container {
-  padding: 30px;
-  font-family: "Inter", sans-serif;
-  background-color: white;
+  padding: 16px;
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: transparent; /* se integra con dashboard-container */
   min-height: 100vh;
 }
-
-.users-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+@media (min-width: 576px) {
+  .users-container {
+    padding: 24px;
+  }
 }
 
-.users-header .header-text h1 {
-  font-size: 32px;
-  color: var(--text-dark);
-  margin-bottom: 5px;
-  font-weight: 700;
-}
+/* ---------- Header (ya usamos ag-header en el JSX) ---------- */
+/* (Nada extra aquí: el look viene de AdminGastos.css -> .ag-header, .ag-title, etc.) */
 
-.users-header .header-text p {
-  font-size: 16px;
-  color: var(--text-medium);
-  margin: 0;
-}
-
-.add-user-button {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 12px 25px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.2s ease;
-  box-shadow: 0 4px 8px var(--shadow-medium);
-}
-
-.add-user-button:hover {
-  background-color: #e04a1f;
-}
-
-.add-user-button svg {
-  fill: none;
-  stroke: white;
-  stroke-width: 2;
-}
-
+/* ---------- Filtros ---------- */
 .users-filters {
   display: flex;
-  gap: 15px;
-  margin-bottom: 30px;
+  gap: 0.5rem;
   flex-wrap: wrap;
+  margin: 0.5rem 0 1rem;
 }
-
-.filter-search-input {
-  flex-grow: 2;
-  padding: 12px 15px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 15px;
-  color: var(--text-dark);
-  background-color: var(--card-bg);
-  box-shadow: 0 2px 4px var(--shadow-light);
+.filter-search-input,
+.filter-dropdown {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border-100);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--ink-900);
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
-
 .filter-search-input::placeholder {
   color: var(--text-light);
 }
 
-.filter-dropdown {
-  flex-grow: 1;
-  padding: 12px 15px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 15px;
-  color: var(--text-dark);
-  background-color: var(--card-bg);
-  box-shadow: 0 2px 4px var(--shadow-light);
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" strokeLinejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>');
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 20px;
+/* ---------- Listado móvil (cards) ---------- */
+.user-card {
+  background: #fff;
+  border: 1px solid var(--border-100);
+  border-radius: 14px;
+  padding: 0.9rem 0.95rem;
+  margin-bottom: 0.6rem;
+  box-shadow: var(--shadow-100);
+}
+.user-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.user-avatar-pill {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-surface);
+  color: var(--brand-primary);
+  border: 1px solid var(--border-100);
+}
+.user-name {
+  font-weight: 700;
+  color: var(--ink-900);
+  font-size: 1.02rem;
+  line-height: 1.2;
+}
+.user-email {
+  font-size: 0.9rem;
+  color: var(--ink-500);
+  margin-top: 0.1rem;
+}
+.dot-sep {
+  color: #94a3b8;
 }
 
-.filter-dropdown:focus,
-.filter-search-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.2);
+/* Acciones icónicas (coherentes con brand) */
+.action-icon-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-100);
+  background: #fff;
+  color: var(--ink-600);
+}
+.action-icon-button.edit-button {
+  color: var(--brand-primary);
+}
+.action-icon-button.delete-button {
+  color: var(--color-danger, #dc3545);
 }
 
-.users-table {
+/* Estado (activo/inactivo) */
+.badge-status {
+  border: 0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--badge-active-text);
+  background: var(--badge-active-bg);
+}
+.badge-status.inactive {
+  color: var(--badge-inactive-text);
+  background: var(--badge-inactive-bg);
+}
+
+/* ---------- Tabla desktop (>= sm) ---------- */
+.table.users-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 10px;
-  background-color: transparent;
+  background: transparent;
 }
-
-.users-table thead tr {
-  background-color: transparent;
-  color: var(--text-medium);
-  text-align: left;
-  font-size: 14px;
-  font-weight: 600;
+.users-table thead th {
+  background: var(--brand-surface);
+  color: var(--ink-600);
+  font-weight: 700;
   text-transform: uppercase;
+  font-size: 0.82rem;
+  border-bottom: 1px solid var(--border-100);
 }
-
+.users-table tbody tr {
+  background: #fff;
+  box-shadow: var(--shadow-100);
+}
 .users-table th,
 .users-table td {
-  padding: 15px 20px;
+  padding: 0.75rem 1rem;
   vertical-align: middle;
 }
-
-.users-table th {
-  border-bottom: none;
-  padding-bottom: 5px;
-}
-
-.users-table tbody tr {
-  background-color: var(--card-bg);
-  border-radius: 10px;
-  box-shadow: 0 2px 8px var(--shadow-light);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.users-table tbody tr:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow-medium);
-}
-
 .users-table tbody tr td:first-child {
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
+  font-weight: 600;
+  color: var(--ink-900);
 }
 .users-table tbody tr td:last-child {
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
 }
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+@media (min-width: 576px) and (max-width: 992px) {
+  .users-table th,
+  .users-table td {
+    padding: 0.6rem 0.7rem;
+  }
 }
 
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #e0e0e0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--text-dark);
-  flex-shrink: 0;
+/* ---------- Badges de rol (colores por rol) ---------- */
+.badge-role {
+  display: inline-block;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid var(--border-100);
+  background: #fff;
+  color: var(--ink-600);
 }
-
-.user-avatar svg {
-  stroke: var(--text-medium);
-  width: 24px;
-  height: 24px;
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.user-name {
-  font-weight: 600;
-  color: var(--text-dark);
-  font-size: 16px;
-}
-
-.user-email {
-  font-size: 14px;
-  color: var(--text-light);
-  margin-top: 2px;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: capitalize;
-  white-space: nowrap;
-}
-
 .badge-admin {
-  background-color: var(--badge-admin-bg);
+  background: var(--badge-admin-bg);
   color: var(--badge-admin-text);
+  border-color: transparent;
 }
-
-.badge-chef {
-  background-color: var(--badge-chef-bg);
-  color: var(--badge-chef-text);
-}
-
 .badge-encargado {
-  background-color: var(--badge-encargado-bg);
+  background: var(--badge-encargado-bg);
   color: var(--badge-encargado-text);
 }
-
+.badge-chef {
+  background: var(--badge-chef-bg);
+  color: var(--badge-chef-text);
+}
 .badge-viewer {
-  background-color: var(--badge-viewer-bg);
+  background: var(--badge-viewer-bg);
   color: var(--badge-viewer-text);
 }
 
-.badge-active {
-  background-color: var(--badge-active-bg);
-  color: var(--badge-active-text);
-}
-
-.badge-inactive {
-  background-color: var(--badge-inactive-bg);
-  color: var(--badge-inactive-text);
-}
-
-.actions-cell {
-  white-space: nowrap;
-}
-
-.action-icon-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
+/* ---------- FAB (solo móvil) ---------- */
+.fab-users {
+  position: fixed;
+  right: 16px;
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  z-index: 1050;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  transition: background-color 0.2s ease;
-  color: var(--text-medium);
+  border: 0;
+  background: var(--brand-primary);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-
-.action-icon-button svg {
-  width: 20px;
-  height: 20px;
-  stroke: var(--text-medium);
+.fab-users:active {
+  transform: translateY(1px) scale(0.96);
 }
-
-.action-icon-button:hover {
-  background-color: #f0f0f0;
+.fab-plus {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-1px);
 }
-
-.remove-role-button svg {
-  color: #f67e8a;
-  stroke: #ef7783;
-}
-.remove-role-button:hover {
-  background-color: rgba(220, 53, 69, 0.1);
-}
-
-.edit-button svg {
-  color: #75b1f2;
-  stroke: #8bbff7;
-}
-.edit-button:hover {
-  background-color: rgba(0, 123, 255, 0.1);
-}
-
-.delete-button svg {
-  color: #6c757d;
-  stroke: #6c757d;
-}
-.delete-button:hover {
-  background-color: rgba(108, 117, 125, 0.1);
-}
-
-.activate-button svg {
-  color: #28a745;
-  stroke: #28a745;
-}
-.activate-button:hover {
-  background-color: rgba(40, 167, 69, 0.1);
-}
-
-body {
-  overflow-x: hidden;
-}
-
-@media (max-width: 768px) {
-  .users-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-  .add-user-button {
-    width: 100%;
-    justify-content: center;
-  }
-  .users-filters {
-    flex-direction: column;
-  }
-  .filter-search-input,
-  .filter-dropdown {
-    width: 100%;
-    min-width: unset;
-  }
-  .users-table thead {
+@media (min-width: 576px) {
+  .fab-users {
     display: none;
   }
-  .users-table tbody,
-  .users-table tr,
-  .users-table td {
-    display: block;
-    width: 100%;
-  }
-  .users-table tr {
-    margin-bottom: 20px;
-  }
-  .users-table td {
-    border-bottom: 1px solid var(--border-color);
-    text-align: right;
-    padding-left: 50%;
-    position: relative;
-  }
-  .users-table td:before {
-    content: attr(data-label);
-    position: absolute;
-    left: 15px;
-    width: 45%;
-    padding-right: 10px;
-    white-space: nowrap;
-    text-align: left;
-    font-weight: bold;
-    color: var(--text-dark);
-  }
-  .users-table td:last-child {
-    border-bottom: none;
-  }
-  .actions-cell {
-    justify-content: flex-end;
-    display: flex;
-  }
-  .error-message {
-    color: red;
-    margin-top: 8px;
-    font-size: 0.9rem;
-  }
-}
-.users-table thead tr {
-  background-color: #2f647a;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
 }
 
-/* Aplica negrita al nombre del restaurante en la tabla */
-.users-table tbody td:first-child {
-  font-weight: 600;
-  color: var(--text-dark);
+/* ---------- Utilidades ---------- */
+.actions-cell {
+  white-space: nowrap;
 }
