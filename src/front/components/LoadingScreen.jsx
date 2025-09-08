@@ -1,6 +1,6 @@
 import React from "react";
 
-import brandLogo from "../assets/img/gastock2.png";
+import brandLogo from "../assets/img/gastock2_tmp.png";
 
 export const LoadingScreen = () => {
   return (
@@ -18,4 +18,4 @@ export const LoadingScreen = () => {
   );
 };
 
-export default LoadingScreen;
+export default LoadingScreen; 
