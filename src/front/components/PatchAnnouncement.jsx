@@ -3,7 +3,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
 export const PatchAnnouncement = () => {
-    const STORAGE_KEY = "patchViewed_v8"; // misma clave en todos los sitios
+    const STORAGE_KEY = "patchViewed_v9"; // misma clave en todos los sitios
     const [show, setShow] = useState(false);
 
     useEffect(() => {
@@ -29,6 +29,8 @@ export const PatchAnnouncement = () => {
                     <ul className="list-unstyled mb-3">
                         <li> - Ahora al recargar la pagina no se mandara a la pagina de "iniciar sesion".</li>
                         <li> - Se corrigio el error al actualizar un gasto, ya no trae informacion errada.</li>
+                        <li> - Vista admin ajustada a <strong> GASTOCK </strong></li>
+
                         <li>🛟 <strong>¿Algo no va bien?</strong> Avisame de inmediato para arreglarlo cuanto antes. ¡Gracias por tu ayuda!</li>
                     </ul>
 
