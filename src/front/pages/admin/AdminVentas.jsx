@@ -1,88 +1,144 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+// ⬇️ Mantén tus componentes como ya los tienes
 import ResumenVentas from "./VistaVentas/ResumenVentas";
 import VentasPorRestauranteChart from "./VistaVentas/VentasPorRestauranteChart";
-import EvolucionVentasMensual from "./VistaVentas/EvolucionVentasMensual";
 import TablaTopRestaurantes from "./VistaVentas/TablaTopRestaurantes";
+import EvolucionVentasMensual from "./VistaVentas/EvolucionVentasMensual";
+// (Opcional) si tienes filtros para ventas
+// import FiltrosVentas from "./VistaVentas/FiltrosVentas";
 
+
+// Reutilizamos el mismo CSS de Gastos para el layout (ag-*)
+import "../../styles/AdminGastos.css";
 
 const AdminVentas = () => {
-  // ÚNICA fecha para toda la vista
-  const hoy = useMemo(() => new Date(), []);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(
+  const navigate = useNavigate();
+  const hoy = new Date();
+
+  const [mesAno, setMesAno] = useState(
     `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`
   );
-  const [ano, mes] = fechaSeleccionada.split("-").map(Number);
+  const [mes, setMes] = useState(hoy.getMonth() + 1);
+  const [ano, setAno] = useState(hoy.getFullYear());
+
+  useEffect(() => {
+    const [y, m] = mesAno.split("-").map(Number);
+    setMes(m);
+    setAno(y);
+    const el = document.getElementsByClassName("custom-sidebar")?.[0];
+    if (el) el.scrollTo(0, 0);
+  }, [mesAno]);
 
   const retrocederMes = () => {
-    const [a, m] = fechaSeleccionada.split("-").map(Number);
-    const d = new Date(a, m - 2);
-    setFechaSeleccionada(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+    const d = new Date(ano, mes - 2);
+    setMesAno(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
   };
 
   const avanzarMes = () => {
-    const [a, m] = fechaSeleccionada.split("-").map(Number);
-    const d = new Date(a, m);
-    setFechaSeleccionada(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+    const d = new Date(ano, mes); // siguiente mes
+    setMesAno(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
   };
 
-  // UX: al abrir la vista, subir al top del panel
-  useEffect(() => {
-    const el = document.getElementsByClassName("custom-sidebar")[0];
-    if (el) el.scrollTo(0, 0);
-  }, []);
-
   return (
-    <div className="analytics-page">
-      {/* Encabezado + ÚNICO control de fecha */}
-      <div className="d-flex flex-wrap align-items-center justify-content-between analytics-header">
-        <div>
-          <h2 className="fw-bold mb-1">Resumen de ventas globales</h2>
-          <p className="analytics-subtitle">Comparativa mensual por restaurante y evolución de ingresos</p>
+    <div className="dashboard-container">
+      {/* Volver */}
+      {/* HEADER COMPACTO V2 PARA VENTAS */}
+      <div className="ag-header mb-3">
+        <div className="ag-header-top">
+          <button
+            className="btn btn-light ag-back"
+            onClick={() => navigate("/admin/dashboard")}
+            aria-label="Volver"
+          >
+            ← Volver
+          </button>
+          <div className="ag-brand-dot" />
         </div>
 
-        <div className="d-flex align-items-center page-toolbar mt-3 mt-sm-0">
-          <label className="fw-bold mb-0 me-2">Fecha:</label>
-          <button className="btn btn-nav" onClick={retrocederMes}>←</button>
-          <input
-            type="month"
-            className="form-control form-control-sm text-center"
-            value={fechaSeleccionada}
-            onChange={(e) => setFechaSeleccionada(e.target.value)}
-          />
-          <button className="btn btn-nav" onClick={avanzarMes}>→</button>
+        <div className="ag-title-wrap">
+          <h1 className="ag-title">Ventas — Visión General</h1>
+          <p className="ag-subtitle">Resumen mensual, ranking por restaurante y evolución anual.</p>
+        </div>
+
+        {/* Controles Mes (compactos y centrados) */}
+        <div className="ag-monthbar">
+          <button className="ag-monthbtn" onClick={retrocederMes} aria-label="Mes anterior">←</button>
+
+          <div className="ag-monthpill">
+            {new Date(ano, mes - 1, 1).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}
+            {/* input real (oculto) para accesibilidad y teclado */}
+            <input
+              type="month"
+              className="ag-month-hidden"
+              value={mesAno}
+              onChange={(e) => setMesAno(e.target.value)}
+              aria-label="Seleccionar mes"
+            />
+          </div>
+
+          <button className="ag-monthbtn" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
         </div>
       </div>
+
 
       {/* KPIs */}
-      <ResumenVentas mes={mes} ano={ano} />
+      <section className="ag-section">
+        <ResumenVentas mes={mes} ano={ano} />
+      </section>
 
-      {/* Gráficos */}
-      <div className="row mt-3">
-        <div className="col-12 col-lg-6 mb-4">
-          <div className="card-plain p-3 h-100">
-            <div className="block-title">Ventas por restaurante</div>
-            <div className="chart-wrap">
-              <VentasPorRestauranteChart mes={mes} ano={ano} />
-            </div>
+      {/* Grid: Barras por restaurante + Top tabla */}
+      <section className="ag-grid">
+        <div className="ag-card">
+          <div className="ag-card-header">
+            <div className="ag-icon">📊</div>
+            <h5 className="mb-0">Ventas por restaurante</h5>
+          </div>
+          <div className="ag-chart-wrap">
+            <VentasPorRestauranteChart mes={mes} ano={ano} />
           </div>
         </div>
-        <div className="col-12 col-lg-6 mb-4">
-          <div className="card-plain p-3 h-100">
-            <div className="block-title">Evolución de ventas</div>
-            <div className="chart-wrap">
-              <EvolucionVentasMensual ano={ano} hastaMes={mes} />
-            </div>
+
+        <div className="ag-card">
+          <div className="ag-card-header">
+            <div className="ag-icon">🏆</div>
+            <h5 className="mb-0">Top restaurantes</h5>
+          </div>
+          <div className="p-3">
+            <TablaTopRestaurantes mes={mes} ano={ano} top={15} />
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Tabla */}
-      <div className="card-plain p-3">
-        <h6 className="fw-bold mb-3">Top restaurantes por ventas</h6>
-        <div className="table-responsive">
-          <TablaTopRestaurantes mes={mes} ano={ano} />
+      {/* Evolución anual */}
+      <section className="ag-card mt-3">
+        <div className="ag-card-header">
+          <div className="ag-icon">📈</div>
+          <h5 className="mb-0">Evolución anual de ventas ({ano})</h5>
         </div>
-      </div>
+        <div className="ag-chart-wrap">
+          <EvolucionVentasMensual ano={ano} />
+        </div>
+      </section>
+
+      {/* (Opcional) Filtros adicionales, si los tienes */}
+      {false && (
+        <section className="ag-card mt-3">
+          <div className="ag-card-header">
+            <div className="ag-icon">🧭</div>
+            <h5 className="mb-0">Filtros adicionales</h5>
+          </div>
+          <div className="p-3">
+            {/* <FiltrosVentas /> */}
+            <small className="text-muted d-block mt-2">
+              *Próximamente: selector de restaurante y exportación a CSV.
+            </small>
+          </div>
+        </section>
+      )}
+
+
     </div>
   );
 };

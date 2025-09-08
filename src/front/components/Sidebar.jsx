@@ -1,3 +1,4 @@
+// src/front/components/Sidebar.jsx
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
@@ -13,25 +14,19 @@ export const Sidebar = () => {
   const toggleRail = () => setMenuall(!menuall);
 
   const handleLogout = () => {
-    // 🔒 Limpia todo lo relacionado a la sesión
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
-    sessionStorage.removeItem("lastPrivatePath"); // opcional: evita volver a la última privada tras reloguear
-    localStorage.removeItem("adminEmail");        // opcional: si lo usas para recordar el email del admin
-
-    // 🧹 Limpia el estado global
+    sessionStorage.removeItem("lastPrivatePath");
+    localStorage.removeItem("adminEmail");
     dispatch({ type: "get_user_info", payload: null });
-
-    // 🔁 Navega al Home y reemplaza el histórico
     navigate("/", { replace: true });
   };
 
-  // helpers de activo
+  // activo por ruta (soporta rutas con :id)
   const isActive = (paths = []) => {
     return paths.some((p) =>
       p.includes(":")
-        ? // soporte para rutas con params (ej: /admin/restaurante/:id)
-        location.pathname.startsWith(p.replace(":id", id || ""))
+        ? location.pathname.startsWith(p.replace(":id", id || ""))
         : location.pathname === p
     )
       ? "color-orange-bold"
@@ -188,6 +183,12 @@ export const Sidebar = () => {
                   <i className="bi bi-house"></i><span>Home</span>
                 </Link>
               </li>
+              {/* 🔹 Restaurantes (faltaba) */}
+              <li>
+                <Link to="/admin/restaurantes/expense" className={`bn-item ${isActive(["/admin/restaurantes/expense", "/admin/restaurantes/restaurant"])}`}>
+                  <i className="bi bi-shop"></i><span>Rest.</span>
+                </Link>
+              </li>
               <li>
                 <Link to="/admin/ventas" className={`bn-item ${isActive(["/admin/ventas"])}`}>
                   <i className="bi bi-bar-chart"></i><span>Ventas</span>
@@ -221,6 +222,12 @@ export const Sidebar = () => {
               <li>
                 <Link to="/encargado/gastos" className={`bn-item ${isActive(["/encargado/gastos"])}`}>
                   <i className="bi bi-cash-stack"></i><span>Gastos</span>
+                </Link>
+              </li>
+              {/* 🔹 Proveedores (faltaba) */}
+              <li>
+                <Link to="/encargado/proveedores" className={`bn-item ${isActive(["/encargado/proveedores"])}`}>
+                  <i className="bi bi-truck"></i><span>Prov.</span>
                 </Link>
               </li>
               <li>
