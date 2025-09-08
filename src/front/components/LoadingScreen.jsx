@@ -1,16 +1,20 @@
 import React from "react";
-import logo from "../assets/img/logo.svg";
+import brandLogo from "../assets/img/gastock2.PNG";
 
 export const LoadingScreen = () => {
   return (
-    <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-white text-dark">
+    <div className="loading-screen d-flex flex-column justify-content-center align-items-center">
       <img
-        src={logo}
-        alt="OhMyChef Logo"
-        className="logo-pulse"
-        style={{ width: "160px" }}
+        src={brandLogo}
+        alt="Gastock"
+        className="loading-logo"
+        width={320}   // ⬅️ Aumentado (antes 160)
+        height="auto"
       />
-      <p className="mt-4 fs-5">Cocinando tu experiencia...</p>
+      <p className="mt-4 mb-0 loading-text">Organizando tus números en segundos…</p>
+      <div className="mt-3 brand-spinner" aria-label="Cargando" />
     </div>
   );
 };
+
+export default LoadingScreen;

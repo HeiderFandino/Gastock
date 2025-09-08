@@ -1144,40 +1144,72 @@ def editar_restaurante(id):
 @jwt_required()
 def eliminar_restaurante(id):
     try:
+        # Autenticación y rol
         current_user_id = get_jwt_identity()
-        current_user = db.session.get(Usuario, current_user_id)
+        if not current_user_id:
+            return jsonify({"error": "No autenticado"}), 401
 
+        current_user = db.session.get(Usuario, current_user_id)
         if not current_user or current_user.rol != "admin":
             return jsonify({"error": "Solo el admin puede eliminar restaurantes"}), 403
 
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "Datos no recibidos"}), 400
+        # Obtener password desde cabecera o JSON o query
+        data = request.get_json(silent=True) or {}
+        admin_password = (
+            request.headers.get("X-Admin-Password")
+            or data.get("adminPassword")
+            or request.args.get("adminPassword")
+        )
+        if not admin_password:
+            return jsonify({"error": "Falta adminPassword"}), 400
 
-        admin_password = data.get("adminPassword")
-        if not admin_password or not check_password_hash(current_user.password, admin_password):
+        if not current_user.password:
+            return jsonify({"error": "Password del admin no configurada"}), 500
+
+        if not check_password_hash(current_user.password, admin_password):
             return jsonify({"error": "Contraseña del administrador incorrecta"}), 401
 
-        restaurante = Restaurante.query.get(id)
-        if restaurante is None:
+        # Restaurante
+        restaurante = db.session.get(Restaurante, id)
+        if not restaurante:
             return jsonify({"error": "Restaurante no encontrado"}), 404
 
-        db.session.delete(restaurante)
-        db.session.commit()
-        return jsonify({"msg": "Restaurante eliminado correctamente"}), 200
+        # Conteos (evita 500 accediendo a relaciones lazy)
+        ventas = Venta.query.filter_by(restaurante_id=id).count()
+        gastos = Gasto.query.filter_by(restaurante_id=id).count()
+        proveedores = Proveedor.query.filter_by(restaurante_id=id).count()
+        usuarios = Usuario.query.filter_by(restaurante_id=id).count()
 
-    except IntegrityError as e:
-        db.session.rollback()
-        return jsonify({
-            "error": "Este restaurante no puede ser eliminado porque tiene datos asociados (usuarios, ventas, gastos, etc.)"
-        }), 409
+        if ventas > 0 or gastos > 0 or proveedores > 0 or usuarios > 0:
+            return jsonify({
+                "error": "Este restaurante tiene datos asociados y no puede ser eliminado.",
+                "conteos": {
+                    "ventas": ventas, "gastos": gastos,
+                    "proveedores": proveedores, "usuarios": usuarios
+                }
+            }), 409
+
+        # Borrado definitivo
+        try:
+            db.session.delete(restaurante)
+            db.session.commit()
+            return jsonify({"msg": "Restaurante eliminado correctamente"}), 200
+        except IntegrityError as e:
+            db.session.rollback()
+            return jsonify({
+                "error": "No se pudo eliminar por restricciones de integridad.",
+                "detalle": str(e)
+            }), 409
 
     except Exception as e:
         db.session.rollback()
+        # Log útil para ver el motivo real del 500 en consola
+        print("ERROR eliminar_restaurante:", repr(e))
         return jsonify({
             "error": "Error inesperado al eliminar el restaurante",
             "detalle": str(e)
         }), 500
+
 
 
 @api.route("/gastos/resumen-mensual", methods=["GET"])
@@ -2057,3 +2089,31 @@ def limpiar_email(texto):
     texto = unicodedata.normalize('NFKD', texto).encode(
         'ascii', 'ignore').decode('utf-8')
     return texto.lower().replace(' ', '').replace('&', '')
+
+# ✅ Validación de sesión: /api/private
+@api.route("/private", methods=["GET"])
+@jwt_required()
+def private():
+    try:
+        # En /login guardas identity como str → aquí lo conviertes a int
+        user_id = int(get_jwt_identity())
+        user = Usuario.query.get(user_id)
+        if not user:
+            return jsonify({"msg": "Usuario no encontrado"}), 404
+
+        data = user.serialize()
+
+        # Agrega el nombre del restaurante si existe (igual que en /login)
+        if user.restaurante_id:
+            r = Restaurante.query.get(user.restaurante_id)
+            if r:
+                data["restaurante_nombre"] = r.nombre
+
+        # Evita respuestas 304 (caché)
+        resp = jsonify(data)
+        resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
+        return resp, 200
+    except Exception as e:
+        return jsonify({"msg": "Error en /private", "error": str(e)}), 500

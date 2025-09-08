@@ -1,1 +1,0 @@
-export const VentasTable = () => <div>Tabla de ventas</div>;

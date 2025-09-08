@@ -1,12 +1,14 @@
+// src/front/components/Login.jsx
 import React, { useState, useEffect } from "react";
 import userServices from "../services/userServices";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import logo from "../assets/img/gastock2_tmp.png";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 export const Login = () => {
   const { dispatch } = useGlobalReducer();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [FormData, setFormData] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,41 +24,58 @@ export const Login = () => {
     setFormData({ ...FormData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    userServices
-      .login(FormData)
-      .then((data) => {
-        if (!data || !data.access_token) {
-          setErrorMessage("Credenciales incorrectas");
-        } else {
-          sessionStorage.setItem("token", data.access_token);
-          if (data.user && data.user.rol === "admin") {
-            localStorage.setItem("adminEmail", data.user.email);
-          }
-          dispatch({ type: "get_user_info", payload: data.user });
-          navigate(`/${data.user.rol}/dashboard`);
-        }
-      })
-      .catch(() => setErrorMessage("Hubo un error en el login"))
-      .finally(() => setLoading(false));
+    try {
+      const data = await userServices.login(FormData);
+
+      if (!data?.access_token || !data?.user) {
+        setErrorMessage("Credenciales incorrectas");
+        return;
+      }
+
+      // Persistir sesión para recarga
+      sessionStorage.setItem("token", data.access_token);
+      sessionStorage.setItem("user", JSON.stringify(data.user));
+
+      if (data.user?.rol === "admin") {
+        localStorage.setItem("adminEmail", data.user.email);
+      }
+
+      dispatch({ type: "get_user_info", payload: data.user });
+
+      // Volver a última privada si existe
+      const last = sessionStorage.getItem("lastPrivatePath");
+      if (last && last.startsWith("/")) {
+        navigate(last, { replace: true });
+        return;
+      }
+
+      // Fallback por rol
+      const destino =
+        data.user.rol === "admin" ? "/admin/dashboard" :
+          data.user.rol === "encargado" ? "/encargado/dashboard" :
+            data.user.rol === "chef" ? "/chef/dashboard" : "/";
+
+      navigate(destino, { replace: true });
+    } catch (err) {
+      setErrorMessage("Hubo un error en el login");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="auth-panel">
       <h2 className="auth-title">Iniciar sesión</h2>
 
-      {errorMessage && (
-        <div className="alert">{errorMessage}</div>
-      )}
+      {errorMessage && <div className="alert">{errorMessage}</div>}
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="email" className="form-label">
-            Correo electrónico
-          </label>
+          <label htmlFor="email" className="form-label">Correo electrónico</label>
           <input
             type="email"
             name="email"
@@ -66,13 +85,12 @@ export const Login = () => {
             value={FormData.email}
             onChange={handleChange}
             required
+            autoComplete="username"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="password" className="form-label">
-            Contraseña
-          </label>
+          <label htmlFor="password" className="form-label">Contraseña</label>
           <input
             type="password"
             name="password"
@@ -82,14 +100,11 @@ export const Login = () => {
             value={FormData.password}
             onChange={handleChange}
             required
+            autoComplete="current-password"
           />
         </div>
 
-        <button
-          type="submit"
-          className="btn-primary"
-          disabled={loading}
-        >
+        <button type="submit" className="btn-primary" disabled={loading}>
           {loading ? "Entrando..." : "Entrar"}
         </button>
 

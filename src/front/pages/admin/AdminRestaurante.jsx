@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import restauranteService from "../../services/restauranteServices";
 import RestauranteModal from "../../components/RestauranteModal";
 import PasswordModal from "../../components/usuarios/PasswordModal";
-import ErrorModal from "./ErrorModal"; // :marca_de_verificación_blanca: NUEVA IMPORTACIÓN
+import ErrorModal from "./ErrorModal"; // NUEVA IMPORTACIÓN
 import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
 import "../../styles/UserModal.css";
 import "../../styles/Usuarios.css";
@@ -16,8 +16,8 @@ const AdminRestaurante = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [restauranteToDelete, setRestauranteToDelete] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [showErrorModal, setShowErrorModal] = useState(false); // :marca_de_verificación_blanca: NUEVO
-  const [errorModalMessage, setErrorModalMessage] = useState(""); // :marca_de_verificación_blanca: NUEVO
+  const [showErrorModal, setShowErrorModal] = useState(false); // NUEVO
+  const [errorModalMessage, setErrorModalMessage] = useState(""); // NUEVO
   const token = sessionStorage.getItem("token");
   const loadData = async () => {
     try {
@@ -37,10 +37,10 @@ const AdminRestaurante = () => {
     try {
       if (currentRestaurante) {
         await restauranteService.updateRestaurante(currentRestaurante.id, data, token);
-        setMessage(":marca_de_verificación_blanca: Restaurante actualizado correctamente.");
+        setMessage("Restaurante actualizado correctamente.");
       } else {
         await restauranteService.createRestaurante(data, token);
-        setMessage(":marca_de_verificación_blanca: Restaurante creado correctamente.");
+        setMessage("Restaurante creado correctamente.");
       }
       setModalOpen(false);
       setCurrentRestaurante(null);
@@ -74,12 +74,12 @@ const AdminRestaurante = () => {
       await restauranteService.eliminarRestaurante(restauranteToDelete.id, password, token);
       setShowPasswordModal(false);
       setRestauranteToDelete(null);
-      setMessage(":papelera: Restaurante eliminado correctamente.");
+      setMessage("Restaurante eliminado correctamente.");
       loadData();
       setTimeout(() => setMessage(""), 4000);
     } catch (err) {
       console.error("Error al eliminar restaurante", err);
-      setErrorMessage(err.message || ":x: No se pudo eliminar el restaurante.");
+      setErrorMessage(err.message || " No se pudo eliminar el restaurante.");
     }
   };
   return (

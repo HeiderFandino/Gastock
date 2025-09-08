@@ -1,18 +1,14 @@
 export const initialStore = () => {
+  let savedUser = null;
+  try {
+    savedUser = JSON.parse(sessionStorage.getItem("user")) || null;
+  } catch {}
   return {
-    user: null,
+    user: savedUser, // 👈 hidrata desde sessionStorage
     message: null,
     todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      },
+      { id: 1, title: "Make the bed", background: null },
+      { id: 2, title: "Do my homework", background: null },
     ],
     restaurantes: [],
   };
@@ -21,30 +17,15 @@ export const initialStore = () => {
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
     case "get_user_info":
-      return {
-        ...store,
-        user: action.payload,
-      };
+      return { ...store, user: action.payload };
     case "login_register":
-      return {
-        ...store,
-        user: action.payload.user,
-      };
+      return { ...store, user: action.payload.user };
     case "get_usuarios":
-      return {
-        ...store,
-        user: action.payload.user,
-      };
+      return { ...store, user: action.payload.user };
     case "set_hello":
-      return {
-        ...store,
-        message: action.payload,
-      };
+      return { ...store, message: action.payload };
     case "set_restaurante":
-      return {
-        ...store,
-        restaurantes: action.payload,
-      };
+      return { ...store, restaurantes: action.payload };
     case "add_restaurante":
       return {
         ...store,
@@ -63,10 +44,7 @@ export default function storeReducer(store, action = {}) {
         restaurantes: store.restaurantes.filter((r) => r.id !== action.payload),
       };
     case "get_restaurantes":
-      return {
-        ...store,
-        restaurantes: action.payload,
-      };
+      return { ...store, restaurantes: action.payload };
     case "add_task":
       const { id, color } = action.payload;
       return {

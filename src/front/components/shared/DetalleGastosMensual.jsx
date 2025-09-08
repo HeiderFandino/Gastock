@@ -35,43 +35,50 @@ export const DetalleGastosMensual = () => {
   const [gastoEditar, setGastoEditar] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  // ---------- Helpers ----------
+  const rid = Number(user?.restaurante_id);
+  const provById = (id) => proveedoresList.find((p) => Number(p.id) === Number(id));
+  const provName = (id) => (provById(id)?.nombre ?? String(id));
+
+  // Proveedores (según restaurante del usuario)
   useEffect(() => {
-    if (!user?.restaurante_id) return;
+    if (!rid) return;
     gastoServices
-      .getProveedores(user.restaurante_id)
+      .getProveedores(rid)
       .then(setProveedoresList)
       .catch(() => { });
-  }, [user]);
+  }, [rid]);
 
+  // Resumen mensual (dejamos tus services "como están")
   useEffect(() => {
-    if (view !== "mensual" || !user?.restaurante_id) return;
+    if (view !== "mensual") return;
     gastoServices
-      .resumenMensual(mes, ano)
+      .resumenMensual(mes, ano) // ⬅️ sin restaurante_id (como pediste)
       .then(setMonthlyData)
       .catch(() => setMensaje("Error al obtener resumen mensual"));
-  }, [view, mes, ano, user?.restaurante_id]);
+  }, [view, mes, ano]);
+
+  // Carga diaria (sin restaurante_id en el service; filtramos localmente)
+  const cargarGastosDiarios = async () => {
+    try {
+      const all = await gastoServices.getGastos(); // ⬅️ sin params
+      const filtered = all
+        .filter((g) => Number(g.restaurante_id) === rid)
+        .filter((g) => g.fecha === selectedDate);
+
+      setDailyData(filtered);
+      setTipoMensaje("info");
+      setMensaje("");
+    } catch (err) {
+      setMensaje("Error al obtener gastos diarios");
+      setTipoMensaje("error");
+    }
+  };
 
   useEffect(() => {
-    if (view !== "diario" || !user?.restaurante_id) return;
-
-    const fetchGastos = async () => {
-      try {
-        const all = await gastoServices.getGastos();
-        if (!Array.isArray(all)) throw new Error("Datos no válidos");
-
-        const filtered = all
-          .filter((g) => g.restaurante_id === user.restaurante_id)
-          .filter((g) => g.fecha === selectedDate);
-
-        setDailyData(filtered);
-      } catch (err) {
-        setMensaje("Error al obtener gastos diarios");
-        setTipoMensaje("error");
-      }
-    };
-
-    fetchGastos();
-  }, [view, selectedDate, user?.restaurante_id]);
+    if (view !== "diario" || !rid) return;
+    cargarGastosDiarios();
+  }, [view, selectedDate, rid]);
 
   useEffect(() => {
     const el = document.getElementsByClassName("custom-sidebar")[0];
@@ -118,14 +125,26 @@ export const DetalleGastosMensual = () => {
     }
   };
 
+  // ✅ Actualización optimista: no pedimos toda la lista
   const guardarEdicion = async (editado) => {
     try {
       await gastoServices.editarGasto(editado.id, editado);
       setMensaje("✅ Gasto actualizado");
       setTipoMensaje("success");
-      const updated = await gastoServices.getGastos(user.restaurante_id);
-      const filtered = updated.filter((g) => g.fecha === selectedDate);
-      setDailyData(filtered);
+
+      setDailyData((prev) =>
+        prev.map((g) =>
+          g.id === editado.id
+            ? {
+              ...g,
+              ...editado,
+              // preservamos contexto para que la vista quede igual
+              fecha: selectedDate,
+              restaurante_id: rid,
+            }
+            : g
+        )
+      );
     } catch (err) {
       setMensaje("❌ Error al actualizar gasto");
       setTipoMensaje("error");
@@ -137,13 +156,14 @@ export const DetalleGastosMensual = () => {
   };
 
   const displayedDaily = dailyData
-    .filter((g) => !filterProveedor || g.proveedor_id === parseInt(filterProveedor, 10))
+    .filter((g) => !filterProveedor || Number(g.proveedor_id) === Number(filterProveedor))
     .filter((g) => !filterCategoria || g.categoria === filterCategoria);
 
   const totalGastosDia = useMemo(
     () => displayedDaily.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0),
     [displayedDaily]
   );
+
   const totalGastosMes = useMemo(
     () => Object.values(monthlyData.totales || {}).reduce((s, v) => s + (parseFloat(v) || 0), 0),
     [monthlyData.totales]
@@ -161,7 +181,6 @@ export const DetalleGastosMensual = () => {
         >
           <i className="bi bi-plus-circle me-2"></i> Registrar gasto
         </button>
-
       </div>
 
       {/* Tabs (desktop y móvil) */}
@@ -226,7 +245,6 @@ export const DetalleGastosMensual = () => {
           <div className="d-none d-md-block">
             <div className="mb-3 justify-content-start">
               <div className="d-flex justify-content-start flex-wrap align-items-center mb-3 mt-2">
-
                 <input
                   type="month"
                   className="form-control w-auto"
@@ -270,7 +288,7 @@ export const DetalleGastosMensual = () => {
             </div>
           </div>
 
-          {/* Móvil: lista simple por proveedor (nombre + total) */}
+          {/* Móvil: lista simple por proveedor */}
           <div className="d-md-none">
             <ul className="eg-list">
               {monthlyData.proveedores.map((prov) => (
@@ -352,21 +370,18 @@ export const DetalleGastosMensual = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedDaily.map((g) => {
-                    const provName = proveedoresList.find((p) => p.id === g.proveedor_id)?.nombre || g.proveedor_id;
-                    return (
-                      <tr key={g.id}>
-                        <td>{provName}</td>
-                        <td>{g.categoria}</td>
-                        <td>{simbolo}{parseFloat(g.monto).toFixed(2)}</td>
-                        <td>{g.nota}</td>
-                        <td>
-                          <button className="action-icon-button edit-button" onClick={() => abrirModalEditar(g.id)} title="Editar gasto">✏️</button>
-                          <button className="action-icon-button delete-button" onClick={() => eliminar(g.id)} title="Eliminar gasto">🗑️</button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {displayedDaily.map((g) => (
+                    <tr key={g.id}>
+                      <td>{provName(g.proveedor_id)}</td>
+                      <td>{g.categoria}</td>
+                      <td>{simbolo}{parseFloat(g.monto).toFixed(2)}</td>
+                      <td>{g.nota}</td>
+                      <td>
+                        <button className="action-icon-button edit-button" onClick={() => abrirModalEditar(g.id)} title="Editar gasto">✏️</button>
+                        <button className="action-icon-button delete-button" onClick={() => eliminar(g.id)} title="Eliminar gasto">🗑️</button>
+                      </td>
+                    </tr>
+                  ))}
                   {displayedDaily.length === 0 && (
                     <tr><td colSpan={5} className="text-center">No hay gastos para esta fecha.</td></tr>
                   )}
@@ -382,30 +397,27 @@ export const DetalleGastosMensual = () => {
           {/* Móvil: cards compactas */}
           <div className="d-md-none">
             <ul className="eg-list">
-              {displayedDaily.map((g) => {
-                const provName = proveedoresList.find((p) => p.id === g.proveedor_id)?.nombre || g.proveedor_id;
-                return (
-                  <li className="eg-item" key={g.id}>
-                    <div className="eg-item-main">
-                      <div className="eg-item-title">{provName}</div>
-                      <div className="eg-item-amount">
-                        {parseFloat(g.monto).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
-                      </div>
+              {displayedDaily.map((g) => (
+                <li className="eg-item" key={g.id}>
+                  <div className="eg-item-main">
+                    <div className="eg-item-title">{provName(g.proveedor_id)}</div>
+                    <div className="eg-item-amount">
+                      {parseFloat(g.monto).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
                     </div>
-                    <div className="eg-item-sub">
-                      <span className="eg-meta">{g.categoria}{g.nota ? ` · ${g.nota}` : ""}</span>
-                      <div className="eg-actions">
-                        <button className="eg-icon-btn" aria-label="Editar" onClick={() => abrirModalEditar(g.id)}>
-                          <i className="bi bi-pencil"></i>
-                        </button>
-                        <button className="eg-icon-btn eg-danger" aria-label="Eliminar" onClick={() => eliminar(g.id)}>
-                          <i className="bi bi-trash"></i>
-                        </button>
-                      </div>
+                  </div>
+                  <div className="eg-item-sub">
+                    <span className="eg-meta">{g.categoria}{g.nota ? ` · ${g.nota}` : ""}</span>
+                    <div className="eg-actions">
+                      <button className="eg-icon-btn" aria-label="Editar" onClick={() => abrirModalEditar(g.id)}>
+                        <i className="bi bi-pencil"></i>
+                      </button>
+                      <button className="eg-icon-btn eg-danger" aria-label="Eliminar" onClick={() => eliminar(g.id)}>
+                        <i className="bi bi-trash"></i>
+                      </button>
                     </div>
-                  </li>
-                );
-              })}
+                  </div>
+                </li>
+              ))}
               {displayedDaily.length === 0 && <li className="eg-empty">No hay gastos para esta fecha.</li>}
             </ul>
 
