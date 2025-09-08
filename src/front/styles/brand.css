@@ -19,6 +19,12 @@
   --color-text-weak: #3f4b5a;
   --color-border: #b7c7da;
 
+  /* niveles base */
+  --z-sticky: 3000; /* toolbars pegadas (fecha) */
+  --z-nav: 10000; /* navbar */
+  --z-dropdown: 10050; /* menús dependientes del nav */
+  --z-modal: 11000; /* modales, toasts, etc. */
+
   /* Radios y efectos */
   --radius-md: 12px;
   --radius-lg: 18px;

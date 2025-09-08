@@ -132,7 +132,7 @@
   color: var(--brand-primary);
 }
 .action-icon-button.delete-button {
-  color: var(--color-danger, #dc3545);
+  color: var(--color-danger, #d4d4d4);
 }
 
 /* Estado (activo/inactivo) */

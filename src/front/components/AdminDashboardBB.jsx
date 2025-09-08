@@ -88,7 +88,7 @@ const AdminDashboardBB = () => {
   };
 
   return (
-    <div className="dashboard-container admin-bb p-6">
+    <div className="dashboard-container admin-bb">
 
       {/* Toolbar móvil pegada al navbar */}
       <div className="ad-toolbar d-md-none">
@@ -121,7 +121,7 @@ const AdminDashboardBB = () => {
           value={fechaSeleccionada}
           onChange={(e) => setFechaSeleccionada(e.target.value)}
         />
-        <button className="btn-gastock btn-sm" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
+        <button className="btn-gastock-outline btn-sm" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
       </div>
 
       {/* Contenido */}

@@ -241,7 +241,7 @@ const Users = () => {
             </select>
           </div>
 
-          <button className="btn btn-primary" onClick={handleAddUser}>
+          <button className="btn ag-monthbtn" onClick={handleAddUser}>
             <FiPlus className="me-2" />
             Añadir Usuario
           </button>
