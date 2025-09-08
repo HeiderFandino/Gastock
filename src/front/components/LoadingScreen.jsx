@@ -1,4 +1,5 @@
 import React from "react";
+
 import brandLogo from "../assets/img/gastock2.png";
 
 export const LoadingScreen = () => {
@@ -11,7 +12,7 @@ export const LoadingScreen = () => {
         width={320}   // ⬅️ Aumentado (antes 160)
         height="auto"
       />
-      <p className="mt-4 mb-0 loading-text">Organizando tus números en segundos…</p>
+      <p className="mt-4 mb-0 loading-text">Organizando tus números en segundos…..</p>
       <div className="mt-3 brand-spinner" aria-label="Cargando" />
     </div>
   );
