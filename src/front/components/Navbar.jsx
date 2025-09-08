@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import logo from "../assets/img/gastock2.png";
+import logo from "../assets/img/gastock2_tmp.png";
 
 export const Navbar = () => {
   const { store, dispatch } = useGlobalReducer();

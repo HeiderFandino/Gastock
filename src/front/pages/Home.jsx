@@ -1,7 +1,7 @@
 import React from "react";
 import { Login } from "../components/Login.jsx";
 import gastockfondo from "../assets/img/fondo-pantalla.png";
-import logo from "../assets/img/gastock2.png";
+import logo from "../assets/img/gastock2_tmp.png";
 
 import "../styles/login.css";
 
