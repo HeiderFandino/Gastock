@@ -1,3 +1,4 @@
+// src/front/components/Login.jsx
 import React, { useState, useEffect } from "react";
 import userServices from "../services/userServices";
 import useGlobalReducer from "../hooks/useGlobalReducer";
@@ -7,6 +8,7 @@ export const Login = () => {
   const { dispatch } = useGlobalReducer();
   const navigate = useNavigate();
   const location = useLocation();
+
   const [FormData, setFormData] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,7 +36,7 @@ export const Login = () => {
         return;
       }
 
-      // guardar token y usuario para hidratar tras recarga
+      // Persistir sesión para recarga
       sessionStorage.setItem("token", data.access_token);
       sessionStorage.setItem("user", JSON.stringify(data.user));
 
@@ -44,19 +46,18 @@ export const Login = () => {
 
       dispatch({ type: "get_user_info", payload: data.user });
 
-      // preferir volver a la última ruta privada
+      // Volver a última privada si existe
       const last = sessionStorage.getItem("lastPrivatePath");
       if (last && last.startsWith("/")) {
         navigate(last, { replace: true });
         return;
       }
 
-      // fallback por rol
+      // Fallback por rol
       const destino =
         data.user.rol === "admin" ? "/admin/dashboard" :
           data.user.rol === "encargado" ? "/encargado/dashboard" :
-            data.user.rol === "chef" ? "/chef/dashboard" :
-              "/";
+            data.user.rol === "chef" ? "/chef/dashboard" : "/";
 
       navigate(destino, { replace: true });
     } catch (err) {
