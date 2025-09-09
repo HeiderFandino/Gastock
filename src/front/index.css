@@ -147,7 +147,7 @@ table thead tr th {
 .dashboard-container {
   direction: ltr;
   align-self: flex-start;
-  background-color: #891515;
+  background-color: #ffffff;
 }
 .custom-sidebar {
   overflow: scroll !important;

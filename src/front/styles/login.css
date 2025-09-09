@@ -255,3 +255,68 @@
     max-width: 360px;
   }
 }
+/* styles/Login.css */
+.login-error {
+  background: #ffe5e5; /* fondo rojo claro */
+  border: 1px solid #ff4d4d; /* borde rojo */
+  color: #d00000; /* texto rojo oscuro */
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.login-error::before {
+  content: "❌";
+  font-size: 1rem;
+}
+
+/* opcional: estilos para mensajes de éxito */
+.login-success {
+  background: #e6ffed;
+  border: 1px solid #4caf50;
+  color: #1b5e20;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.login-success::before {
+  content: "✅";
+  font-size: 1rem;
+}
+
+.login-error {
+  margin-top: 10px;
+  margin-bottom: 16px; /* más espacio hacia abajo */
+}
+
+.login-error {
+  background: #ffecec;
+  border: 1px solid #ff5d5d;
+  color: #c62828;
+}
+
+.login-error {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

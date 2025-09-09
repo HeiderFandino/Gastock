@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import userServices from "../services/userServices";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import "../styles/Login.css"; // 👈 nuevo import para estilos
 
 // ACL simple para validar si una ruta privada es accesible por rol
 const ACL = [
@@ -40,7 +41,7 @@ export const Login = () => {
 
   useEffect(() => {
     if (errorMessage) {
-      const timer = setTimeout(() => setErrorMessage(""), 3000);
+      const timer = setTimeout(() => setErrorMessage(""), 4000);
       return () => clearTimeout(timer);
     }
   }, [errorMessage]);
@@ -52,16 +53,16 @@ export const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage("");
 
     try {
       const data = await userServices.login(FormData);
 
       if (!data?.access_token || !data?.user) {
-        setErrorMessage("Credenciales incorrectas");
+        setErrorMessage("Usuario o contraseña incorrectos");
         return;
       }
 
-      // Persistir sesión (coincide con tu patrón actual)
       sessionStorage.setItem("token", data.access_token);
       sessionStorage.setItem("user", JSON.stringify(data.user));
 
@@ -71,17 +72,19 @@ export const Login = () => {
 
       dispatch({ type: "get_user_info", payload: data.user });
 
-      // Intenta volver a la última privada SOLO si el rol puede verla
       const last = sessionStorage.getItem("lastPrivatePath");
       if (last && last.startsWith("/") && isAllowed(last, data.user.rol)) {
         navigate(last, { replace: true });
         return;
       }
 
-      // Si no, ve al destino por rol
       navigate(destinoPorRol(data.user.rol), { replace: true });
     } catch (err) {
-      setErrorMessage("Hubo un error en el login");
+      if (err.response?.data?.msg) {
+        setErrorMessage(err.response.data.msg);
+      } else {
+        setErrorMessage("Error de conexión con el servidor");
+      }
     } finally {
       setLoading(false);
     }
@@ -91,11 +94,13 @@ export const Login = () => {
     <div className="auth-panel">
       <h2 className="auth-title">Iniciar sesión</h2>
 
-      {errorMessage && <div className="alert">{errorMessage}</div>}
+      {errorMessage && <div className="login-error">{errorMessage}</div>}
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="email" className="form-label">Correo electrónico</label>
+          <label htmlFor="email" className="form-label">
+            Correo electrónico
+          </label>
           <input
             type="email"
             name="email"
@@ -110,7 +115,9 @@ export const Login = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="password" className="form-label">Contraseña</label>
+          <label htmlFor="password" className="form-label">
+            Contraseña
+          </label>
           <input
             type="password"
             name="password"
