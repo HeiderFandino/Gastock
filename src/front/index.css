@@ -1,94 +1,123 @@
+/* =========================================================
+   GASTOCK – Bridge al brand (usa tokens de brand.css)
+   Mantiene mismas clases, organizado y sin colores hardcode
+   ========================================================= */
+
+/* Tipografía (omite el @import si ya lo cargas en el HTML) */
 @import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap");
 
-body,
 html,
+body,
 * {
   font-family: "Quicksand", sans-serif !important;
 }
+
+/* ---------------- Enlaces / Etiquetas ------------------- */
 .enlacevertodo {
   text-decoration: none;
-  padding: 4px;
-  background: #ff5d1d;
-  border-radius: 6px;
-  color: #fff;
-  border: 1px solid #db3e00;
+  padding: 4px 8px;
+  background: var(--color-primary);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 85%, #000 15%);
+  border-radius: var(--radius-sm, 6px);
+  color: #fff; /* contraste correcto sobre primary */
   font-size: 0.8rem !important;
 }
 .enlacevertodo:hover {
   cursor: pointer;
-  background: #bb3e0c;
-}
-.barralarga {
-  padding: 10px;
-  background: #ff5d1d;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  color: #fff;
-}
-.bg-orange {
-  background-color: #ff7741 !important;
-  color: rgb(255, 255, 255) !important;
-  color: #ff7741 !important;
-}
-.color-orange {
-  color: #ff7741 !important;
-}
-.color-orange-bold {
-  color: #ff7741 !important;
-  font-weight: 500 !important;
-}
-.btn-outline-orange {
-  background-color: rgb(255 255 255 / 50%) !important;
-  border: 1px solid #ffb496 !important;
-  color: #000000 !important;
-}
-.btn-outline-orange.active {
-  background: #ff5d1d !important;
-  border: 1px solid #c63b04 !important;
-  color: #fff !important;
-}
-.card.container .nosotros p {
-  font-size: 1rem !important;
-}
-.boder-orange {
-  border: 1px solid #c43c06;
-}
-.text-info.strong {
-  color: rgb(0 142 170) !important;
-}
-button.bg-orange:hover {
-  background-color: #f55d21 !important;
+  background: color-mix(in srgb, var(--color-primary) 86%, black);
 }
 
+/* Barra separadora de secciones */
+.barralarga {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--brand-200); /* línea sutil según brand */
+  color: var(--brand-900);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+/* ---------------- Paleta “orange” (mapeada al brand) ---- */
+.bg-orange {
+  background-color: var(--color-primary) !important;
+  color: #fff !important;
+}
+.color-orange {
+  color: var(--color-primary) !important;
+}
+.color-orange-bold {
+  color: var(--color-primary) !important;
+  font-weight: 500 !important;
+}
+
+.btn-outline-orange {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, #fff) !important;
+  color: var(--color-text) !important;
+}
+.btn-outline-orange.active {
+  background: var(--color-primary) !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 90%, #000) !important;
+  color: #fff !important;
+}
+
+/* Sombra/contorno “orange” (mantiene la clase tal cual está) */
+.boder-orange {
+  /* (sic) mantener nombre original */
+  border: 1px solid color-mix(in srgb, var(--color-primary) 80%, #000);
+}
+
+/* Intensificar texto info (se apoya en los tokens BS ya mapeados) */
+.text-info.strong {
+  color: var(--bs-info-text-emphasis) !important;
+}
+
+button.bg-orange:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-primary) 78%,
+    black
+  ) !important;
+}
+
+/* ---------------- Utilidades ---------------------------- */
 .fs-7 {
   font-size: 0.9rem;
 }
+
 .footer-landing.contacto {
   background: rgba(255, 255, 255, 0.6) !important;
   width: 310px;
   margin: 0 auto;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 6px);
   font-weight: bold;
 }
+
+/* Proveedor header */
 .proveedor-header span.proveedor-zone {
   color: #000000 !important;
   background: #ffffff;
-  border: 1px solid #c9c2c2;
+  border: 1px solid var(--color-border);
 }
 .proveedor-header span {
-  color: #f94700 !important;
+  color: var(--color-primary) !important;
 }
+
+/* Tablas */
 table thead tr th {
   text-align: left;
 }
 .table > thead tr th {
-  background: #396d81 !important;
+  background: var(--color-primary) !important;
   color: #ffffff !important;
 }
-
 .table > tbody tr td {
-  background: #ffffff82;
+  background: color-mix(in srgb, #ffffff 82%, transparent);
 }
+
+/* Alturas rápidas */
 .vh-90 {
   height: 90vh !important;
 }
@@ -98,60 +127,67 @@ table thead tr th {
 .vh-10 {
   height: 10vh !important;
 }
+
+/* Ancho rápido */
 .w-60 {
   width: 60px !important;
 }
 
-/* .custom-sidebar {
-  overflow-x: hidden !important;
-} */
+/* Scroll y dirección */
 .rtl-scroll {
   direction: rtl;
   text-align: left;
 }
-
 .ltr-scroll {
   direction: ltr;
   text-align: left;
 }
 
+/* Contenedores principales */
 .dashboard-container {
   direction: ltr;
   align-self: flex-start;
-  background-color: #f3f3f3b5;
+  background-color: #891515;
 }
 .custom-sidebar {
   overflow: scroll !important;
   direction: rtl;
 }
-
 .custom-sidebar > div {
   direction: ltr;
 }
+
 .wrapper-content {
   height: 90vh !important;
 }
+
+/* Pestañas (nav) */
 .nav-link.pestania {
   color: black !important;
 }
-
 a.nav-link.pestania.active {
-  box-shadow: inset 0px 4px 0px rgb(255 93 29);
+  box-shadow: inset 0px 4px 0px var(--color-primary);
   border-bottom: none;
-  color: #af3200 !important;
+  color: color-mix(in srgb, var(--color-primary) 70%, #000) !important;
 }
+
+/* Spans responsivos */
 span.w-auto {
   width: auto !important;
 }
 span.w-60 {
   width: auto !important;
-}
+} /* mantiene tu regla móvil abajo */
+
+/* Chips de usuario */
 .usuario {
   padding: 5px 10px;
   background: #f0f0f0;
-  border-radius: 10px;
-  border: 1px solid #ff5d1d;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid var(--color-primary);
 }
+
+/* ---------------- Responsive ---------------------------- */
 @media (max-width: 2100px) {
   input.form-control.custom-gastos-fecha {
     width: 40%;
@@ -178,6 +214,7 @@ span.w-60 {
     width: 22%;
   }
 }
+
 @media (max-width: 767px) {
   span.w-60 {
     width: auto !important;

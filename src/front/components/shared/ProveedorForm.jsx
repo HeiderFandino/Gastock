@@ -64,6 +64,11 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
 
   return (
     <form className="pm-form" onSubmit={handleSubmit}>
+      {/* 🔹 Título dinámico */}
+      <h4 className="mb-3 fw-bold text-center">
+        {proveedor ? "Editar Proveedor" : "Nuevo Proveedor"}
+      </h4>
+
       {/* Alertas */}
       {error && <div className="alert alert-danger text-center fw-bold">{error}</div>}
       {successMsg && <div className="alert alert-success text-center fw-bold">{successMsg}</div>}

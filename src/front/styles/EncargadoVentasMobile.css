@@ -179,17 +179,25 @@
   }
 }
 /* ==== FAB móvil en Ventas (btn-fab) ==== */
+/* EncargadoVentasMobile.css */
 @media (max-width: 767.98px) {
+  :root {
+    /* añade esta variable si no existe aquí */
+    --bottom-nav-h: 68px; /* ajusta a la altura real de tu bottom nav */
+  }
+
   .btn-fab {
     position: fixed;
     right: 16px;
-    bottom: calc(var(--bottom-nav-h) + max(env(safe-area-inset-bottom), 12px));
+    bottom: calc(
+      var(--bottom-nav-h) + max(env(safe-area-inset-bottom), 16px)
+    ); /* <-- más alto */
     width: 56px;
     height: 56px;
     padding: 0;
     border: none;
     border-radius: 50%;
-    background: var(--color-primary) !important; /* forzar azul */
+    background: var(--color-primary) !important;
     color: #fff;
     display: inline-flex;
     align-items: center;
@@ -199,14 +207,15 @@
     z-index: var(--z-modal);
     transition: transform 0.15s ease, filter 0.15s ease;
   }
-  .btn-fab:hover {
-    filter: brightness(1.06);
-    transform: scale(1.04);
-  }
-  .btn-fab:active {
-    transform: scale(0.96);
-  }
-  .btn-fab i {
-    line-height: 1;
-  }
+}
+
+.btn-fab:hover {
+  filter: brightness(1.06);
+  transform: scale(1.04);
+}
+.btn-fab:active {
+  transform: scale(0.96);
+}
+.btn-fab i {
+  line-height: 1;
 }

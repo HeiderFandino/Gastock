@@ -2,7 +2,7 @@
 :root {
   --aj-card-bg: #fff;
   --aj-card-br: var(--radius-lg, 16px);
-  --aj-card-bd: 1px solid var(--color-border, #b7c7da);
+  --aj-card-bd: 1px solid var(--color-border, #ffffff);
   --aj-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   --navbar-h: 56px;
 }

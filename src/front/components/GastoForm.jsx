@@ -152,7 +152,7 @@ export const GastoForm = () => {
   };
 
   return (
-    <div className="container-fluid px-4 py-4">
+    <div className="container-fluidd bg-gasto px-4 py-4">
       <button onClick={() => navigate(-1)} className="btn-gastock-outline mb-3">
         ← Volver
       </button>
