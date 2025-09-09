@@ -346,3 +346,13 @@
     margin: 0.5rem 0.75rem 0 !important;
   }
 }
+
+@media (max-width: 767.98px) {
+  .btn-fab.eg-fab,
+  .eg-fab {
+    bottom: calc(
+      var(--bottom-nav-h) + var(--eg-totalbar-h) +
+        max(env(safe-area-inset-bottom), 12px)
+    );
+  }
+}

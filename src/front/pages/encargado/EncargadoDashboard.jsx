@@ -262,9 +262,9 @@ export const EncargadoDashboard = () => {
         </div>
 
         {/* Acciones rápidas compactas */}
-        <div className="card mt-3 border-0">
-          <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
-        </div>
+
+        <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
+
       </div>
 
       {/* ========== DESKTOP: igual que ya tenías ========== */}
@@ -360,9 +360,9 @@ export const EncargadoDashboard = () => {
           </div>
         </div>
 
-        <div className="card mt-4 shadow-sm border rounded p-4 px-0 pt-0">
-          <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
-        </div>
+
+        <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
+
       </div>
 
       {mensaje && (

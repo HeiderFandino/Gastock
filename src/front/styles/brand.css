@@ -20,10 +20,10 @@
   --color-border: #b7c7da;
 
   /* niveles base */
-  --z-sticky: 3000; /* toolbars pegadas (fecha) */
+  --z-sticky: 11000; /* toolbars pegadas (fecha) */
   --z-nav: 10000; /* navbar */
   --z-dropdown: 10050; /* menús dependientes del nav */
-  --z-modal: 11000; /* modales, toasts, etc. */
+  --z-modal: 30000; /* modales, toasts, etc. */
 
   /* Radios y efectos */
   --radius-md: 12px;
@@ -87,6 +87,23 @@
 }
 
 /* Utilidades */
+
+.modal {
+  z-index: var(--z-modal) !important;
+}
+.modal-backdrop {
+  z-index: calc(var(--z-modal) - 1) !important;
+}
+
+/* ===== Ocultar navbar y barra de fecha cuando hay modal abierto ===== */
+.modal-open .navbar,
+.modal-open .sticky-top,
+.modal-open .date-bar,
+.modal-open .header-date,
+.modal-open .ventas__mes {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
 .page {
   min-height: 100vh;
   background: var(--color-bg);

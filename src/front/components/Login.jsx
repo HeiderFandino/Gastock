@@ -4,6 +4,31 @@ import userServices from "../services/userServices";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 
+// ACL simple para validar si una ruta privada es accesible por rol
+const ACL = [
+  { prefix: "/chef/gastos", roles: ["chef"] },
+  { prefix: "/admin", roles: ["admin"] },
+  { prefix: "/encargado", roles: ["encargado"] },
+  { prefix: "/chef", roles: ["chef"] },
+  { prefix: "/ventas", roles: ["encargado"] },
+];
+
+function isAllowed(path, rol) {
+  const match =
+    ACL.filter((r) => path.startsWith(r.prefix)).sort(
+      (a, b) => b.prefix.length - a.prefix.length
+    )[0] || null;
+  if (!match) return true; // rutas no listadas = abiertas
+  return match.roles.includes(rol);
+}
+
+function destinoPorRol(rol) {
+  if (rol === "admin") return "/admin/dashboard";
+  if (rol === "encargado") return "/encargado/dashboard";
+  if (rol === "chef") return "/chef/dashboard";
+  return "/";
+}
+
 export const Login = () => {
   const { dispatch } = useGlobalReducer();
   const navigate = useNavigate();
@@ -36,7 +61,7 @@ export const Login = () => {
         return;
       }
 
-      // Persistir sesión para recarga
+      // Persistir sesión (coincide con tu patrón actual)
       sessionStorage.setItem("token", data.access_token);
       sessionStorage.setItem("user", JSON.stringify(data.user));
 
@@ -46,20 +71,15 @@ export const Login = () => {
 
       dispatch({ type: "get_user_info", payload: data.user });
 
-      // Volver a última privada si existe
+      // Intenta volver a la última privada SOLO si el rol puede verla
       const last = sessionStorage.getItem("lastPrivatePath");
-      if (last && last.startsWith("/")) {
+      if (last && last.startsWith("/") && isAllowed(last, data.user.rol)) {
         navigate(last, { replace: true });
         return;
       }
 
-      // Fallback por rol
-      const destino =
-        data.user.rol === "admin" ? "/admin/dashboard" :
-          data.user.rol === "encargado" ? "/encargado/dashboard" :
-            data.user.rol === "chef" ? "/chef/dashboard" : "/";
-
-      navigate(destino, { replace: true });
+      // Si no, ve al destino por rol
+      navigate(destinoPorRol(data.user.rol), { replace: true });
     } catch (err) {
       setErrorMessage("Hubo un error en el login");
     } finally {

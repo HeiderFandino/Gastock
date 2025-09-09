@@ -5,28 +5,30 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 import userServices from "../services/userServices";
 import { LoadingScreen } from "./LoadingScreen";
 
+// ACL compartida (misma que usamos en Login.jsx)
+const ACL = [
+  { prefix: "/chef/gastos", roles: ["chef"] },
+  { prefix: "/admin", roles: ["admin"] },
+  { prefix: "/encargado", roles: ["encargado"] },
+  { prefix: "/chef", roles: ["chef"] },
+  { prefix: "/ventas", roles: ["encargado"] },
+];
+
+function isAllowed(path, rol) {
+  const match =
+    ACL.filter((r) => path.startsWith(r.prefix)).sort(
+      (a, b) => b.prefix.length - a.prefix.length
+    )[0] || null;
+  if (!match) return true;
+  return match.roles.includes(rol);
+}
+
 export const RutaPrivada = () => {
   const { store, dispatch } = useGlobalReducer();
   const [cargando, setCargando] = useState(true);
   const token = sessionStorage.getItem("token");
   const location = useLocation();
   const path = location.pathname;
-
-  // Prefijos protegidos -> roles permitidos (match más largo primero)
-  const ACL = [
-    { prefix: "/chef/gastos", roles: ["chef"] },
-    { prefix: "/admin", roles: ["admin"] },
-    { prefix: "/encargado", roles: ["encargado"] },
-    { prefix: "/chef", roles: ["chef"] },
-    { prefix: "/ventas", roles: ["encargado"] },
-  ];
-
-  const match =
-    ACL.filter((r) => path.startsWith(r.prefix)).sort(
-      (a, b) => b.prefix.length - a.prefix.length
-    )[0] || null;
-
-  const rolesPermitidos = match ? match.roles : null;
 
   useEffect(() => {
     let cancel = false;
@@ -48,15 +50,17 @@ export const RutaPrivada = () => {
 
     const boot = async () => {
       if (!token) {
+        // Sin token, asegúrate de no arrastrar rutas privadas previas
+        sessionStorage.removeItem("lastPrivatePath");
         setCargando(false);
         return;
       }
 
-      // 1) Hidrata rápido desde sessionStorage para evitar parpadeos/redirecciones
+      // 1) Hidrata rápido desde sessionStorage
       const cached = hydrateFromStorage();
       if (cached) {
         setCargando(false);
-        // Refresco silencioso para validar token/usuario actual
+        // Refresco silencioso
         userServices
           .getUserinfo()
           .then((u) => {
@@ -66,7 +70,7 @@ export const RutaPrivada = () => {
             }
           })
           .catch(() => {
-            // Si falla, handleUnauthorized en services hace la limpieza/redirección
+            // 401 → handleUnauthorized en services limpiará y redirigirá
           });
         return;
       }
@@ -79,7 +83,6 @@ export const RutaPrivada = () => {
           dispatch({ type: "get_user_info", payload: u });
         }
       } catch {
-        // handleUnauthorized ya responde: limpiará y enviará a "/"
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("user");
       } finally {
@@ -93,20 +96,22 @@ export const RutaPrivada = () => {
     };
   }, [token, path, dispatch]);
 
-  // Guardar última ruta privada válida (para volver tras login/refresh)
+  // Guardar última ruta privada válida (solo si el rol actual tiene permiso)
   useEffect(() => {
-    if (token) sessionStorage.setItem("lastPrivatePath", path);
-  }, [token, path]);
+    if (!token || !store.user) return;
+    if (isAllowed(path, store.user.rol)) {
+      sessionStorage.setItem("lastPrivatePath", path);
+    }
+  }, [token, path, store.user]);
 
   if (cargando) return <LoadingScreen />;
 
-  // Si no hay token o no está el user en store, manda a Home (tu login está en "/")
   if (!token || !store.user) {
     return <Navigate to="/" replace state={{ from: location }} />;
   }
 
   // Chequeo de ACL por rol
-  if (rolesPermitidos && !rolesPermitidos.includes(store.user.rol)) {
+  if (!isAllowed(path, store.user.rol)) {
     return <Navigate to="/" replace />;
   }
 

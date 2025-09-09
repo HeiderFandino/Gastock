@@ -38,7 +38,7 @@ userServices.getUsuarios = async (token) => {
   return await response.json();
 };
 
-// ✅ CORREGIDO: leer SIEMPRE de sessionStorage (donde guardas el token)
+// ✅ Siempre lee token fresco de sessionStorage
 userServices.getUserinfo = async () => {
   const token = sessionStorage.getItem("token");
   const resp = await fetch(backendUrl + "/api/private", {
@@ -57,6 +57,12 @@ userServices.getUserinfo = async () => {
 };
 
 userServices.login = async (formData) => {
+  // Limpia restos de sesión previa ANTES de loguear otra cuenta
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("user");
+  // Importante para no heredar ruta previa de otra cuenta:
+  sessionStorage.removeItem("lastPrivatePath");
+
   try {
     const resp = await fetch(backendUrl + "/api/login", {
       method: "POST",
@@ -66,8 +72,10 @@ userServices.login = async (formData) => {
     if (!resp.ok) throw Error("something went wrong");
     const data = await resp.json();
 
-    // Ya lo hacías así: guardar en sessionStorage
+    // Persistir token
     sessionStorage.setItem("token", data.access_token);
+
+    // (Mantengo tus líneas tal cual, pero ojo: restaurante_moneda está guardando el nombre)
     sessionStorage.setItem("restaurante_id", data.user.restaurante_id);
     sessionStorage.setItem("restaurante_moneda", data.user.restaurante_nombre);
 
@@ -75,6 +83,15 @@ userServices.login = async (formData) => {
   } catch (error) {
     console.log(error);
   }
+};
+
+// ✅ Logout robusto: limpia TODO, incluida la lastPrivatePath
+userServices.logout = async () => {
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("user");
+  sessionStorage.removeItem("restaurante_id");
+  sessionStorage.removeItem("restaurante_moneda");
+  sessionStorage.removeItem("lastPrivatePath");
 };
 
 export default userServices;

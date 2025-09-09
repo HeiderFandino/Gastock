@@ -27,7 +27,7 @@ export const QuickActionsEncargado = ({ onNuevaVenta }) => {
     ];
 
     return (
-        <div className="qa-wrapper">
+        <div className="section-wrapper">
             {/* Título sutil alineado con el resto de secciones */}
             <div className="section-title">⚡ Acciones Rápidas</div>
 
