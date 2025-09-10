@@ -1,11 +1,3 @@
-/* ===== Variables globales de capas (z-index) ===== */
-:root {
-  --z-sticky: 3000; /* toolbars pegadas (fecha) */
-  --z-nav: 10000; /* navbar */
-  --z-dropdown: 10050; /* menús dependientes del nav (usuario) */
-  --z-modal: 11000; /* modales/toasts si los hubiera */
-}
-
 /* nabvar.css — gradiente sutil */
 .navbar {
   height: 100px; /* altura consistente */

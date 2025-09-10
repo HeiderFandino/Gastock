@@ -853,3 +853,93 @@
     border-top-color: var(--brand-200);
   }
 }
+div.form-select {
+  background-image: none !important; /* quita la flecha de fondo */
+  background-color: transparent !important;
+  padding-right: 0 !important; /* evita espacio reservado para la flecha nativa */
+  border: none !important; /* el borde lo pone .select__control */
+  height: auto !important;
+}
+/* === Ajuste react-select para look igual a form-control === */
+div.form-select {
+  background-image: none !important; /* sin flecha nativa */
+  background-color: transparent !important;
+  padding: 0 !important;
+  border: none !important; /* el borde lo pone el control interno */
+  height: auto !important;
+}
+
+/* Control principal */
+.form-select .select__control {
+  width: 100%;
+  min-height: 40px;
+  background: #f6fafb; /* 🎯 fondo blanco como inputs */
+  border: 1px solid var(--color-border); /* 🎯 borde azul claro */
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font: inherit;
+  color: var(--color-text);
+}
+.form-select .select__control--is-focused {
+  border-color: var(--color-primary); /* azul navy cuando enfocado */
+  box-shadow: 0 0 0 0.2rem var(--focus-ring);
+}
+
+/* Texto interno */
+.form-select .select__value-container {
+  padding: 0.375rem 0.75rem;
+}
+.form-select .select__single-value {
+  color: var(--color-text);
+}
+.form-select .select__placeholder {
+  color: var(--color-text-weak);
+}
+
+/* Iconos */
+.form-select .select__indicator {
+  padding: 0.25rem 0.5rem;
+}
+.form-select .select__dropdown-indicator svg,
+.form-select .select__clear-indicator svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Menú desplegable */
+.form-select .select__menu {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-dropdown);
+}
+.form-select .select__option {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.form-select .select__option--is-focused {
+  background: var(--brand-50);
+}
+.form-select .select__option--is-selected {
+  background: var(--brand-200);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+/* Valor seleccionado dentro del react-select */
+div.form-select
+  .select__control
+  .select__value-container
+  .select__single-value {
+  color: var(--color-text) !important; /* ej: #0b1d3a */
+  opacity: 1 !important; /* evita transiciones que lo dejen 0 */
+}
+
+/* Por si el input interno hereda blanco */
+div.form-select .select__input-container,
+div.form-select .select__input-container input.select__input {
+  color: var(--color-text) !important;
+}
+
+/* ===== Ocultar navbar y barra de fecha cuando hay modal abierto ===== */

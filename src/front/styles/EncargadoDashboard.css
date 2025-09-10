@@ -230,3 +230,11 @@
     border-color: var(--stroke-warning-45) !important;
   }
 }
+.modal-open .navbar,
+.modal-open .sticky-top,
+.modal-open .date-bar,
+.modal-open .header-date,
+.modal-open .ventas__mes {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

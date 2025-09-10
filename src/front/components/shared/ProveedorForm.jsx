@@ -65,7 +65,7 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
   return (
     <form className="pm-form" onSubmit={handleSubmit}>
       {/* 🔹 Título dinámico */}
-      <h4 className="mb-3 fw-bold text-center">
+      <h4 className="titulo text-brand mb-3 fw-bold text-center">
         {proveedor ? "Editar Proveedor" : "Nuevo Proveedor"}
       </h4>
 

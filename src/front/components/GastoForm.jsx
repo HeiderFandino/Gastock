@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import gastoServices from "../services/GastoServices";
+import "../styles/Gastoform.css";
+
 
 export const GastoForm = () => {
   const { store } = useGlobalReducer();
@@ -151,6 +153,7 @@ export const GastoForm = () => {
     }
   };
 
+
   return (
     <div className="container-fluidd bg-gasto px-4 py-4">
       <button onClick={() => navigate(-1)} className="btn-gastock-outline mb-3">
@@ -174,18 +177,29 @@ export const GastoForm = () => {
           <div className="row g-2 align-items-end mb-2" key={index}>
             <div className="col-12 col-md-4">
               <label className="form-label fw-semibold">Proveedor</label>
-              <select
-                className="form-select"
-                value={gasto.proveedor_id}
-                onChange={(e) => handleProveedorChange(index, e.target.value)}
-              >
-                <option value="">Seleccione un proveedor</option>
-                {proveedores.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre}
-                  </option>
-                ))}
-              </select>
+
+              <Select
+                classNamePrefix="select"
+                components={{ IndicatorSeparator: () => null }}
+                value={
+                  gasto.proveedor_id
+                    ? {
+                      value: gasto.proveedor_id,
+                      label:
+                        proveedores.find((p) => p.id === parseInt(gasto.proveedor_id, 10))
+                          ?.nombre || gasto.proveedor_id,
+                    }
+                    : null
+                }
+                onChange={(option) => handleProveedorChange(index, option ? option.value : "")}
+                options={proveedores.map((p) => ({
+                  value: p.id,
+                  label: p.nombre,
+                }))}
+                placeholder="Seleccione un proveedor"
+                isClearable
+                isSearchable   // 🔎 permite escribir y buscar
+              />
             </div>
 
             <div className="col-12 col-md-3">
