@@ -2,7 +2,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/AdminGastos.css";
-import { FiArrowLeft } from "react-icons/fi";
 
 export const RegistrarGasto = () => {
   const navigate = useNavigate();
@@ -12,9 +11,6 @@ export const RegistrarGasto = () => {
       {/* ===== Header compacto v2 ===== */}
       <div className="ag-header mb-3">
         <div className="ag-header-top">
-          <button className="btn btn-light ag-back" onClick={() => navigate('/encargado/gastos')}>
-            <FiArrowLeft size={16} className="me-1" /> Volver
-          </button>
           <div className="ag-brand-dot" />
         </div>
 

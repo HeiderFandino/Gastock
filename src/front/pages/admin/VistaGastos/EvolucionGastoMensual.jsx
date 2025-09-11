@@ -11,6 +11,7 @@ import {
   Legend,
 } from "chart.js";
 import adminService from "../../../services/adminService";
+import "../../../styles/EncargadoDashboard.css";
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
@@ -44,12 +45,15 @@ const EvolucionGastoMensual = ({ ano }) => {
       {
         label: "Gasto total (€)",
         data: datos.map(d => d.total_gastado),
-        borderColor: "#FF6600",
-        backgroundColor: "rgba(255, 102, 0, 0.2)",
-        tension: 0.3,
+        borderColor: "#2563eb",
+        backgroundColor: "rgba(37, 99, 235, 0.1)",
+        tension: 0.4,
         fill: true,
-        pointBackgroundColor: "#FF6600",
-        pointRadius: 4,
+        pointBackgroundColor: "#2563eb",
+        pointBorderColor: "#ffffff",
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8,
       },
     ],
   };
@@ -57,16 +61,84 @@ const EvolucionGastoMensual = ({ ano }) => {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
+    plugins: { 
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#ffffff',
+        titleColor: '#1f2937',
+        bodyColor: '#1f2937',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        cornerRadius: 8,
+        displayColors: false,
+        titleFont: { weight: 'bold' },
+        bodyFont: { size: 13 }
+      }
+    },
     scales: {
-      y: { beginAtZero: true, ticks: { callback: v => `€${v}` } },
+      x: {
+        grid: { 
+          color: '#f3f4f6',
+          borderDash: [3, 3]
+        },
+        ticks: { 
+          color: '#6b7280',
+          font: { size: 12, weight: '500' }
+        }
+      },
+      y: { 
+        beginAtZero: true, 
+        grid: { 
+          color: '#f3f4f6',
+          borderDash: [3, 3]
+        },
+        ticks: { 
+          color: '#6b7280',
+          font: { size: 12, weight: '500' },
+          callback: v => `€${Number(v).toLocaleString("es-ES")}`
+        }
+      },
     },
   };
 
-  if (loading) return <p>Cargando evolución mensual...</p>;
-  if (!datos.length || datos.every(d => d.total_gastado === 0)) return <p>No hay datos para mostrar este año.</p>;
+  if (loading) return (
+    <div className="card-brand" style={{ minHeight: 360 }}>
+      <div className="text-center py-5">
+        <div className="spinner-border" style={{ color: '#2563eb' }} role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+        <p className="mt-3 text-muted">Cargando evolución mensual...</p>
+      </div>
+    </div>
+  );
+  
+  if (!datos.length || datos.every(d => d.total_gastado === 0)) return (
+    <div className="card-brand" style={{ minHeight: 360 }}>
+      <div className="text-center py-5">
+        <div className="ag-icon mx-auto mb-3" style={{ 
+          background: '#fef3c7', 
+          color: '#d97706', 
+          width: 48, 
+          height: 48, 
+          fontSize: '1.5rem' 
+        }}>📊</div>
+        <p className="text-muted">No hay datos para mostrar este año.</p>
+      </div>
+    </div>
+  );
 
-  return <div style={{ height: 300 }}><Line data={data} options={options} /></div>;
+  return (
+    <div className="card-brand" style={{ minHeight: 380 }}>
+      <h6 className="ag-card-title mb-4" style={{ color: '#2563eb' }}>📉 Evolución de gastos ({datos.length} meses)</h6>
+      <div style={{ height: 300, padding: '10px' }}>
+        <Line data={data} options={options} />
+      </div>
+    </div>
+  );
 };
 
 export default EvolucionGastoMensual;

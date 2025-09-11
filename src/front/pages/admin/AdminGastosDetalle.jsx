@@ -4,9 +4,10 @@ import gastoServices from "../../services/GastoServices";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
 import GastoModal from "../../components/GastoModal";
+import restauranteService from "../../services/restauranteServices";
 import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
-
-// Estilos ya incluidos en brand-unified.css
+import "../../styles/EncargadoDashboard.css";
+import "../../styles/AdminGastos.css";
 
 const AdminGastosDetalle = () => {
   const simbolo = MonedaSimbolo();
@@ -14,20 +15,39 @@ const AdminGastosDetalle = () => {
   const user = store.user;
   const query = new URLSearchParams(window.location.search);
   const restauranteId = query.get("restaurante_id");
+  const mesFromUrl = query.get("mes");
+  const anoFromUrl = query.get("ano");
   const navigate = useNavigate();
+
+  if (!restauranteId) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: "var(--color-bg)" }}>
+        <div className="text-center">
+          <h4 className="text-danger mb-3">⚠️ Error de Parámetros</h4>
+          <p className="text-muted">No se ha especificado el ID del restaurante en la URL.</p>
+          <button className="btn btn-gastock" onClick={() => navigate('/admin/dashboard')}>Ir al Dashboard</button>
+        </div>
+      </div>
+    );
+  }
 
   const [view, setView] = useState("diario");
   const hoy = new Date();
-  const [mes, setMes] = useState(hoy.getMonth() + 1);
-  const [ano, setAno] = useState(hoy.getFullYear());
-  
+  const mesInicial = mesFromUrl ? Number(mesFromUrl) : hoy.getMonth() + 1;
+  const anoInicial = anoFromUrl ? Number(anoFromUrl) : hoy.getFullYear();
+
+  const [mes, setMes] = useState(mesInicial);
+  const [ano, setAno] = useState(anoInicial);
+  const [mesAno, setMesAno] = useState(`${anoInicial}-${String(mesInicial).padStart(2, "0")}`);
+  const [nombreRestaurante, setNombreRestaurante] = useState("");
+
   const [monthlyData, setMonthlyData] = useState({
     datos: {},
     proveedores: [],
     dias: [],
     totales: {},
   });
-  
+
   const [selectedDate, setSelectedDate] = useState(hoy.toISOString().split("T")[0]);
   const [dailyData, setDailyData] = useState([]);
   const [filterProveedor, setFilterProveedor] = useState("");
@@ -37,46 +57,128 @@ const AdminGastosDetalle = () => {
   const [tipoMensaje, setTipoMensaje] = useState("info");
   const [gastoEditar, setGastoEditar] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Helpers
   const rid = Number(restauranteId);
   const provById = (id) => proveedoresList.find((p) => Number(p.id) === Number(id));
-  const provName = (id) => (provById(id)?.nombre ?? String(id));
+  const provName = (id) => (provById(id)?.nombre ?? String(id ?? "-"));
+
+  // Cargar nombre del restaurante
+  const cargarNombreRestaurante = async () => {
+    try {
+      const data = await restauranteService.getRestaurante(rid);
+      setNombreRestaurante(data?.nombre || "");
+    } catch (error) {
+      console.log("Error al obtener restaurante:", error);
+      setNombreRestaurante("");
+    }
+  };
+
+  // Funciones de navegación de mes
+  useEffect(() => {
+    const [y, m] = mesAno.split("-").map(Number);
+    if (!Number.isNaN(y) && !Number.isNaN(m)) {
+      setAno(y);
+      setMes(m);
+    }
+  }, [mesAno]);
+
+  const retrocederMes = () => {
+    const newMonth = mes === 1 ? 12 : mes - 1;
+    const newYear = mes === 1 ? ano - 1 : ano;
+    setMes(newMonth);
+    setAno(newYear);
+    setMesAno(`${newYear}-${String(newMonth).padStart(2, "0")}`);
+  };
+
+  const avanzarMes = () => {
+    const newMonth = mes === 12 ? 1 : mes + 1;
+    const newYear = mes === 12 ? ano + 1 : ano;
+    setMes(newMonth);
+    setAno(newYear);
+    setMesAno(`${newYear}-${String(newMonth).padStart(2, "0")}`);
+  };
 
   // Proveedores (según restaurante)
   useEffect(() => {
     if (!rid) return;
     gastoServices
       .getProveedores(rid)
-      .then(setProveedoresList)
-      .catch(() => { });
+      .then((list) => setProveedoresList(Array.isArray(list) ? list : []))
+      .catch((e) => {
+        console.warn("No se pudieron cargar proveedores:", e);
+        setProveedoresList([]);
+      });
+    cargarNombreRestaurante();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rid]);
 
-  // Resumen mensual
+  // Resumen mensual (intento de filtrado defensivo por restauranteId)
   useEffect(() => {
-    if (view !== "mensual" || !rid) return;
-    gastoServices
-      .resumenMensual(mes, ano)
-      .then((data) => {
-        // Filtrar por restaurante_id en el frontend
-        const filteredData = {
-          datos: {},
-          proveedores: [],
-          dias: data.dias || [],
-          totales: {}
-        };
-        // Solo mantenemos los datos del restaurante específico
-        setMonthlyData(filteredData);
-      })
-      .catch(() => setMensaje("Error al obtener resumen mensual"));
+    const cargarResumen = async () => {
+      if (view !== "mensual" || !rid) return;
+      setLoading(true);
+      try {
+        const data = await gastoServices.resumenMensual(mes, ano);
+        // data puede venir en distintos formatos; intentamos extraer solo lo del restaurante:
+        // 1) Si viene un objeto con `datos` y dentro keys por restauranteId
+        if (data && data.datos && typeof data.datos === "object") {
+          // intento directo por key numérica o string
+          const key = String(rid);
+          const restauranteDatos = data.datos[key] ?? data.datos[rid] ?? null;
+          if (restauranteDatos) {
+            setMonthlyData({
+              datos: restauranteDatos.datos ?? restauranteDatos,
+              proveedores: restauranteDatos.proveedores ?? data.proveedores ?? [],
+              dias: restauranteDatos.dias ?? data.dias ?? [],
+              totales: restauranteDatos.totales ?? data.totales ?? {},
+            });
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 2) Si viene un array de registros con restaurante_id
+        if (Array.isArray(data)) {
+          const filtered = data.filter((rec) => Number(rec.restaurante_id) === rid);
+          setMonthlyData({
+            datos: {},
+            proveedores: proveedoresList || [],
+            dias: filtered || [],
+            totales: {},
+          });
+          setLoading(false);
+          return;
+        }
+
+        // 3) Si viene una respuesta simple, intentar usar los campos directos
+        setMonthlyData({
+          datos: data?.datos ?? {},
+          proveedores: Array.isArray(data?.proveedores) ? data.proveedores : proveedoresList || [],
+          dias: data?.dias ?? [],
+          totales: data?.totales ?? {},
+        });
+      } catch (err) {
+        console.error("Error al obtener resumen mensual:", err);
+        setMensaje("Error al obtener resumen mensual");
+        setTipoMensaje("error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarResumen();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, mes, ano, rid]);
 
-  // Carga diaria
-  const cargarGastosDiarios = async () => {
+  // Carga diaria con AbortController
+  const cargarGastosDiarios = async (signal) => {
+    setLoading(true);
     try {
       const all = await gastoServices.getGastos();
-      const filtered = all
+      if (signal?.aborted) return;
+      const filtered = (Array.isArray(all) ? all : [])
         .filter((g) => Number(g.restaurante_id) === rid)
         .filter((g) => g.fecha === selectedDate);
 
@@ -84,14 +186,22 @@ const AdminGastosDetalle = () => {
       setTipoMensaje("info");
       setMensaje("");
     } catch (err) {
+      if (err.name === "AbortError") return;
+      console.error("Error al obtener gastos diarios:", err);
       setMensaje("Error al obtener gastos diarios");
       setTipoMensaje("error");
+      setDailyData([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     if (view !== "diario" || !rid) return;
-    cargarGastosDiarios();
+    const controller = new AbortController();
+    cargarGastosDiarios(controller.signal);
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, selectedDate, rid]);
 
   useEffect(() => {
@@ -137,6 +247,7 @@ const AdminGastosDetalle = () => {
         )
       );
     } catch (err) {
+      console.error("Error actualizando gasto:", err);
       setMensaje("❌ Error al actualizar gasto");
       setTipoMensaje("error");
     } finally {
@@ -154,6 +265,7 @@ const AdminGastosDetalle = () => {
       setMensaje("✅ Gasto eliminado correctamente");
       setTipoMensaje("success");
     } catch (err) {
+      console.error("Error eliminando gasto:", err);
       setMensaje("❌ No se pudo eliminar el gasto");
       setTipoMensaje("error");
     } finally {
@@ -166,7 +278,7 @@ const AdminGastosDetalle = () => {
     .filter((g) => !filterCategoria || g.categoria === filterCategoria);
 
   const totalGastosDia = useMemo(
-    () => displayedDaily.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0),
+    () => displayedDaily.reduce((sum, g) => sum + (parseFloat(g.monto) || 0), 0),
     [displayedDaily]
   );
 
@@ -175,22 +287,9 @@ const AdminGastosDetalle = () => {
     [monthlyData.totales]
   );
 
-  // Si no hay restaurante_id, mostrar error
-  if (!restauranteId) {
-    return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: "var(--color-bg)" }}>
-        <div className="text-center">
-          <div style={{ fontSize: '3rem', opacity: 0.4 }}>⚠️</div>
-          <h4 className="text-danger mb-3">⚠️ Error de Parámetros</h4>
-          <p className="text-muted">No se ha especificado el ID del restaurante en la URL.</p>
-          <button className="btn btn-gastock" onClick={() => navigate('/admin/gastos')}>Volver a Gastos</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="dashboard-container admin-bb">
+
       {/* Header simplificado */}
       <div
         className="sticky-top"
@@ -198,41 +297,41 @@ const AdminGastosDetalle = () => {
       >
         <div className="container-fluid px-4 py-3">
           <div className="d-flex align-items-center justify-content-between">
-            <div className="d-flex align-items-center">
+            <div className="d-flex align-items-center gap-3">
               <button
-                className="btn d-flex align-items-center justify-content-center me-3"
+                className="btn d-flex align-items-center justify-content-center"
                 style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '12px',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
                   background: 'var(--color-bg-card)',
                   border: '1px solid var(--color-border)',
-                  color: 'var(--color-text-secondary)',
-                  transition: 'all 0.2s ease'
+                  color: 'var(--color-text)',
+                  transition: 'all 0.2s ease',
+                  fontSize: '14px'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.background = 'var(--color-bg-subtle)';
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.color = 'var(--color-text)';
+                  e.target.style.transform = 'translateX(-2px)';
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.background = 'var(--color-bg-card)';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.color = 'var(--color-text-secondary)';
+                  e.target.style.transform = 'translateX(0)';
                 }}
-                onClick={() => navigate('/admin/gastos')}
-                title="Volver a Gastos"
-                aria-label="Volver a Gastos"
+                onClick={() => navigate(`/admin/restaurante/${restauranteId}?mes=${mes}&ano=${ano}`)}
+                title="Volver al restaurante"
               >
                 ←
               </button>
               <div>
                 <h1 className="h4 fw-bold mb-0" style={{ color: "var(--color-text)" }}>
-                  💸 Detalle de Gastos
+                  💸 Detalle de Gastos {nombreRestaurante ? `— ${nombreRestaurante}` : ""}
                 </h1>
                 <p className="text-muted mb-0 small">Gestiona los gastos del restaurante</p>
               </div>
             </div>
+
+
           </div>
         </div>
       </div>
@@ -282,91 +381,13 @@ const AdminGastosDetalle = () => {
 
         {/* ======= VISTA MENSUAL ======= */}
         {view === "mensual" ? (
-          <>
-            {/* ===== Filtro de mes centrado ===== */}
-            <div className="d-flex align-items-center justify-content-center mb-4">
-              <button
-                className="btn d-flex align-items-center justify-content-center"
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '12px',
-                  background: 'var(--color-bg-card)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text)',
-                  transition: 'all 0.2s ease',
-                  fontSize: '1.1rem'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'var(--color-bg-subtle)';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'var(--color-bg-card)';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-                onClick={() => {
-                  const newMonth = mes === 1 ? 12 : mes - 1;
-                  const newYear = mes === 1 ? ano - 1 : ano;
-                  setMes(newMonth);
-                  setAno(newYear);
-                }}
-              >
-                ◀
-              </button>
-              <div
-                className="mx-4 px-5 py-3 fw-medium text-center"
-                style={{
-                  background: 'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-subtle))',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: '16px',
-                  minWidth: '220px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
-                  fontSize: '1.1rem',
-                  color: 'var(--color-text)'
-                }}
-              >
-                📊 {nombreMes}
-              </div>
-              <button
-                className="btn d-flex align-items-center justify-content-center"
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '12px',
-                  background: 'var(--color-bg-card)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text)',
-                  transition: 'all 0.2s ease',
-                  fontSize: '1.1rem'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'var(--color-bg-subtle)';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'var(--color-bg-card)';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-                onClick={() => {
-                  const newMonth = mes === 12 ? 1 : mes + 1;
-                  const newYear = mes === 12 ? ano + 1 : ano;
-                  setMes(newMonth);
-                  setAno(newYear);
-                }}
-              >
-                ▶
-              </button>
-            </div>
-
-            <div className="text-center py-4">
-              <div className="ag-icon mx-auto mb-2" style={{ width: 48, height: 48, fontSize: '1.5rem' }}>📊</div>
-              <p className="text-muted">Vista mensual próximamente disponible.</p>
-            </div>
-          </>
+          <div className="text-center py-4">
+            <div className="ag-icon mx-auto mb-2" style={{ width: 48, height: 48, fontSize: '1.5rem' }}>📊</div>
+            {loading ? <p className="text-muted">Cargando resumen mensual...</p> : <p className="text-muted">Vista mensual próximamente disponible.</p>}
+          </div>
         ) : (
-          /* ======= VISTA DIARIA ======= */
           <>
+            {/* ======= VISTA DIARIA ======= */}
             {/* ===== Filtro de fecha elegante ===== */}
             <div className="d-flex align-items-center justify-content-center mb-4">
               <button
@@ -508,7 +529,14 @@ const AdminGastosDetalle = () => {
               </div>
             </div>
 
-            {displayedDaily.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-4">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Cargando...</span>
+                </div>
+                <p className="mt-3 text-muted">Cargando gastos...</p>
+              </div>
+            ) : displayedDaily.length === 0 ? (
               <div className="text-center py-4">
                 <div className="ag-icon mx-auto mb-2" style={{ width: 48, height: 48, fontSize: '1.5rem' }}>📊</div>
                 <p className="text-muted">No hay gastos registrados para esta fecha.</p>
@@ -529,7 +557,7 @@ const AdminGastosDetalle = () => {
                         </div>
                         <div className="text-end">
                           <div className="fw-bold text-success" style={{ fontSize: "1.1rem" }}>
-                            {simbolo}{parseFloat(g.monto).toFixed(2)}
+                            {simbolo}{Number(g.monto || 0).toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -572,7 +600,7 @@ const AdminGastosDetalle = () => {
                         <tr key={g.id}>
                           <td>{provName(g.proveedor_id)}</td>
                           <td><span className="badge bg-secondary">{g.categoria}</span></td>
-                          <td className="fw-bold text-success">{simbolo}{parseFloat(g.monto).toFixed(2)}</td>
+                          <td className="fw-bold text-success">{simbolo}{Number(g.monto || 0).toFixed(2)}</td>
                           <td>{g.nota || "-"}</td>
                           <td className="text-end">
                             <button
@@ -595,6 +623,11 @@ const AdminGastosDetalle = () => {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Totales resumen rápido */}
+                <div className="d-flex justify-content-end mt-3">
+                  <div className="fw-bold">Total día: {simbolo}{totalGastosDia.toFixed(2)}</div>
+                </div>
               </>
             )}
           </>
@@ -610,17 +643,16 @@ const AdminGastosDetalle = () => {
           <FiPlus size={24} />
         </button>
 
+        {/* Modal edición */}
+        {modalVisible && (
+          <GastoModal
+            gasto={gastoEditar}
+            proveedores={proveedoresList}
+            onSave={guardarEdicion}
+            onClose={() => setModalVisible(false)}
+          />
+        )}
       </div>
-
-      {/* Modal edición */}
-      {modalVisible && (
-        <GastoModal
-          gasto={gastoEditar}
-          proveedores={proveedoresList}
-          onSave={guardarEdicion}
-          onClose={() => setModalVisible(false)}
-        />
-      )}
     </div>
   );
 };

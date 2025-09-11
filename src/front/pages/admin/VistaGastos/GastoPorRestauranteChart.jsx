@@ -9,6 +9,7 @@ import {
   Legend,
 } from "chart.js";
 import adminService from "../../../services/adminService";
+import "../../../styles/EncargadoDashboard.css";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -44,8 +45,27 @@ const GastoPorRestauranteChart = ({ mes, ano }) => {
     return () => { mounted = false; };
   }, [mes, ano]);
 
-  if (loading) return <p>Cargando gráfico...</p>;
-  if (!dataChart.length) return <p>No hay datos para mostrar en este periodo.</p>;
+  if (loading) return (
+    <div className="text-center py-4">
+      <div className="spinner-border" style={{ color: '#2563eb' }} role="status">
+        <span className="visually-hidden">Cargando...</span>
+      </div>
+      <p className="mt-3 text-muted">Cargando gráfico...</p>
+    </div>
+  );
+  
+  if (!dataChart.length) return (
+    <div className="text-center py-4">
+      <div className="ag-icon mx-auto mb-3" style={{ 
+        background: '#fef3c7', 
+        color: '#d97706', 
+        width: 48, 
+        height: 48, 
+        fontSize: '1.5rem' 
+      }}>📊</div>
+      <p className="text-muted">No hay datos para mostrar en este periodo.</p>
+    </div>
+  );
 
   const valores = dataChart.map((item) => toNumber(item.total_gastado));
   const max = Math.max(...valores, 0);
@@ -55,10 +75,10 @@ const GastoPorRestauranteChart = ({ mes, ano }) => {
   const maxIndex = valores.reduce((maxIdx, v, i, arr) => (v > arr[maxIdx] ? i : maxIdx), 0);
 
   const backgroundColors = valores.map((_, i) =>
-    i === maxIndex ? "rgba(255, 91, 0, 0.85)" : "rgba(220, 220, 220, 0.8)"
+    i === maxIndex ? "#2563eb" : "#f3f4f6"
   );
   const borderColors = valores.map((_, i) =>
-    i === maxIndex ? "#ff5b00" : "rgba(0,0,0,0.06)"
+    i === maxIndex ? "#1d4ed8" : "#e5e7eb"
   );
 
   const chartData = {
@@ -69,10 +89,10 @@ const GastoPorRestauranteChart = ({ mes, ano }) => {
         data: valores,
         backgroundColor: backgroundColors,
         borderColor: borderColors,
-        borderWidth: 1,
+        borderWidth: 2,
         borderRadius: 8,
-        barThickness: 24,
-        maxBarThickness: 28,
+        barThickness: 22,
+        maxBarThickness: 26,
       },
     ],
   };
@@ -81,22 +101,46 @@ const GastoPorRestauranteChart = ({ mes, ano }) => {
     indexAxis: "y",
     responsive: true,
     maintainAspectRatio: false,
-    layout: { padding: 6 },
-    plugins: { legend: { display: false }, tooltip: { enabled: true } },
+    layout: { padding: { top: 15, right: 15, bottom: 15, left: 15 } },
+    plugins: { 
+      legend: { display: false }, 
+      tooltip: { 
+        enabled: true,
+        backgroundColor: '#ffffff',
+        titleColor: '#1f2937',
+        bodyColor: '#1f2937',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        cornerRadius: 8,
+        displayColors: false,
+        titleFont: { weight: 'bold' },
+        bodyFont: { size: 13 }
+      }
+    },
     scales: {
       x: {
         beginAtZero: true,
         suggestedMax,
-        grid: { color: "#eef1f4" },
+        grid: { 
+          color: "#f3f4f6",
+          borderDash: [2, 2]
+        },
         ticks: {
           color: "#6b7280",
-          maxTicksLimit: 6,
+          font: { size: 12, weight: '500' },
+          maxTicksLimit: 5,
           callback: (v) => `€${Number(v).toLocaleString("es-ES")}`,
         },
       },
       y: {
-        ticks: { color: "#6b7280", font: { weight: "bold" } },
-        grid: { color: "#eef1f4" },
+        ticks: { 
+          color: "#374151", 
+          font: { weight: "600", size: 13 }
+        },
+        grid: { 
+          color: "#f3f4f6",
+          borderDash: [2, 2]
+        },
       },
     },
   };

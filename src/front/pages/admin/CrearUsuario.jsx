@@ -17,33 +17,6 @@ export const CrearUsuario = () => {
         <div className="container-fluid px-4 py-3">
           <div className="d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center">
-              <button
-                className="btn d-flex align-items-center justify-content-center me-3"
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '12px',
-                  background: 'var(--color-bg-card)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text-secondary)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'var(--color-bg-subtle)';
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.color = 'var(--color-text)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'var(--color-bg-card)';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.color = 'var(--color-text-secondary)';
-                }}
-                onClick={() => navigate('/admin/usuarios')}
-                title="Volver a Usuarios"
-                aria-label="Volver a Usuarios"
-              >
-                ←
-              </button>
               <div>
                 <h1 className="h4 fw-bold mb-0" style={{ color: "var(--color-text)" }}>
                   👤 Crear Usuario

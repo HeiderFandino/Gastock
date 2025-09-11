@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import adminService from "../../../services/adminService";
 import { useSearchParams } from "react-router-dom";
+import "../../../styles/EncargadoDashboard.css";
 
 const TablaTopRestaurantes = ({ mes: mesProp, ano: anoProp }) => {
   const [searchParams] = useSearchParams();
@@ -41,17 +42,39 @@ const TablaTopRestaurantes = ({ mes: mesProp, ano: anoProp }) => {
   }, [controlled, mesProp, anoProp]);
 
   return (
-    <div className="p-3 bg-white rounded shadow-sm mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h6 className="fw-bold mb-0">Top restaurantes por ventas ({mesesNombre[mes - 1].toLowerCase()} {ano})</h6>
+    <div className="card-brand mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h6 className="ag-card-title mb-0" style={{ color: '#2563eb' }}>🏆 Top restaurantes por ventas ({mesesNombre[mes - 1].toLowerCase()} {ano})</h6>
         {!controlled && (
           <div className="d-flex gap-2">
-            <select className="form-select form-select-sm" value={mes} onChange={e => setMes(parseInt(e.target.value))}>
+            <select 
+              className="form-select form-select-sm" 
+              value={mes} 
+              onChange={e => setMes(parseInt(e.target.value))}
+              style={{
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                background: '#ffffff',
+                color: '#374151',
+                fontSize: '0.875rem'
+              }}
+            >
               {mesesNombre.map((nombre, i) => (
                 <option key={i + 1} value={i + 1}>{nombre.toLowerCase()}</option>
               ))}
             </select>
-            <select className="form-select form-select-sm" value={ano} onChange={e => setAno(parseInt(e.target.value))}>
+            <select 
+              className="form-select form-select-sm" 
+              value={ano} 
+              onChange={e => setAno(parseInt(e.target.value))}
+              style={{
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                background: '#ffffff',
+                color: '#374151',
+                fontSize: '0.875rem'
+              }}
+            >
               {[ano - 1, ano, ano + 1].map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
@@ -61,25 +84,39 @@ const TablaTopRestaurantes = ({ mes: mesProp, ano: anoProp }) => {
       </div>
 
       {loading ? (
-        <p>Cargando restaurantes...</p>
+        <div className="text-center py-4">
+          <div className="spinner-border" style={{ color: '#2563eb' }} role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-3 text-muted">Cargando restaurantes...</p>
+        </div>
       ) : restaurantes.length === 0 ? (
-        <p>No hay datos disponibles para este periodo.</p>
+        <div className="text-center py-4">
+          <div className="ag-icon mx-auto mb-3" style={{ 
+            background: '#fef3c7', 
+            color: '#d97706', 
+            width: 48, 
+            height: 48, 
+            fontSize: '1.5rem' 
+          }}>🏢</div>
+          <p className="text-muted">No hay datos disponibles para este periodo.</p>
+        </div>
       ) : (
         <div className="table-responsive">
-          <table className="table table-sm table-hover align-middle mb-0">
-            <thead className="table-light">
+          <table className="table users-table align-middle mb-0">
+            <thead>
               <tr>
-                <th>Nombre restaurante</th>
-                <th>Total vendido</th>
-                <th>Nº de ventas</th>
+                <th style={{ color: '#374151', fontWeight: '600' }}>Nombre restaurante</th>
+                <th style={{ color: '#374151', fontWeight: '600' }}>Total vendido</th>
+                <th style={{ color: '#374151', fontWeight: '600' }}>Nº de ventas</th>
               </tr>
             </thead>
             <tbody>
               {restaurantes.map((r, i) => (
                 <tr key={i}>
-                  <td>{r.nombre}</td>
-                  <td>€{Number(r.total_vendido || 0).toLocaleString("es-ES")}</td>
-                  <td>{Number(r.ventas_realizadas || 0).toLocaleString("es-ES")}</td>
+                  <td className="fw-medium" style={{ color: '#1f2937' }}>{r.nombre}</td>
+                  <td className="fw-bold" style={{ color: '#2563eb' }}>€{Number(r.total_vendido || 0).toLocaleString("es-ES")}</td>
+                  <td style={{ color: '#6366f1', fontWeight: '500' }}>{Number(r.ventas_realizadas || 0).toLocaleString("es-ES")}</td>
                 </tr>
               ))}
             </tbody>

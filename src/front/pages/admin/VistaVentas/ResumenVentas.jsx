@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, Row, Col, Spinner } from "react-bootstrap";
 import adminService from "../../../services/adminService";
 import { useSearchParams } from "react-router-dom";
+import "../../../styles/EncargadoDashboard.css";
 
 const ResumenVentas = ({ mes: mesProp, ano: anoProp }) => {
   const [searchParams] = useSearchParams();
@@ -42,22 +42,40 @@ const ResumenVentas = ({ mes: mesProp, ano: anoProp }) => {
     return () => { cancel = true; };
   }, [mes, ano]);
 
-  if (loading) return <Spinner animation="border" size="sm" />;
-  if (!resumen || resumen.length === 0) return <p className="text-muted">No hay datos disponibles.</p>;
+  if (loading) return (
+    <div className="text-center py-4">
+      <div className="spinner-border" style={{ color: '#2563eb' }} role="status">
+        <span className="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  );
+  
+  if (!resumen || resumen.length === 0) return (
+    <div className="text-center py-4">
+      <p className="text-muted">No hay datos disponibles.</p>
+    </div>
+  );
 
   return (
-    <Row className="mb-4">
+    <div className="row g-4 mb-0">
       {resumen.map((item, i) => (
-        <Col key={i} xs={12} sm={6} md={3} className="mb-3">
-          <Card className="h-100 shadow-sm">
-            <Card.Body>
-              <Card.Title className="fs-6 text-muted">{item.titulo}</Card.Title>
-              <Card.Text className="fs-4 fw-bold">{item.valor}</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
+        <div key={i} className="col-6 col-md-3">
+          <div className="card-brand h-100 text-center" style={{ padding: '20px 12px' }}>
+            <div className="ag-icon mx-auto mb-3" style={{ 
+              background: i === 0 ? '#dcfce7' : i === 1 ? '#dbeafe' : i === 2 ? '#fef3c7' : '#e0e7ff', 
+              color: i === 0 ? '#16a34a' : i === 1 ? '#2563eb' : i === 2 ? '#d97706' : '#7c3aed', 
+              width: 48, 
+              height: 48, 
+              fontSize: '1.2rem' 
+            }}>
+              {i === 0 ? '💰' : i === 1 ? '🏢' : i === 2 ? '🏆' : '📊'}
+            </div>
+            <p className="ag-card-label mb-2">{item.titulo}</p>
+            <h3 className="ag-card-value mb-0" style={{ color: '#2563eb' }}>{item.valor}</h3>
+          </div>
+        </div>
       ))}
-    </Row>
+    </div>
   );
 };
 

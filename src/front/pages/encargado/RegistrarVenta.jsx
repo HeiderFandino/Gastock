@@ -4,7 +4,7 @@ import ventaServices from "../../services/ventaServices";
 import { useNavigate } from "react-router-dom";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
 import "../../styles/AdminGastos.css";
-import { FiArrowLeft, FiSave } from "react-icons/fi";
+import { FiSave } from "react-icons/fi";
 
 export const RegistrarVenta = () => {
   useEffect(() => {
@@ -58,9 +58,6 @@ export const RegistrarVenta = () => {
       {/* ===== Header compacto v2 ===== */}
       <div className="ag-header mb-3">
         <div className="ag-header-top">
-          <button className="btn btn-light ag-back" onClick={() => navigate('/encargado/ventas')}>
-            <FiArrowLeft size={16} className="me-1" /> Volver
-          </button>
           <div className="ag-brand-dot" />
         </div>
 

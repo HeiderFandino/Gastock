@@ -325,7 +325,7 @@ export const Sidebar = () => {
             <>
               <li>
                 <Link to="/admin/dashboard" className={`bn-item ${isActive(["/admin/dashboard"])}`}>
-                  <i className="bi bi-house"></i><span>Home</span>
+                  <i className="bi bi-house"></i><span>Inicio</span>
                 </Link>
               </li>
               {/* 🔹 Restaurantes (faltaba) */}
@@ -345,8 +345,13 @@ export const Sidebar = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/admin/usuarios" className={`bn-item ${isActive(["/admin/usuarios"])}`}>
+                  <i className="bi bi-people"></i><span>Users</span>
+                </Link>
+              </li>
+              <li>
                 <Link to="/admin/settings" className={`bn-item ${isActive(["/admin/settings"])}`}>
-                  <i className="bi bi-gear"></i><span>Ajustes</span>
+                  <i className="bi bi-gear"></i><span>Config</span>
                 </Link>
               </li>
             </>

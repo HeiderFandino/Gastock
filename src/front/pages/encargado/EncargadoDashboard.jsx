@@ -11,7 +11,7 @@ import VentaModal from "./VentaModal";
 import ventaServices from "../../services/ventaServices";
 import { useNavigate } from "react-router-dom";
 import { PatchAnnouncement } from "../../components/PatchAnnouncement";
-import { FiArrowLeft, FiTrendingUp, FiDollarSign, FiPercent, FiPlus } from "react-icons/fi";
+import { FiTrendingUp, FiDollarSign, FiPercent, FiPlus } from "react-icons/fi";
 
 export const EncargadoDashboard = () => {
   const { store } = useGlobalReducer();

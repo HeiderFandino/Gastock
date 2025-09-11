@@ -47,16 +47,14 @@ const AdminGastos = () => {
         <div className="container-fluid px-4 py-3">
           <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div>
-              <h4 className="fw-bold mb-1 d-flex align-items-center gap-2">
-                💸 Gestión de Gastos
-              </h4>
-              <p className="text-muted small mb-0">
-                Analiza y controla los gastos de todos tus restaurantes
-              </p>
+              <h1 className="h4 fw-bold mb-0" style={{ color: "var(--color-text)" }}>
+                💸 Gastos — Visión General
+              </h1>
+              <p className="text-muted mb-0 small">Análisis de gastos mensual, gasto por restaurante y evolución anual</p>
             </div>
             
-            {/* Controles de navegación de fecha elegantes */}
-            <div className="d-flex align-items-center gap-2">
+            {/* Controles de mes */}
+            <div className="d-flex align-items-center gap-2 flex-shrink-0">
               <button 
                 className="btn btn-sm rounded-pill d-flex align-items-center justify-content-center"
                 onClick={retrocederMes}
@@ -86,7 +84,7 @@ const AdminGastos = () => {
                   background: 'var(--color-bg-card)',
                   border: '1px solid var(--color-border)',
                   color: 'var(--color-text)',
-                  minWidth: '200px',
+                  minWidth: '180px',
                   textAlign: 'center'
                 }}
               >
@@ -134,9 +132,9 @@ const AdminGastos = () => {
           <ResumenGastos mes={mes} ano={ano} />
         </div>
 
-        {/* Grid responsive: gráfico barras (izq) + tabla proveedores (der) */}
+        {/* Grid: Barras por restaurante + Tabla proveedores */}
         <div className="row g-4 mb-4">
-          <div className="col-lg-8">
+          <div className="col-12 col-xl-7">
             <div 
               className="h-100 p-0 overflow-hidden"
               style={{
@@ -163,13 +161,13 @@ const AdminGastos = () => {
                   Gastos por Restaurante
                 </h5>
               </div>
-              <div className="p-4">
+              <div className="p-4" style={{ height: "450px" }}>
                 <GastoPorRestauranteChart mes={mes} ano={ano} />
               </div>
             </div>
           </div>
 
-          <div className="col-lg-4">
+          <div className="col-12 col-xl-5">
             <div 
               className="h-100 p-0 overflow-hidden"
               style={{

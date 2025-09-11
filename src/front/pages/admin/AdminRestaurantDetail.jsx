@@ -5,9 +5,9 @@ import adminService from "../../services/adminService";
 import GastosChef from "../../components/GastosChef";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
-
-// Estilos ya incluidos en brand-unified.css
-import { FiArrowLeft, FiTrendingUp, FiDollarSign } from "react-icons/fi";
+import "../../styles/EncargadoDashboard.css";
+import "../../styles/AdminGastos.css";
+import { FiTrendingUp, FiDollarSign, FiPercent, FiPlus } from "react-icons/fi";
 
 const AdminRestaurantDetail = () => {
   const { id } = useParams();
@@ -146,386 +146,259 @@ const AdminRestaurantDetail = () => {
   }, [fechaSeleccionada]);
 
   return (
-    <div className="min-vh-100" style={{ background: "var(--color-bg)" }}>
-      {/* Header */}
-      <div
-        className="sticky-top"
-        style={{ background: "var(--color-bg)", borderBottom: "1px solid var(--color-border)", zIndex: 10 }}
-      >
-        <div className="container-fluid px-4 py-3">
-          <div className="d-flex align-items-center justify-content-between">
-            <div className="d-flex align-items-center gap-3">
-              <button
-                className="btn-gastock-outline btn-sm d-flex align-items-center gap-2"
-                onClick={() => navigate(`/admin/dashboard`)}
-                style={{ padding: '8px 12px' }}
-              >
-                <FiArrowLeft size={16} /> Volver
-              </button>
-              <div>
-                <h1 className="h4 fw-bold mb-0" style={{ color: "var(--color-text)" }}>
-                  🏢 {restaurante?.nombre || `Restaurante #${id}`}
-                </h1>
-                <p className="text-muted mb-0 small">Análisis detallado de ventas y gastos</p>
+    <div className="dashboard-container admin-bb">
+      {/* ===== Header compacto v2 ===== */}
+      <div className="ag-header mb-3">
+        <div className="ag-header-top">
+          <div className="ag-brand-dot" />
+        </div>
+
+        <div className="ag-title-wrap">
+          <h1 className="ag-title">🏢 {restaurante?.nombre || `Restaurante #${id}`}</h1>
+          <p className="ag-subtitle">Análisis detallado de ventas y gastos del restaurante.</p>
+        </div>
+
+        {/* Controles Mes (compactos y centrados) */}
+        <div className="ag-monthbar">
+          <button className="ag-monthbtn" onClick={retrocederMes} aria-label="Mes anterior">←</button>
+
+          <div className="ag-monthpill">
+            {nombreMes}
+            {/* input real (oculto) para accesibilidad y teclado */}
+            <input
+              type="month"
+              className="ag-month-hidden"
+              value={fechaSeleccionada}
+              onChange={(e) => onChangeMesInput(e.target.value)}
+              aria-label="Seleccionar mes"
+            />
+          </div>
+
+          <button className="ag-monthbtn" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
+        </div>
+      </div>
+
+      {cargando && (
+        <div className="text-center py-4">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-3 text-muted">Cargando datos...</p>
+        </div>
+      )}
+
+      {/* ===== VENTAS ===== */}
+      <div className="ag-card mb-4">
+        <div className="ag-card-header">
+          <div className="ag-icon">📊</div>
+          <h5 className="mb-0">Análisis de Ventas</h5>
+        </div>
+        <div className="p-3 p-md-4">
+          {/* KPIs móviles de ventas */}
+          <div className="row g-2 mb-3 d-md-none">
+            <div className="col-4">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
+                    💰
+                  </div>
+                  <div className="fw-bold text-warning" style={{ fontSize: '0.9rem' }}>
+                    {totalVentas.toLocaleString("es-ES", { maximumFractionDigits: 0 })}{simbolo}
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>Ventas</div>
+                </div>
               </div>
             </div>
-
-            {/* Controles de mes */}
-            <div className="d-flex align-items-center gap-2">
-              <button
-                className="btn d-flex align-items-center justify-content-center"
-                style={{ 
-                  width: '40px', 
-                  height: '40px', 
-                  borderRadius: '10px',
-                  background: 'var(--color-bg-card)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'var(--color-bg-subtle)';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'var(--color-bg-card)';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-                onClick={retrocederMes}
-                aria-label="Mes anterior"
-              >
-                ←
-              </button>
-
-              <div 
-                className="px-4 py-2 fw-medium text-center" 
-                style={{ 
-                  background: 'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-subtle))', 
-                  border: '1px solid var(--color-border)', 
-                  borderRadius: '12px',
-                  minWidth: '200px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
-                  fontSize: '0.95rem',
-                  color: 'var(--color-text)'
-                }}
-              >
-                📅 {nombreMes}
-                <input
-                  type="month"
-                  style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
-                  value={fechaSeleccionada}
-                  onChange={(e) => onChangeMesInput(e.target.value)}
-                  aria-label="Seleccionar mes"
-                />
+            <div className="col-4">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-info-12)', color: 'var(--color-info)', width: 40, height: 40, fontSize: '1rem' }}>
+                    📈
+                  </div>
+                  <div className="fw-bold text-info" style={{ fontSize: '0.9rem' }}>
+                    {promedioDiario.toLocaleString("es-ES", { maximumFractionDigits: 0 })}{simbolo}
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>Promedio</div>
+                </div>
               </div>
+            </div>
+            <div className="col-4">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-success-12)', color: 'var(--color-success)', width: 40, height: 40, fontSize: '1rem' }}>
+                    📊
+                  </div>
+                  <div className="fw-bold text-success" style={{ fontSize: '0.9rem' }}>
+                    {proyeccionMensual.toLocaleString("es-ES", { maximumFractionDigits: 0 })}{simbolo}
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>Proyección</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-              <button
-                className="btn d-flex align-items-center justify-content-center"
-                style={{ 
-                  width: '40px', 
-                  height: '40px', 
-                  borderRadius: '10px',
-                  background: 'var(--color-bg-card)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'var(--color-bg-subtle)';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'var(--color-bg-card)';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-                onClick={avanzarMes}
-                aria-label="Mes siguiente"
-              >
-                →
-              </button>
+          <div className="row align-items-center">
+            <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch d-none d-md-flex">
+              <ResumenCard icon="💰" color="warning" label="Ventas actuales" value={totalVentas} simbolo={simbolo} />
+              <ResumenCard icon="📈" color="info" label="Promedio diario" value={promedioDiario} simbolo={simbolo} />
+              <ResumenCard icon="📊" color="success" label="Proyección mensual" value={proyeccionMensual} simbolo={simbolo} />
+            </div>
+
+            <div className="col-12 col-md-9 mt-3 mt-md-0">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={ventas}>
+                  <XAxis dataKey="dia" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="monto" fill="#ffa94d" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container-fluid px-4 py-4">
-
-        {/* ===== KPIs móviles ===== */}
-        <div className="row g-3 mb-4 d-md-none">
-          <div className="col-6">
-            <div 
-              className="p-3 text-center h-100"
-              style={{
-                background: "var(--color-bg-card)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "12px",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
-              }}
-            >
-              <div 
-                className="mx-auto mb-2 d-flex align-items-center justify-content-center"
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'var(--color-bg-subtle)',
-                  borderRadius: '10px',
-                  color: 'var(--color-primary)'
-                }}
-              >
-                <FiTrendingUp size={18} />
-              </div>
-              <div className="fw-bold text-success" style={{ fontSize: '1.1rem' }}>
-                {totalVentas.toLocaleString("es-ES", { maximumFractionDigits: 0 })}{simbolo}
-              </div>
-              <div className="text-muted small">💰 Ventas</div>
-            </div>
-          </div>
-          <div className="col-6">
-            <div 
-              className="p-3 text-center h-100"
-              style={{
-                background: "var(--color-bg-card)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "12px",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
-              }}
-            >
-              <div 
-                className="mx-auto mb-2 d-flex align-items-center justify-content-center"
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'var(--color-bg-subtle)',
-                  borderRadius: '10px',
-                  fontSize: '1.2rem'
-                }}
-              >
-                {icono}
-              </div>
-              <div className={`fw-bold ${textClass}`} style={{ fontSize: '1.1rem' }}>
-                {porcentaje.toFixed(1)}%
-              </div>
-              <div className="text-muted small">💸 % Gasto</div>
-            </div>
-          </div>
+      {/* ===== GASTOS ===== */}
+      <div className="ag-card mb-4">
+        <div className="ag-card-header">
+          <div className="ag-icon">💸</div>
+          <h5 className="mb-0">Análisis de Gastos</h5>
         </div>
-
-        {cargando && (
-          <div className="text-center py-4">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Cargando...</span>
-            </div>
-            <p className="mt-3 text-muted">Cargando datos...</p>
-          </div>
-        )}
-
-        {/* ===== VENTAS ===== */}
-        <div 
-          className="mb-4"
-          style={{
-            background: "var(--color-bg-card)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "16px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
-          }}
-        >
-          <div 
-            className="px-4 py-3 d-flex align-items-center gap-3"
-            style={{ borderBottom: "1px solid var(--color-border)" }}
-          >
-            <div 
-              className="d-flex align-items-center justify-content-center"
-              style={{
-                width: '40px',
-                height: '40px',
-                background: 'var(--color-bg-subtle)',
-                borderRadius: '10px',
-                fontSize: '1.2rem'
-              }}
-            >
-              📊
-            </div>
-            <h5 className="mb-0 fw-bold" style={{ color: "var(--color-text)" }}>Análisis de Ventas</h5>
-          </div>
-          <div className="p-4">
-            <div className="row align-items-center">
-              <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch">
-                <ResumenCard icon="💰" color="info" label="Ventas actuales" value={totalVentas} simbolo={simbolo} />
-                <ResumenCard icon="📈" color="warning" label="Promedio diario" value={promedioDiario} simbolo={simbolo} />
-                <ResumenCard icon="📊" color="success" label="Proyección mensual" value={proyeccionMensual} simbolo={simbolo} />
-              </div>
-
-              <div className="col-12 col-md-9 mt-3 mt-md-0">
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={ventas}>
-                    <XAxis dataKey="dia" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="monto" fill="var(--color-primary)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ===== GASTOS ===== */}
-        <div 
-          className="mb-4"
-          style={{
-            background: "var(--color-bg-card)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "16px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
-          }}
-        >
-          <div 
-            className="px-4 py-3 d-flex align-items-center gap-3"
-            style={{ borderBottom: "1px solid var(--color-border)" }}
-          >
-            <div 
-              className="d-flex align-items-center justify-content-center"
-              style={{
-                width: '40px',
-                height: '40px',
-                background: 'var(--color-bg-subtle)',
-                borderRadius: '10px',
-                fontSize: '1.2rem'
-              }}
-            >
-              💸
-            </div>
-            <h5 className="mb-0 fw-bold" style={{ color: "var(--color-text)" }}>Análisis de Gastos</h5>
-          </div>
-          <div className="p-4">
-            <div className="row align-items-center">
-              <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch">
-                <ResumenCard icon="💸" color="info" label="Gastos actuales" value={gastoTotal} simbolo={simbolo} />
-
-                <div 
-                  className="p-3 text-center w-100"
-                  style={{
-                    background: "var(--color-bg-subtle)",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "12px"
-                  }}
-                >
-                  <div
-                    className={`rounded-circle d-inline-flex align-items-center justify-content-center mb-2`}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      fontSize: '1.2rem'
-                    }}
-                    aria-hidden="true"
-                  >
-                    {icono}
+        <div className="p-3 p-md-4">
+          {/* KPIs móviles de gastos */}
+          <div className="row g-2 mb-3 d-md-none">
+            <div className="col-6">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-info-12)', color: 'var(--color-info)', width: 40, height: 40, fontSize: '1rem' }}>
+                    💸
                   </div>
-                  <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
-                  <div className={`fs-4 fw-bold ${textClass}`}>{porcentaje.toFixed(2)}%</div>
+                  <div className="fw-bold text-info" style={{ fontSize: '0.9rem' }}>
+                    {gastoTotal.toLocaleString("es-ES", { maximumFractionDigits: 0 })}{simbolo}
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>Gastos totales</div>
                 </div>
               </div>
-
-              <div className="col-12 col-md-9 mt-3 mt-md-0">
-                <h6 className="text-center mb-3" style={{ color: "var(--color-text)" }}>Gráfico Diario de Gastos</h6>
-                <GastosChef
-                  datos={gastoDatos}
-                  ancho="100%"
-                  alto={250}
-                  rol="admin"
-                  xAxisProps={{ dataKey: "dia" }}
-                  yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
-                  tooltipProps={{ formatter: (v) => `${v}%` }}
-                  lineProps={{ dataKey: "porcentaje", stroke: "var(--brand-600)", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }}
-                />
+            </div>
+            <div className="col-6">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
+                    {icono}
+                  </div>
+                  <div className={`fw-bold ${textClass}`} style={{ fontSize: '0.9rem' }}>
+                    {porcentaje.toFixed(1)}%
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>% Gastos</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* ===== Acciones rápidas ===== */}
-        <div 
-          style={{
-            background: "var(--color-bg-card)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "16px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
-          }}
-        >
-          <div 
-            className="px-4 py-3 d-flex align-items-center gap-3"
-            style={{ borderBottom: "1px solid var(--color-border)" }}
-          >
-            <div 
-              className="d-flex align-items-center justify-content-center"
-              style={{
-                width: '40px',
-                height: '40px',
-                background: 'var(--color-bg-subtle)',
-                borderRadius: '10px',
-                fontSize: '1.2rem'
-              }}
-            >
-              ⚡
+          <div className="row align-items-center">
+            <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch d-none d-md-flex">
+              <ResumenCard icon="💸" color="info" label="Gastos actuales" value={gastoTotal} simbolo={simbolo} />
+
+              <div className="card-brand p-3 text-center w-100">
+                <div
+                  className={`icono-circular rounded-circle d-inline-flex align-items-center justify-content-center mb-2 ${textClass}`}
+                  aria-hidden="true"
+                >
+                  {icono}
+                </div>
+                <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
+                <div className={`fs-4 fw-bold ${textClass}`}>{porcentaje.toFixed(2)} %</div>
+              </div>
             </div>
-            <h5 className="mb-0 fw-bold" style={{ color: "var(--color-text)" }}>Acciones Rápidas</h5>
+
+            <div className="col-12 col-md-9 mt-3 mt-md-0">
+              <h6 className="text-center mb-3 d-none d-md-block">Gráfico Diario de Gastos</h6>
+              <GastosChef
+                datos={gastoDatos}
+                ancho="100%"
+                alto={250}
+                rol="encargado"
+                xAxisProps={{
+                  dataKey: "dia",
+                  type: "number",
+                  domain: [1, diasDelMes],
+                  allowDecimals: false,
+                  tickCount: diasDelMes,
+                }}
+                yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
+                tooltipProps={{ formatter: (v) => `${v}%` }}
+                lineProps={{ dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }}
+              />
+            </div>
           </div>
-          <div className="p-4">
-            <div className="d-flex flex-wrap justify-content-center gap-3">
+        </div>
+      </div>
+
+      {/* ===== Acciones rápidas ===== */}
+      <div className="ag-card">
+        <div className="ag-card-header">
+          <div className="ag-icon">⚡</div>
+          <h5 className="mb-0">Acciones Rápidas</h5>
+        </div>
+        <div className="p-3 p-md-4">
+          <div className="mt-0">
+            {/* Grid responsive más compacto */}
+            <div className="row g-2 justify-content-center">
               {[
                 {
-                  icon: "📊",
-                  title: "Ventas Detalladas",
-                  subtitle: "Ver ventas día a día",
+                  icon: "📅",
+                  title: "Ver Ventas",
+                  subtitle: "Historial mensual",
                   link: `/admin/ventas-detalle?restaurante_id=${id}&mes=${mes}&ano=${ano}`,
+                  bgToken: "var(--tint-warning-12)",
+                  fgToken: "var(--color-warning)",
                 },
                 {
-                  icon: "💸",
-                  title: "Gastos Detallados",
-                  subtitle: "Ver gastos por fecha",
+                  icon: "📈",
+                  title: "Ver Gastos",
+                  subtitle: "Detalle mensual",
                   link: `/admin/gastos-detalle?restaurante_id=${id}&mes=${mes}&ano=${ano}`,
+                  bgToken: "var(--tint-success-12)",
+                  fgToken: "var(--color-success)",
                 },
-              ].map((a, i) => (
-                <Link
-                  to={a.link}
-                  key={i}
-                  className="text-decoration-none"
-                  style={{ flex: "1 1 200px", maxWidth: "230px" }}
-                >
-                  <div 
-                    className="p-4 h-100 text-center"
-                    style={{
-                      background: "var(--color-bg-subtle)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "12px",
-                      transition: "all 0.2s ease",
-                      color: "var(--color-text)"
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+              ].map((a, i) => {
+                const content = (
+                  <div
+                    className="card-quic card-brand p-2 h-100 text-center d-flex flex-column align-items-center justify-content-center"
                   >
-                    <div 
-                      className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
-                      style={{ 
-                        width: '60px', 
-                        height: '60px', 
-                        fontSize: "1.5rem",
-                        background: 'var(--color-bg-card)'
+                    {/* Ícono circular más pequeño */}
+                    <div
+                      className="d-flex align-items-center justify-content-center rounded-circle mb-2"
+                      style={{
+                        width: 45,
+                        height: 45,
+                        background: a.bgToken,
+                        color: a.fgToken,
+                        boxShadow: "var(--shadow-sm)",
                       }}
                     >
-                      {a.icon}
+                      <span style={{ fontSize: "1.2rem", lineHeight: 1 }}>{a.icon}</span>
                     </div>
-                    <h6 className="fw-bold mb-2">{a.title}</h6>
-                    <small className="text-muted">{a.subtitle}</small>
+
+                    <h6 className="fw-bold mb-1 text-center" style={{ color: "var(--color-text)", fontSize: "0.85rem" }}>
+                      {a.title}
+                    </h6>
+                    <small className="text-muted text-center" style={{ fontSize: "0.7rem" }}>{a.subtitle}</small>
                   </div>
-                </Link>
-              ))}
+                );
+
+                return (
+                  <div key={i} className="col-6 col-sm-6 col-md-6">
+                    <Link
+                      to={a.link}
+                      className="text-decoration-none"
+                      aria-label={a.title}
+                    >
+                      {content}
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -535,27 +408,14 @@ const AdminRestaurantDetail = () => {
 };
 
 const ResumenCard = ({ icon, color, label, value, simbolo }) => (
-  <div 
-    className="p-3 text-center w-100"
-    style={{
-      background: "var(--color-bg-subtle)",
-      border: "1px solid var(--color-border)",
-      borderRadius: "12px"
-    }}
-  >
+  <div className="card-brand p-3 text-center w-100">
     <div
-      className={`rounded-circle d-inline-flex align-items-center justify-content-center mb-2 text-${color}`}
-      style={{
-        width: '40px',
-        height: '40px',
-        fontSize: '1.2rem',
-        background: 'var(--color-bg-card)'
-      }}
+      className={`rounded-circle d-inline-flex align-items-center justify-content-center mb-2 text-${color} icono-circular`}
       aria-hidden="true"
     >
       {icon}
     </div>
-    <h6 className={`fw-bold text-${color} mb-1`}>{label}</h6>
+    <h6 className={`fw-bold text-${color}`}>{label}</h6>
     <div className={`fs-5 fw-bold text-${color}`}>
       {parseFloat(value || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       {simbolo}

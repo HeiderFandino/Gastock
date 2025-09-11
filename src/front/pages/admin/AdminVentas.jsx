@@ -48,7 +48,7 @@ const AdminVentas = () => {
         style={{ background: "var(--color-bg)", borderBottom: "1px solid var(--color-border)", zIndex: 10 }}
       >
         <div className="container-fluid px-4 py-3">
-          <div className="d-flex align-items-center justify-content-between">
+          <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div>
               <h1 className="h4 fw-bold mb-0" style={{ color: "var(--color-text)" }}>
                 💰 Ventas — Visión General
@@ -57,7 +57,7 @@ const AdminVentas = () => {
             </div>
 
             {/* Controles de mes */}
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 flex-shrink-0">
               <button
                 className="btn d-flex align-items-center justify-content-center"
                 style={{ 
@@ -89,7 +89,7 @@ const AdminVentas = () => {
                   background: 'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-subtle))', 
                   border: '1px solid var(--color-border)', 
                   borderRadius: '12px',
-                  minWidth: '200px',
+                  minWidth: '180px',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
                   fontSize: '0.95rem',
                   color: 'var(--color-text)'
@@ -144,7 +144,7 @@ const AdminVentas = () => {
 
         {/* Grid: Barras por restaurante + Top tabla */}
         <div className="row g-4 mb-4">
-          <div className="col-12 col-lg-8">
+          <div className="col-12 col-xl-7">
             <div 
               style={{
                 background: "var(--color-bg-card)",
@@ -171,13 +171,13 @@ const AdminVentas = () => {
                 </div>
                 <h5 className="mb-0 fw-bold" style={{ color: "var(--color-text)" }}>Ventas por restaurante</h5>
               </div>
-              <div className="p-4">
+              <div className="p-4" style={{ height: "450px" }}>
                 <VentasPorRestauranteChart mes={mes} ano={ano} />
               </div>
             </div>
           </div>
 
-          <div className="col-12 col-lg-4">
+          <div className="col-12 col-xl-5">
             <div 
               style={{
                 background: "var(--color-bg-card)",

@@ -8,7 +8,7 @@ import CompactMonthFilter from "./CompactMonthFilter";
 import "../../styles/Encargado.css";
 import "../../styles/EncargadoGastos.mobile.css";
 // Estilos ya incluidos en brand-unified.css
-import { FiEdit2, FiTrash2, FiPlus, FiArrowLeft } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
 
 export const DetalleGastosMensual = () => {
   const simbolo = MonedaSimbolo();
