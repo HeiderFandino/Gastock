@@ -28,61 +28,129 @@ export const Sidebar = () => {
       p.includes(":")
         ? location.pathname.startsWith(p.replace(":id", id || ""))
         : location.pathname === p
-    )
-      ? "color-orange-bold"
-      : "";
+    );
   };
+
+  const getNavLinkStyle = (active = false) => ({
+    borderRadius: '12px',
+    padding: '12px 16px',
+    margin: '2px 0',
+    transition: 'all 0.2s ease',
+    background: active ? 'var(--color-primary)' : 'transparent',
+    color: active ? 'white' : 'var(--color-text)',
+    boxShadow: active ? '0 2px 8px rgba(59, 130, 246, 0.3)' : 'none',
+    textDecoration: 'none',
+    border: 'none'
+  });
+
+  const getNavLinkHoverProps = (active = false) => ({
+    onMouseEnter: (e) => {
+      if (!active) {
+        e.target.style.background = 'var(--color-bg-subtle)';
+        e.target.style.transform = 'translateX(4px)';
+      }
+    },
+    onMouseLeave: (e) => {
+      if (!active) {
+        e.target.style.background = 'transparent';
+        e.target.style.transform = 'translateX(0)';
+      }
+    }
+  });
 
   return (
     <>
-      {/* === Sidebar (solo >= md) === */}
+      {/* === Sidebar moderno (solo >= md) === */}
       <div className="sidebar-container d-none d-md-flex">
         <nav
           id="sidebar"
-          className={`sidebar menu d-flex flex-column p-3 ${menuall ? "w-72" : "w-240"}`}
+          className={`sidebar menu d-flex flex-column ${menuall ? "w-72" : "w-240"}`}
+          style={{
+            background: "var(--color-bg-card)",
+            borderRight: "1px solid var(--color-border)",
+            backdropFilter: "blur(10px)",
+            boxShadow: "2px 0 8px rgba(0, 0, 0, 0.08)",
+            padding: "1rem"
+          }}
         >
-          <ul className="nav nav-pills flex-column gap-1">
+          <ul className="nav flex-column" style={{ gap: '4px' }}>
             {rol === "admin" && (
               <>
-                <li className={`nav-item ${isActive(["/admin/dashboard", `/admin/restaurante/${id || ""}`])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/admin/dashboard" title="Dashboard">
-                    <i className="bi bi-house me-2"></i>
-                    {!menuall && <span>Dashboard</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/admin/dashboard" 
+                    title="Dashboard"
+                    style={getNavLinkStyle(isActive(["/admin/dashboard", `/admin/restaurante/${id || ""}`]))}
+                    {...getNavLinkHoverProps(isActive(["/admin/dashboard", `/admin/restaurante/${id || ""}`]))}
+                  >
+                    <i className="bi bi-house me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Dashboard</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/admin/restaurantes/expense", "/admin/restaurantes/restaurant"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/admin/restaurantes/expense" title="Restaurantes">
-                    <i className="bi bi-shop me-2"></i>
-                    {!menuall && <span>Restaurantes</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/admin/restaurantes/expense" 
+                    title="Restaurantes"
+                    style={getNavLinkStyle(isActive(["/admin/restaurantes/expense", "/admin/restaurantes/restaurant"]))}
+                    {...getNavLinkHoverProps(isActive(["/admin/restaurantes/expense", "/admin/restaurantes/restaurant"]))}
+                  >
+                    <i className="bi bi-shop me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Restaurantes</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/admin/ventas"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/admin/ventas" title="Ventas">
-                    <i className="bi bi-bar-chart me-2"></i>
-                    {!menuall && <span>Ventas</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/admin/ventas" 
+                    title="Ventas"
+                    style={getNavLinkStyle(isActive(["/admin/ventas"]))}
+                    {...getNavLinkHoverProps(isActive(["/admin/ventas"]))}
+                  >
+                    <i className="bi bi-bar-chart me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Ventas</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/admin/gastos"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/admin/gastos" title="Gastos">
-                    <i className="bi bi-cash-coin me-2"></i>
-                    {!menuall && <span>Gastos</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/admin/gastos" 
+                    title="Gastos"
+                    style={getNavLinkStyle(isActive(["/admin/gastos"]))}
+                    {...getNavLinkHoverProps(isActive(["/admin/gastos"]))}
+                  >
+                    <i className="bi bi-cash-coin me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Gastos</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/admin/usuarios"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/admin/usuarios" title="Usuarios">
-                    <i className="bi bi-people me-2"></i>
-                    {!menuall && <span>Usuarios</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/admin/usuarios" 
+                    title="Usuarios"
+                    style={getNavLinkStyle(isActive(["/admin/usuarios"]))}
+                    {...getNavLinkHoverProps(isActive(["/admin/usuarios"]))}
+                  >
+                    <i className="bi bi-people me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Usuarios</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/admin/settings"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/admin/settings" title="Configuración">
-                    <i className="bi bi-gear me-2"></i>
-                    {!menuall && <span>Configuración</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/admin/settings" 
+                    title="Configuración"
+                    style={getNavLinkStyle(isActive(["/admin/settings"]))}
+                    {...getNavLinkHoverProps(isActive(["/admin/settings"]))}
+                  >
+                    <i className="bi bi-gear me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Configuración</span>}
                   </Link>
                 </li>
               </>
@@ -90,38 +158,68 @@ export const Sidebar = () => {
 
             {rol === "encargado" && (
               <>
-                <li className={`nav-item ${isActive(["/encargado/dashboard"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/encargado/dashboard" title="Dashboard">
-                    <i className="bi bi-house me-2"></i>
-                    {!menuall && <span>Dashboard</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/encargado/dashboard" 
+                    title="Dashboard"
+                    style={getNavLinkStyle(isActive(["/encargado/dashboard"]))}
+                    {...getNavLinkHoverProps(isActive(["/encargado/dashboard"]))}
+                  >
+                    <i className="bi bi-house me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Dashboard</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/encargado/ventas", "/encargado/registrar-venta"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/encargado/ventas" title="Ventas">
-                    <i className="bi bi-bar-chart me-2"></i>
-                    {!menuall && <span>Ventas</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/encargado/ventas" 
+                    title="Ventas"
+                    style={getNavLinkStyle(isActive(["/encargado/ventas", "/encargado/registrar-venta"]))}
+                    {...getNavLinkHoverProps(isActive(["/encargado/ventas", "/encargado/registrar-venta"]))}
+                  >
+                    <i className="bi bi-bar-chart me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Ventas</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/encargado/gastos", "/encargado/gastos/registrar"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/encargado/gastos" title="Gastos">
-                    <i className="bi bi-cash-stack me-2"></i>
-                    {!menuall && <span>Gastos</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/encargado/gastos" 
+                    title="Gastos"
+                    style={getNavLinkStyle(isActive(["/encargado/gastos", "/encargado/gastos/registrar"]))}
+                    {...getNavLinkHoverProps(isActive(["/encargado/gastos", "/encargado/gastos/registrar"]))}
+                  >
+                    <i className="bi bi-cash-stack me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Gastos</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/encargado/proveedores"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/encargado/proveedores" title="Proveedores">
-                    <i className="bi bi-truck me-2"></i>
-                    {!menuall && <span>Proveedores</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/encargado/proveedores" 
+                    title="Proveedores"
+                    style={getNavLinkStyle(isActive(["/encargado/proveedores"]))}
+                    {...getNavLinkHoverProps(isActive(["/encargado/proveedores"]))}
+                  >
+                    <i className="bi bi-truck me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Proveedores</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/encargado/settings"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/encargado/settings" title="Configuración">
-                    <i className="bi bi-gear me-2"></i>
-                    {!menuall && <span>Configuración</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/encargado/settings" 
+                    title="Configuración"
+                    style={getNavLinkStyle(isActive(["/encargado/settings"]))}
+                    {...getNavLinkHoverProps(isActive(["/encargado/settings"]))}
+                  >
+                    <i className="bi bi-gear me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Configuración</span>}
                   </Link>
                 </li>
               </>
@@ -129,31 +227,55 @@ export const Sidebar = () => {
 
             {rol === "chef" && (
               <>
-                <li className={`nav-item ${isActive(["/chef/dashboard"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/chef/dashboard" title="Dashboard">
-                    <i className="bi bi-house me-2"></i>
-                    {!menuall && <span>Dashboard</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/chef/dashboard" 
+                    title="Dashboard"
+                    style={getNavLinkStyle(isActive(["/chef/dashboard"]))}
+                    {...getNavLinkHoverProps(isActive(["/chef/dashboard"]))}
+                  >
+                    <i className="bi bi-house me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Dashboard</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/chef/proveedores"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/chef/proveedores" title="Proveedores">
-                    <i className="bi bi-truck me-2"></i>
-                    {!menuall && <span>Proveedores</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/chef/proveedores" 
+                    title="Proveedores"
+                    style={getNavLinkStyle(isActive(["/chef/proveedores"]))}
+                    {...getNavLinkHoverProps(isActive(["/chef/proveedores"]))}
+                  >
+                    <i className="bi bi-truck me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Proveedores</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/chef/gastos", "/chef/gastos/registrar"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/chef/gastos" title="Gastos">
-                    <i className="bi bi-receipt me-2"></i>
-                    {!menuall && <span>Gastos</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/chef/gastos" 
+                    title="Gastos"
+                    style={getNavLinkStyle(isActive(["/chef/gastos", "/chef/gastos/registrar"]))}
+                    {...getNavLinkHoverProps(isActive(["/chef/gastos", "/chef/gastos/registrar"]))}
+                  >
+                    <i className="bi bi-receipt me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Gastos</span>}
                   </Link>
                 </li>
 
-                <li className={`nav-item ${isActive(["/chef/settings"])}`}>
-                  <Link className="nav-link d-flex align-items-center" to="/chef/settings" title="Configuración">
-                    <i className="bi bi-gear me-2"></i>
-                    {!menuall && <span>Configuración</span>}
+                <li className="nav-item">
+                  <Link 
+                    className="nav-link d-flex align-items-center" 
+                    to="/chef/settings" 
+                    title="Configuración"
+                    style={getNavLinkStyle(isActive(["/chef/settings"]))}
+                    {...getNavLinkHoverProps(isActive(["/chef/settings"]))}
+                  >
+                    <i className="bi bi-gear me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Configuración</span>}
                   </Link>
                 </li>
               </>
@@ -162,19 +284,42 @@ export const Sidebar = () => {
 
           <div className="logout mt-auto">
             <button
-              className={`nav-link text-muted d-flex align-items-center bg-transparent border-0 ${menuall ? "logout-column" : "logout-row"}`}
+              className="nav-link d-flex align-items-center bg-transparent border-0 w-100"
               onClick={handleLogout}
               title="Cerrar sesión"
+              style={{
+                ...getNavLinkStyle(false),
+                color: 'var(--color-text-muted)',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'var(--color-bg-subtle)';
+                e.target.style.transform = 'translateX(4px)';
+                e.target.style.color = 'var(--color-danger)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'transparent';
+                e.target.style.transform = 'translateX(0)';
+                e.target.style.color = 'var(--color-text-muted)';
+              }}
             >
-              <i className="bi bi-box-arrow-left me-2"></i>
-              {!menuall && <span>Cerrar sesión</span>}
+              <i className="bi bi-box-arrow-left me-2" style={{ fontSize: '1.1rem' }}></i>
+              {!menuall && <span className="fw-medium">Cerrar sesión</span>}
             </button>
           </div>
         </nav>
       </div>
 
-      {/* === Bottom Nav (solo móvil) === */}
-      <nav className="bottom-nav d-md-none">
+      {/* === Bottom Nav moderno (solo móvil) === */}
+      <nav 
+        className="bottom-nav d-md-none" 
+        style={{
+          background: "var(--color-bg-card)",
+          borderTop: "1px solid var(--color-border)",
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 -2px 8px rgba(0, 0, 0, 0.08)"
+        }}
+      >
         <ul className="d-flex justify-content-around m-0 p-0 list-unstyled">
           {rol === "admin" && (
             <>

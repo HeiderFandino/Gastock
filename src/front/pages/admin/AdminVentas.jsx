@@ -10,8 +10,7 @@ import EvolucionVentasMensual from "./VistaVentas/EvolucionVentasMensual";
 // import FiltrosVentas from "./VistaVentas/FiltrosVentas";
 
 
-// Reutilizamos el mismo CSS de Gastos para el layout (ag-*)
-import "../../styles/AdminGastos.css";
+// Estilos ya incluidos en brand-unified.css
 
 const AdminVentas = () => {
   const navigate = useNavigate();
@@ -42,97 +41,210 @@ const AdminVentas = () => {
   };
 
   return (
-    <div className="dashboard-container">
-      {/* Volver */}
-      {/* HEADER COMPACTO V2 PARA VENTAS */}
-      <div className="ag-header mb-3">
-        <div className="ag-header-top">
+    <div className="min-vh-100" style={{ background: "var(--color-bg)" }}>
+      {/* Header */}
+      <div
+        className="sticky-top"
+        style={{ background: "var(--color-bg)", borderBottom: "1px solid var(--color-border)", zIndex: 10 }}
+      >
+        <div className="container-fluid px-4 py-3">
+          <div className="d-flex align-items-center justify-content-between">
+            <div>
+              <h1 className="h4 fw-bold mb-0" style={{ color: "var(--color-text)" }}>
+                💰 Ventas — Visión General
+              </h1>
+              <p className="text-muted mb-0 small">Resumen mensual, ranking por restaurante y evolución anual</p>
+            </div>
 
-          <div className="ag-brand-dot" />
-        </div>
+            {/* Controles de mes */}
+            <div className="d-flex align-items-center gap-2">
+              <button
+                className="btn d-flex align-items-center justify-content-center"
+                style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '10px',
+                  background: 'var(--color-bg-card)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'var(--color-bg-subtle)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'var(--color-bg-card)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+                onClick={retrocederMes}
+                aria-label="Mes anterior"
+              >
+                ←
+              </button>
 
-        <div className="ag-title-wrap">
-          <h1 className="ag-title">Ventas — Visión General</h1>
-          <p className="ag-subtitle">Resumen mensual, ranking por restaurante y evolución anual.</p>
-        </div>
+              <div 
+                className="px-4 py-2 fw-medium text-center" 
+                style={{ 
+                  background: 'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-subtle))', 
+                  border: '1px solid var(--color-border)', 
+                  borderRadius: '12px',
+                  minWidth: '200px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                  fontSize: '0.95rem',
+                  color: 'var(--color-text)'
+                }}
+              >
+                📅 {new Date(ano, mes - 1, 1).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}
+                <input
+                  type="month"
+                  style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
+                  value={mesAno}
+                  onChange={(e) => setMesAno(e.target.value)}
+                  aria-label="Seleccionar mes"
+                />
+              </div>
 
-        {/* Controles Mes (compactos y centrados) */}
-        <div className="ag-monthbar">
-          <button className="ag-monthbtn" onClick={retrocederMes} aria-label="Mes anterior">←</button>
-
-          <div className="ag-monthpill">
-            {new Date(ano, mes - 1, 1).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}
-            {/* input real (oculto) para accesibilidad y teclado */}
-            <input
-              type="month"
-              className="ag-month-hidden"
-              value={mesAno}
-              onChange={(e) => setMesAno(e.target.value)}
-              aria-label="Seleccionar mes"
-            />
+              <button
+                className="btn d-flex align-items-center justify-content-center"
+                style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '10px',
+                  background: 'var(--color-bg-card)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'var(--color-bg-subtle)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'var(--color-bg-card)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+                onClick={avanzarMes}
+                aria-label="Mes siguiente"
+              >
+                →
+              </button>
+            </div>
           </div>
-
-          <button className="ag-monthbtn" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
         </div>
       </div>
 
+      <div className="container-fluid px-4 py-4">
 
-      {/* KPIs */}
-      <section className="ag-section">
-        <ResumenVentas mes={mes} ano={ano} />
-      </section>
 
-      {/* Grid: Barras por restaurante + Top tabla */}
-      <section className="ag-grid">
-        <div className="ag-card">
-          <div className="ag-card-header">
-            <div className="ag-icon">📊</div>
-            <h5 className="mb-0">Ventas por restaurante</h5>
-          </div>
-          <div className="ag-chart-wrap">
-            <VentasPorRestauranteChart mes={mes} ano={ano} />
-          </div>
-        </div>
-
-        <div className="ag-card">
-          <div className="ag-card-header">
-            <div className="ag-icon">🏆</div>
-            <h5 className="mb-0">Top restaurantes</h5>
-          </div>
-          <div className="p-3">
-            <TablaTopRestaurantes mes={mes} ano={ano} top={15} />
-          </div>
-        </div>
-      </section>
-
-      {/* Evolución anual */}
-      <section className="ag-card mt-3">
-        <div className="ag-card-header">
-          <div className="ag-icon">📈</div>
-          <h5 className="mb-0">Evolución anual de ventas ({ano})</h5>
-        </div>
-        <div className="ag-chart-wrap">
-          <EvolucionVentasMensual ano={ano} />
-        </div>
-      </section>
-
-      {/* (Opcional) Filtros adicionales, si los tienes */}
-      {false && (
-        <section className="ag-card mt-3">
-          <div className="ag-card-header">
-            <div className="ag-icon">🧭</div>
-            <h5 className="mb-0">Filtros adicionales</h5>
-          </div>
-          <div className="p-3">
-            {/* <FiltrosVentas /> */}
-            <small className="text-muted d-block mt-2">
-              *Próximamente: selector de restaurante y exportación a CSV.
-            </small>
-          </div>
+        {/* KPIs */}
+        <section className="mb-4">
+          <ResumenVentas mes={mes} ano={ano} />
         </section>
-      )}
 
+        {/* Grid: Barras por restaurante + Top tabla */}
+        <div className="row g-4 mb-4">
+          <div className="col-12 col-lg-8">
+            <div 
+              style={{
+                background: "var(--color-bg-card)",
+                border: "1px solid var(--color-border)",
+                borderRadius: "16px",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
+              }}
+            >
+              <div 
+                className="px-4 py-3 d-flex align-items-center gap-3"
+                style={{ borderBottom: "1px solid var(--color-border)" }}
+              >
+                <div 
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    background: 'var(--color-bg-subtle)',
+                    borderRadius: '10px',
+                    fontSize: '1.2rem'
+                  }}
+                >
+                  📊
+                </div>
+                <h5 className="mb-0 fw-bold" style={{ color: "var(--color-text)" }}>Ventas por restaurante</h5>
+              </div>
+              <div className="p-4">
+                <VentasPorRestauranteChart mes={mes} ano={ano} />
+              </div>
+            </div>
+          </div>
 
+          <div className="col-12 col-lg-4">
+            <div 
+              style={{
+                background: "var(--color-bg-card)",
+                border: "1px solid var(--color-border)",
+                borderRadius: "16px",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
+              }}
+            >
+              <div 
+                className="px-4 py-3 d-flex align-items-center gap-3"
+                style={{ borderBottom: "1px solid var(--color-border)" }}
+              >
+                <div 
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    background: 'var(--color-bg-subtle)',
+                    borderRadius: '10px',
+                    fontSize: '1.2rem'
+                  }}
+                >
+                  🏆
+                </div>
+                <h5 className="mb-0 fw-bold" style={{ color: "var(--color-text)" }}>Top restaurantes</h5>
+              </div>
+              <div className="p-3">
+                <TablaTopRestaurantes mes={mes} ano={ano} top={15} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Evolución anual */}
+        <div 
+          className="mb-4"
+          style={{
+            background: "var(--color-bg-card)",
+            border: "1px solid var(--color-border)",
+            borderRadius: "16px",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
+          }}
+        >
+          <div 
+            className="px-4 py-3 d-flex align-items-center gap-3"
+            style={{ borderBottom: "1px solid var(--color-border)" }}
+          >
+            <div 
+              className="d-flex align-items-center justify-content-center"
+              style={{
+                width: '40px',
+                height: '40px',
+                background: 'var(--color-bg-subtle)',
+                borderRadius: '10px',
+                fontSize: '1.2rem'
+              }}
+            >
+              📈
+            </div>
+            <h5 className="mb-0 fw-bold" style={{ color: "var(--color-text)" }}>Evolución anual de ventas ({ano})</h5>
+          </div>
+          <div className="p-4">
+            <EvolucionVentasMensual ano={ano} />
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };

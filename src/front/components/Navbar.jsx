@@ -49,34 +49,93 @@ export const Navbar = () => {
   }, [open]);
 
   return (
-    <nav ref={navRef} className="navbar navbar-light bg-white border-bottom py-2 sticky-top">
-      <div className="container-fluid align-items-center">
+    <nav 
+      ref={navRef} 
+      className="navbar sticky-top" 
+      style={{ 
+        background: "var(--color-bg-card)", 
+        borderBottom: "1px solid var(--color-border)", 
+        backdropFilter: "blur(10px)",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
+      }}
+    >
+      <div className="container-fluid align-items-center py-2">
         {/* Brand */}
-        <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
+        <Link 
+          className="navbar-brand d-flex align-items-center gap-2" 
+          to="/"
+          style={{ color: "var(--color-text)" }}
+        >
           <img
             src={logo}
             alt="Gastock Logo"
             className="brand-logo"
             onError={(e) => { e.currentTarget.style.display = "none"; }}
+            style={{ height: "32px", width: "auto" }}
           />
         </Link>
 
-        {/* Bloque compacto: texto pegado al icono (SIEMPRE, móvil y desktop) */}
+        {/* Bloque compacto: texto pegado al icono */}
         <div className="user-compact d-flex align-items-center ms-auto">
-          <div className="user-lines me-2 text-end">
-            <div className="user-name fw-semibold text-truncate" title={nombre}>{nombre}</div>
-            <div className="user-role extra-small text-capitalize">{rol}</div>
+          <div className="user-lines me-3 text-end d-none d-md-block">
+            <div 
+              className="user-name fw-semibold text-truncate" 
+              title={nombre}
+              style={{ 
+                color: "var(--color-text)", 
+                fontSize: "0.9rem",
+                lineHeight: "1.2"
+              }}
+            >
+              {nombre}
+            </div>
+            <div 
+              className="user-role text-capitalize" 
+              style={{ 
+                color: "var(--color-text-secondary)", 
+                fontSize: "0.75rem",
+                lineHeight: "1.2"
+              }}
+            >
+              {rol}
+            </div>
             {rol !== "admin" && (
-              <div className="user-restaurant extra-small text-muted text-truncate" title={restaurante}>
+              <div 
+                className="user-restaurant text-truncate" 
+                title={restaurante}
+                style={{ 
+                  color: "var(--color-text-muted)", 
+                  fontSize: "0.7rem",
+                  lineHeight: "1.2"
+                }}
+              >
                 {restaurante}
               </div>
             )}
           </div>
 
-          {/* Botón avatar (toggle menú propio) */}
+          {/* Botón avatar moderno */}
           <button
             type="button"
-            className="avatar-btn"
+            className="btn d-flex align-items-center justify-content-center"
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "12px",
+              background: "var(--color-primary)",
+              border: "none",
+              color: "white",
+              transition: "all 0.2s ease",
+              boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "translateY(-1px)";
+              e.target.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.3)";
+            }}
             aria-haspopup="menu"
             aria-expanded={open ? "true" : "false"}
             onClick={(e) => {
@@ -84,33 +143,123 @@ export const Navbar = () => {
               setOpen((v) => !v);
             }}
           >
-            <i className="bi bi-person-circle" />
+            <i className="bi bi-person-circle" style={{ fontSize: "1.2rem" }} />
           </button>
         </div>
 
-        {/* Menú fijo superpuesto */}
+        {/* Menú moderno superpuesto */}
         {open && (
           <>
             {/* Fondo clicable para cerrar */}
-            <div className="user-menu-backdrop" />
-            <div ref={menuRef} className="user-menu">
-              {/* Cabecera con datos (útil en pantallas pequeñas) */}
-
+            <div 
+              className="position-fixed top-0 start-0 w-100 h-100"
+              style={{ 
+                background: "rgba(0, 0, 0, 0.1)",
+                zIndex: 999,
+                backdropFilter: "blur(2px)"
+              }}
+            />
+            <div 
+              ref={menuRef} 
+              className="position-absolute"
+              style={{
+                top: "calc(100% + 8px)",
+                right: "16px",
+                minWidth: "200px",
+                background: "var(--color-bg-card)",
+                border: "1px solid var(--color-border)",
+                borderRadius: "16px",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+                zIndex: 1000,
+                padding: "8px"
+              }}
+            >
+              {/* Cabecera móvil */}
+              <div className="d-md-none px-3 py-2 mb-2 border-bottom" style={{ borderColor: "var(--color-border)" }}>
+                <div 
+                  className="fw-semibold" 
+                  style={{ color: "var(--color-text)", fontSize: "0.9rem" }}
+                >
+                  {nombre}
+                </div>
+                <div 
+                  className="text-capitalize" 
+                  style={{ color: "var(--color-text-secondary)", fontSize: "0.75rem" }}
+                >
+                  {rol}
+                </div>
+                {rol !== "admin" && (
+                  <div 
+                    style={{ color: "var(--color-text-muted)", fontSize: "0.7rem" }}
+                  >
+                    {restaurante}
+                  </div>
+                )}
+              </div>
 
               <ul className="list-unstyled mb-0">
                 <li>
-                  <Link className="user-menu-item" to="/profile" onClick={() => setOpen(false)}>
+                  <Link 
+                    className="d-flex align-items-center px-3 py-2 text-decoration-none rounded-2"
+                    to="/profile" 
+                    onClick={() => setOpen(false)}
+                    style={{
+                      color: "var(--color-text)",
+                      transition: "all 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "var(--color-bg-subtle)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "transparent";
+                    }}
+                  >
                     <i className="bi bi-person me-2" /> Perfil
                   </Link>
                 </li>
                 <li>
-                  <Link className="user-menu-item" to={`/${rol}/settings`} onClick={() => setOpen(false)}>
-                    <i className="bi bi-gear me-2" /> Ajustes
+                  <Link 
+                    className="d-flex align-items-center px-3 py-2 text-decoration-none rounded-2"
+                    to={`/${rol}/settings`} 
+                    onClick={() => setOpen(false)}
+                    style={{
+                      color: "var(--color-text)",
+                      transition: "all 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "var(--color-bg-subtle)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "transparent";
+                    }}
+                  >
+                    <i className="bi bi-gear me-2" /> Configuración
                   </Link>
                 </li>
-                <li><hr className="my-2" /></li>
                 <li>
-                  <button className="user-menu-item text-danger" onClick={handleLogout}>
+                  <hr 
+                    className="my-2" 
+                    style={{ borderColor: "var(--color-border)", margin: "8px 0" }} 
+                  />
+                </li>
+                <li>
+                  <button 
+                    className="btn w-100 d-flex align-items-center px-3 py-2 rounded-2"
+                    onClick={handleLogout}
+                    style={{
+                      color: "var(--color-danger)",
+                      background: "transparent",
+                      border: "none",
+                      transition: "all 0.2s ease",
+                      textAlign: "left"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "var(--color-danger-light)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "transparent";
+                    }}
+                  >
                     <i className="bi bi-box-arrow-right me-2" /> Cerrar sesión
                   </button>
                 </li>
