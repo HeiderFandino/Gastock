@@ -28,7 +28,7 @@ import { ReporteVentas } from "./pages/encargado/ReporteVentas";
 import ConfigEncargado from "./pages/configuracion/ConfigEncargado.jsx";
 import { RegistrarGasto as RegistrarGastoEncargado } from "./pages/encargado/RegistrarGasto";
 import { Proveedores as ProveedoresEncargado } from "./pages/encargado/Proveedores";
-import { EncargadoVentas } from "./pages/encargado/EncargadoVentas";
+import EncargadoVentas from "./pages/encargado/EncargadoVentas";
 import { EncargadoGastos } from "./pages/encargado/EncargadoGastos";
 import { ProveedorForm } from "./components/shared/ProveedorForm";
 

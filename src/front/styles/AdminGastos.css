@@ -306,3 +306,43 @@
     padding: 0.55rem 0.6rem;
   }
 }
+
+/* ===== FAB (Floating Action Button) ===== */
+.ag-fab {
+  position: fixed;
+  bottom: 90px; /* Más arriba para evitar sidebar */
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: color-mix(in srgb, var(--color-primary) 85%, transparent 15%); /* Transparencia */
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 1050; /* Por encima del sidebar */
+  backdrop-filter: blur(8px); /* Efecto glassmorphism */
+}
+
+.ag-fab:hover {
+  background: var(--color-primary); /* Opaco al hover */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.ag-fab:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* FAB solo visible en móvil */
+@media (min-width: 768px) {
+  .ag-fab {
+    display: none;
+  }
+}

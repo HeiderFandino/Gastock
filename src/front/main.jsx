@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client'
 // 1) Framework primero (para que tus estilos puedan sobrescribir)
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// 2) Design system: variables globales (antes de TODO)
-import './styles/brand.css';
+// 2) Design system: variables globales (antes de TODO)  
+import './styles/brand-unified.css';
 
 // 3) Resto de estilos de la app (ya consumen tokens)
 import './index.css';
@@ -17,7 +17,6 @@ import './styles/Encargado.css';
 import './styles/UserModal.css';
 import './styles/EncargadoGastos.mobile.css';
 import './styles/EncargadoVentasMobile.css';
-import './styles/AdminDashboardBB.css';
 import './styles/AdminRestauranteComponent.css';
 import "./styles/login.css";
 

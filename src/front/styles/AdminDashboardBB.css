@@ -151,7 +151,7 @@
 .selector-mes__input {
   max-width: 220px;
   min-width: 160px;
-  background: #fff;
+  background: #540606;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);

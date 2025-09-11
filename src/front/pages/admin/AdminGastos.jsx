@@ -11,8 +11,7 @@ import FiltrosGasto from "./VistaGastos/FiltrosGasto";
 // Acciones rápidas (si ya las tienes)
 import { QuickActionsAdmin } from "../../components/QuickActionsAdmin";
 
-// CSS específico (hereda de brand)
-import "../../styles/AdminGastos.css";
+// Estilos ya incluidos en brand-unified.css
 
 const AdminGastos = () => {
   const navigate = useNavigate();
@@ -44,9 +43,7 @@ const AdminGastos = () => {
   return (
     <div className="dashboard-container">
       <div className="mb-2">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate("/admin/dashboard")}>
-          ← Volver
-        </button>
+
       </div>
 
       <h1 className="dashboard-title mb-1">Gastos — Visión General</h1>

@@ -76,11 +76,9 @@ export const ChefProveedores = () => {
 
   return (
     <div className="dashboard-container ">
-        <button className="btn btn-outline-orange btn-sm mb-3" onClick={() => window.history.back()}>
-      ← Volver
-    </button>
+
       <div className="d-flex justify-content-between align-items-center mb-3">
-        
+
         <h1 className="dashboard-title">Proveedores</h1>
         <button className="btn btn-success" onClick={abrirModalCrear}>
           + Nuevo Proveedor

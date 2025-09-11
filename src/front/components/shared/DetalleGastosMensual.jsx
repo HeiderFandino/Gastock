@@ -4,8 +4,11 @@ import gastoServices from "../../services/GastoServices";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
 import GastoModal from "../GastoModal";
+import CompactMonthFilter from "./CompactMonthFilter";
 import "../../styles/Encargado.css";
-import "../../styles/EncargadoGastos.mobile.css"; // <-- SOLO móvil
+import "../../styles/EncargadoGastos.mobile.css";
+// Estilos ya incluidos en brand-unified.css
+import { FiEdit2, FiTrash2, FiPlus, FiArrowLeft } from "react-icons/fi";
 
 export const DetalleGastosMensual = () => {
   const simbolo = MonedaSimbolo();
@@ -170,276 +173,483 @@ export const DetalleGastosMensual = () => {
   );
 
   return (
-    <div className="dashboard-container">
-
-      {/* ======= Header ======= */}
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h1 className="dashboard-title m-0">Detalle de Gastos</h1>
-        <button
-          className="btn-gastock d-none d-md-inline-flex"
-          onClick={() => navigate(`/${user.rol}/gastos/registrar`)}
-        >
-          <i className="bi bi-plus-circle me-2"></i> Registrar gasto
-        </button>
-      </div>
-
-      {/* Tabs (desktop y móvil) */}
-      <div className="btn-group col-12 col-sm-12 col-lg-6 col-xl-5 mb-3 d-none d-md-inline-flex">
-        <button
-          className={`btn btn-tab ${view === "mensual" ? "active" : "nobg"}`}
-          onClick={() => setView("mensual")}
-        >
-          Resumen Mensual
-        </button>
-
-        <button
-          className={`btn btn-tab ${view === "diario" ? "active" : "nobg"}`}
-          onClick={() => setView("diario")}
-        >
-          Detalle Diario
-        </button>
-      </div>
-
-      {/* Tabs móviles compactos */}
-      <div className="eg-tabs d-md-none">
-        <button className={`eg-tab ${view === "mensual" ? "active" : ""}`} onClick={() => setView("mensual")}>Gasto mensual</button>
-        <button className={`eg-tab ${view === "diario" ? "active" : ""}`} onClick={() => setView("diario")}>Gasto diario</button>
-      </div>
-
-      {mensaje && (
-        <div className={`alert mt-2 ${tipoMensaje === "success" ? "alert-success" : "alert-danger"}`}>
-          {mensaje}
-        </div>
-      )}
-
-      {/* ======= VISTA MENSUAL ======= */}
-      {view === "mensual" ? (
-        <>
-          {/* Toolbar mes (sticky móvil) */}
-          <div className="eg-toolbar d-md-none">
-            <input
-              type="month"
-              className="form-control eg-month"
-              value={`${ano}-${String(mes).padStart(2, "0")}`}
-              onChange={handleMesChange}
-              aria-label="Seleccionar mes"
-            />
-          </div>
-          <div className="eg-toolbar-spacer d-md-none" />
-
-          {/* KPIs móvil */}
-          <div className="eg-kpis d-md-none">
-            <div className="eg-chip">
-              <div className="eg-chip-title text-warning">Total del mes</div>
-              <div className="eg-chip-value text-warning">
-                {totalGastosMes.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
-              </div>
-            </div>
-            <div className="eg-chip">
-              <div className="eg-chip-title">Proveedores</div>
-              <div className="eg-chip-value">{monthlyData.proveedores.length}</div>
-            </div>
-          </div>
-
-          {/* Desktop original */}
-          <div className="d-none d-md-block">
-            <div className="mb-3 justify-content-start">
-              <div className="d-flex justify-content-start flex-wrap align-items-center mb-3 mt-2">
-                <input
-                  type="month"
-                  className="form-control w-auto"
-                  value={`${ano}-${String(mes).padStart(2, "0")}`}
-                  onChange={handleMesChange}
-                />
-              </div>
-              <p className="text-muted small">Días del mes incluidos: {monthlyData.dias.join(", ")}</p>
-            </div>
-
-            <div className="table-responsive">
-              <table className="table table-striped users-table">
-                <thead>
-                  <tr>
-                    <th rowSpan="2">Proveedor</th>
-                    <th colSpan={monthlyData.dias.length} className="text-center">Día del mes</th>
-                    <th rowSpan="2">Total</th>
-                  </tr>
-                  <tr>
-                    {monthlyData.dias.map((d) => (
-                      <th key={d} title={`Día ${d}`} className="text-center">{d}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {monthlyData.proveedores.map((prov) => (
-                    <tr key={prov}>
-                      <td className="fs-7"><strong>{prov}</strong></td>
-                      {monthlyData.dias.map((d) => (
-                        <td key={d} className="text-end">
-                          {monthlyData.datos[prov]?.[d]?.toFixed(2) || "-"}
-                        </td>
-                      ))}
-                      <td className="text-end fw-bold">
-                        {monthlyData.totales[prov]?.toFixed(2) || "0.00"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Móvil: lista simple por proveedor */}
-          <div className="d-md-none">
-            <ul className="eg-list">
-              {monthlyData.proveedores.map((prov) => (
-                <li className="eg-item" key={prov}>
-                  <div className="eg-item-main">
-                    <div className="eg-item-title">{prov}</div>
-                    <div className="eg-item-amount">
-                      {(monthlyData.totales[prov] || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
-                    </div>
-                  </div>
-                </li>
-              ))}
-              {monthlyData.proveedores.length === 0 && (
-                <li className="eg-empty">No hay datos del mes seleccionado.</li>
-              )}
-            </ul>
-          </div>
-        </>
-      ) : (
-        /* ======= VISTA DIARIA ======= */
-        <>
-          {/* Toolbar fecha (sticky móvil) */}
-          <div className="eg-toolbar d-md-none">
-            <button className="eg-ctrl" onClick={() => cambiarDia(-1)} aria-label="Día anterior">←</button>
-            <input type="date" className="form-control eg-date" value={selectedDate} onChange={handleDateChange} />
-            <button className="eg-ctrl" onClick={() => cambiarDia(1)} aria-label="Día siguiente">→</button>
-            <button className="eg-ctrl eg-ctrl-success" onClick={handleHoy}>Hoy</button>
-          </div>
-          <div className="eg-toolbar-spacer d-md-none" />
-
-          {/* KPIs móvil */}
-          <div className="eg-kpis d-md-none">
-            <div className="eg-chip">
-              <div className="eg-chip-title text-success">Total del día</div>
-              <div className="eg-chip-value text-success">
-                {totalGastosDia.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
-              </div>
-            </div>
-            <div className="eg-chip">
-              <div className="eg-chip-title">Gastos</div>
-              <div className="eg-chip-value">{displayedDaily.length}</div>
-            </div>
-          </div>
-
-          {/* Desktop original (filtros + tabla) */}
-          <div className="d-none d-md-block">
-            <div className="d-flex align-items-center mb-3 flex-wrap gap-2">
-              <label className="me-2">Fecha:</label>
-              <div className="d-flex align-items-center gap-2 me-3">
-                <button className="btn btn-outline-secondary px-2" onClick={() => cambiarDia(-1)} title="Día anterior">←</button>
-                <input type="date" className="form-control w-auto" value={selectedDate} onChange={handleDateChange} />
-                <button className="btn btn-outline-secondary px-2" onClick={() => cambiarDia(1)} title="Día siguiente">→</button>
-              </div>
-              <button className="btn btn-success me-3" onClick={handleHoy}>Hoy</button>
-              <label className="me-2">Proveedor:</label>
-              <select className="form-select w-auto me-2" value={filterProveedor} onChange={(e) => setFilterProveedor(e.target.value)}>
-                <option value="">Todos</option>
-                {proveedoresList.map((p) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
-              </select>
-              <label className="me-2">Categoría:</label>
-              <select className="form-select w-auto" value={filterCategoria} onChange={(e) => setFilterCategoria(e.target.value)}>
-                <option value="">Todas</option>
-                <option value="alimentos">Alimentos</option>
-                <option value="bebidas">Bebidas</option>
-                <option value="limpieza">Limpieza</option>
-                <option value="otros">Otros</option>
-              </select>
-            </div>
-
-            <div className="table-responsive">
-              <table className="table table-striped users-table">
-                <thead>
-                  <tr>
-                    <th>Proveedor</th>
-                    <th>Categoría</th>
-                    <th>Monto</th>
-                    <th>Nota</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {displayedDaily.map((g) => (
-                    <tr key={g.id}>
-                      <td>{provName(g.proveedor_id)}</td>
-                      <td>{g.categoria}</td>
-                      <td>{simbolo}{parseFloat(g.monto).toFixed(2)}</td>
-                      <td>{g.nota}</td>
-                      <td>
-                        <button className="action-icon-button edit-button" onClick={() => abrirModalEditar(g.id)} title="Editar gasto">✏️</button>
-                        <button className="action-icon-button delete-button" onClick={() => eliminar(g.id)} title="Eliminar gasto">🗑️</button>
-                      </td>
-                    </tr>
-                  ))}
-                  {displayedDaily.length === 0 && (
-                    <tr><td colSpan={5} className="text-center">No hay gastos para esta fecha.</td></tr>
-                  )}
-                </tbody>
-              </table>
-
-              <div className="bg-white shadow rounded p-3 mt-3 text-end">
-                <span className="fw-bold fs-5">Total del día: {simbolo}{totalGastosDia.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Móvil: cards compactas */}
-          <div className="d-md-none">
-            <ul className="eg-list">
-              {displayedDaily.map((g) => (
-                <li className="eg-item" key={g.id}>
-                  <div className="eg-item-main">
-                    <div className="eg-item-title">{provName(g.proveedor_id)}</div>
-                    <div className="eg-item-amount">
-                      {parseFloat(g.monto).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
-                    </div>
-                  </div>
-                  <div className="eg-item-sub">
-                    <span className="eg-meta">{g.categoria}{g.nota ? ` · ${g.nota}` : ""}</span>
-                    <div className="eg-actions">
-                      <button className="eg-icon-btn" aria-label="Editar" onClick={() => abrirModalEditar(g.id)}>
-                        <i className="bi bi-pencil"></i>
-                      </button>
-                      <button className="eg-icon-btn eg-danger" aria-label="Eliminar" onClick={() => eliminar(g.id)}>
-                        <i className="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-              {displayedDaily.length === 0 && <li className="eg-empty">No hay gastos para esta fecha.</li>}
-            </ul>
-
-            {/* Total día (móvil) */}
-            <div className="eg-totalbar">
-              <span>Total del día</span>
-              <strong>
-                {totalGastosDia.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{simbolo}
-              </strong>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* FAB móvil */}
-      <button
-        className="eg-fab d-md-none"
-        onClick={() => navigate(`/${user.rol}/gastos/registrar`)}
-        aria-label="Registrar gasto"
+    <div className="dashboard-container admin-bb">
+      {/* Header simplificado */}
+      <div
+        className="sticky-top"
+        style={{ background: "var(--color-bg)", borderBottom: "1px solid var(--color-border)", zIndex: 10 }}
       >
-        <i className="bi bi-receipt"></i>
-      </button>
+        <div className="container-fluid px-4 py-3">
+          <div className="d-flex align-items-center justify-content-between">
+            <div>
+              <h1 className="h4 fw-bold mb-0" style={{ color: "var(--color-text)" }}>
+                💸 Gastos
+              </h1>
+              <p className="text-muted mb-0 small">Gestiona los gastos del restaurante</p>
+            </div>
+
+            <button
+              className="btn d-flex align-items-center gap-2 px-4 py-2"
+              style={{
+                background: 'linear-gradient(135deg, var(--color-danger), color-mix(in srgb, var(--color-danger) 85%, #dc2626))',
+                border: 'none',
+                borderRadius: '12px',
+                color: 'white',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
+              }}
+              onClick={() => navigate('/encargado/gastos/registrar')}
+            >
+              💸 Nuevo Gasto
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="container-fluid px-4 py-4">
+        {mensaje && (
+          <div className={`alert alert-dismissible fade show ${tipoMensaje === "success" ? "alert-success" : "alert-danger"}`} role="alert" style={{ borderRadius: '12px' }}>
+            {mensaje}
+          </div>
+        )}
+
+        {/* ===== Tabs elegantes ===== */}
+        <div className="d-flex justify-content-center mb-4">
+          <div className="d-flex" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '4px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+            <button
+              className="btn px-4 py-2 fw-medium"
+              style={{
+                borderRadius: '12px',
+                border: 'none',
+                background: view === "mensual" ? 'var(--color-primary)' : 'transparent',
+                color: view === "mensual" ? 'white' : 'var(--color-text)',
+                transition: 'all 0.2s ease',
+                fontSize: '0.9rem',
+                boxShadow: view === "mensual" ? '0 2px 4px rgba(59, 130, 246, 0.3)' : 'none'
+              }}
+              onClick={() => setView("mensual")}
+            >
+              📊 Mensual
+            </button>
+            <button
+              className="btn px-4 py-2 fw-medium"
+              style={{
+                borderRadius: '12px',
+                border: 'none',
+                background: view === "diario" ? 'var(--color-primary)' : 'transparent',
+                color: view === "diario" ? 'white' : 'var(--color-text)',
+                transition: 'all 0.2s ease',
+                fontSize: '0.9rem',
+                boxShadow: view === "diario" ? '0 2px 4px rgba(59, 130, 246, 0.3)' : 'none'
+              }}
+              onClick={() => setView("diario")}
+            >
+              📅 Diario
+            </button>
+          </div>
+        </div>
+
+        {/* ======= VISTA MENSUAL ======= */}
+        {view === "mensual" ? (
+          <>
+            {/* ===== Filtro de mes centrado ===== */}
+            <div className="d-flex align-items-center justify-content-center mb-4">
+              <button
+                className="btn d-flex align-items-center justify-content-center"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: 'var(--color-bg-card)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text)',
+                  transition: 'all 0.2s ease',
+                  fontSize: '1.1rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'var(--color-bg-subtle)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'var(--color-bg-card)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+                onClick={() => {
+                  const newMonth = mes === 1 ? 12 : mes - 1;
+                  const newYear = mes === 1 ? ano - 1 : ano;
+                  setMes(newMonth);
+                  setAno(newYear);
+                }}
+              >
+                ◀
+              </button>
+              <div
+                className="mx-4 px-5 py-3 fw-medium text-center"
+                style={{
+                  background: 'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-subtle))',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '16px',
+                  minWidth: '220px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                  fontSize: '1.1rem',
+                  color: 'var(--color-text)'
+                }}
+              >
+                📊 {new Date(ano, mes - 1).toLocaleString("es", { month: "long", year: "numeric" })}
+              </div>
+              <button
+                className="btn d-flex align-items-center justify-content-center"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: 'var(--color-bg-card)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text)',
+                  transition: 'all 0.2s ease',
+                  fontSize: '1.1rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'var(--color-bg-subtle)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'var(--color-bg-card)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+                onClick={() => {
+                  const newMonth = mes === 12 ? 1 : mes + 1;
+                  const newYear = mes === 12 ? ano + 1 : ano;
+                  setMes(newMonth);
+                  setAno(newYear);
+                }}
+              >
+                ▶
+              </button>
+            </div>
+
+            {monthlyData.proveedores.length === 0 ? (
+              <div className="text-center py-4">
+                <div className="ag-icon mx-auto mb-2" style={{ width: 48, height: 48, fontSize: '1.5rem' }}>📊</div>
+                <p className="text-muted">No hay gastos registrados para este período.</p>
+              </div>
+            ) : (
+              <>
+                {/* ===== Resumen Compacto ===== */}
+
+
+                {/* ===== Lista mobile (cards) ===== */}
+                <ul className="list-unstyled d-sm-none">
+                  {monthlyData.proveedores.map((prov) => (
+                    <li key={prov} className="ag-card p-3 mb-2">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div className="flex-grow-1">
+                          <div className="fw-bold" style={{ fontSize: "1.05rem" }}>{prov}</div>
+                        </div>
+                        <div className="text-end">
+                          <div className="fw-bold text-warning" style={{ fontSize: "1.1rem" }}>
+                            {simbolo}{(monthlyData.totales[prov] || 0).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* ===== Tabla desktop ===== */}
+                <div className="table-responsive d-none d-sm-block">
+                  <table className="table users-table mt-2 mb-0">
+                    <thead>
+                      <tr>
+                        <th rowSpan="2">Proveedor</th>
+                        <th colSpan={monthlyData.dias.length} className="text-center">Día del mes</th>
+                        <th rowSpan="2">Total</th>
+                      </tr>
+                      <tr>
+                        {monthlyData.dias.map((d) => (
+                          <th key={d} title={`Día ${d}`} className="text-center">{d}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {monthlyData.proveedores.map((prov) => (
+                        <tr key={prov}>
+                          <td className="fw-bold">{prov}</td>
+                          {monthlyData.dias.map((d) => (
+                            <td key={d} className="text-end">
+                              {monthlyData.datos[prov]?.[d]?.toFixed(2) || "-"}
+                            </td>
+                          ))}
+                          <td className="text-end fw-bold text-warning">
+                            {simbolo}{monthlyData.totales[prov]?.toFixed(2) || "0.00"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          /* ======= VISTA DIARIA ======= */
+          <>
+            {/* ===== Filtro de fecha elegante ===== */}
+            <div className="d-flex align-items-center justify-content-center mb-4">
+              <button
+                className="btn d-flex align-items-center justify-content-center"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: 'var(--color-bg-card)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text)',
+                  transition: 'all 0.2s ease',
+                  fontSize: '1.1rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'var(--color-bg-subtle)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'var(--color-bg-card)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+                onClick={() => cambiarDia(-1)}
+              >
+                ◀
+              </button>
+
+              <div className="d-flex align-items-center mx-4">
+                <input
+                  type="date"
+                  className="form-control text-center fw-medium"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '16px',
+                    background: 'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-subtle))',
+                    color: 'var(--color-text)',
+                    fontSize: '1rem',
+                    padding: '12px 16px',
+                    minWidth: '180px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+                  }}
+                />
+                <button
+                  className="btn ms-3"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--color-success), color-mix(in srgb, var(--color-success) 85%, #16a34a))',
+                    border: 'none',
+                    borderRadius: '12px',
+                    color: 'white',
+                    fontWeight: '600',
+                    fontSize: '0.85rem',
+                    padding: '8px 16px',
+                    boxShadow: '0 2px 6px rgba(34, 197, 94, 0.3)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 2px 6px rgba(34, 197, 94, 0.3)';
+                  }}
+                  onClick={handleHoy}
+                >
+                  🕐 Hoy
+                </button>
+              </div>
+
+              <button
+                className="btn d-flex align-items-center justify-content-center"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: 'var(--color-bg-card)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text)',
+                  transition: 'all 0.2s ease',
+                  fontSize: '1.1rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'var(--color-bg-subtle)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'var(--color-bg-card)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+                onClick={() => cambiarDia(1)}
+              >
+                ▶
+              </button>
+            </div>
+
+            {/* ===== Filtros adicionales ===== */}
+            <div className="row g-3 mb-4">
+              <div className="col-12 col-md-6">
+                <label className="form-label fw-medium">🏢 Proveedor:</label>
+                <select
+                  className="form-select"
+                  value={filterProveedor}
+                  onChange={(e) => setFilterProveedor(e.target.value)}
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    background: 'var(--color-bg-card)',
+                    color: 'var(--color-text)',
+                    padding: '10px 14px'
+                  }}
+                >
+                  <option value="">Todos los proveedores</option>
+                  {proveedoresList.map((p) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
+                </select>
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label fw-medium">📋 Categoría:</label>
+                <select
+                  className="form-select"
+                  value={filterCategoria}
+                  onChange={(e) => setFilterCategoria(e.target.value)}
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    background: 'var(--color-bg-card)',
+                    color: 'var(--color-text)',
+                    padding: '10px 14px'
+                  }}
+                >
+                  <option value="">Todas las categorías</option>
+                  <option value="alimentos">🍞 Alimentos</option>
+                  <option value="bebidas">🥤 Bebidas</option>
+                  <option value="limpieza">🧽 Limpieza</option>
+                  <option value="equipamiento">⚒️ Equipamiento</option>
+                  <option value="otros">📦 Otros</option>
+                </select>
+              </div>
+            </div>
+
+            {displayedDaily.length === 0 ? (
+              <div className="text-center py-4">
+                <div className="ag-icon mx-auto mb-2" style={{ width: 48, height: 48, fontSize: '1.5rem' }}>📊</div>
+                <p className="text-muted">No hay gastos registrados para esta fecha.</p>
+              </div>
+            ) : (
+              <>
+
+
+                {/* ===== Lista mobile (cards) ===== */}
+                <ul className="list-unstyled d-sm-none">
+                  {displayedDaily.map((g) => (
+                    <li key={g.id} className="ag-card p-3 mb-2">
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <div className="flex-grow-1">
+                          <div className="fw-bold" style={{ fontSize: "1.05rem" }}>{provName(g.proveedor_id)}</div>
+                          <div className="text-muted" style={{ fontSize: ".9rem" }}>
+                            <span className="badge bg-secondary me-2">{g.categoria}</span>
+                            {g.nota && <small>{g.nota}</small>}
+                          </div>
+                        </div>
+                        <div className="text-end">
+                          <div className="fw-bold text-success" style={{ fontSize: "1.1rem" }}>
+                            {simbolo}{parseFloat(g.monto).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="d-flex gap-2 justify-content-end">
+                        <button
+                          className="action-icon-button edit-button"
+                          onClick={() => abrirModalEditar(g.id)}
+                          title="Editar"
+                          aria-label="Editar"
+                        >
+                          <FiEdit2 size={18} />
+                        </button>
+                        <button
+                          className="action-icon-button delete-button"
+                          onClick={() => eliminar(g.id)}
+                          title="Eliminar"
+                          aria-label="Eliminar"
+                        >
+                          <FiTrash2 size={18} />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* ===== Tabla desktop ===== */}
+                <div className="table-responsive d-none d-sm-block">
+                  <table className="table users-table mt-2 mb-0">
+                    <thead>
+                      <tr>
+                        <th>Proveedor</th>
+                        <th>Categoría</th>
+                        <th>Monto ({simbolo})</th>
+                        <th>Nota</th>
+                        <th className="text-end">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {displayedDaily.map((g) => (
+                        <tr key={g.id}>
+                          <td>{provName(g.proveedor_id)}</td>
+                          <td><span className="badge bg-secondary">{g.categoria}</span></td>
+                          <td className="fw-bold text-success">{simbolo}{parseFloat(g.monto).toFixed(2)}</td>
+                          <td>{g.nota || "-"}</td>
+                          <td className="text-end">
+                            <button
+                              className="action-icon-button edit-button me-2"
+                              onClick={() => abrirModalEditar(g.id)}
+                              title="Editar"
+                            >
+                              <FiEdit2 size={18} />
+                            </button>
+                            <button
+                              className="action-icon-button delete-button"
+                              onClick={() => eliminar(g.id)}
+                              title="Eliminar"
+                            >
+                              <FiTrash2 size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {/* FAB móvil */}
+        <button
+          className="ag-fab d-md-none"
+          onClick={() => navigate(`/${user.rol}/gastos/registrar`)}
+          aria-label="Nuevo gasto"
+          title="Registrar nuevo gasto"
+        >
+          <FiPlus size={24} />
+        </button>
+
+      </div>
 
       {/* Modal edición */}
       {modalVisible && (

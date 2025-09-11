@@ -4,6 +4,9 @@ import useGlobalReducer from "../../hooks/useGlobalReducer";
 import ventaServices from "../../services/ventaServices";
 import restauranteService from "../../services/restauranteServices";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
+
+import "../../styles/AdminGastos.css";
 
 export const AdminVentasDetalle = () => {
   const simbolo = MonedaSimbolo();
@@ -31,13 +34,13 @@ export const AdminVentasDetalle = () => {
       const data = await ventaServices.getVentasDetalle(mesSeleccionado, anoSeleccionado, restaurante_id);
       let filtradas = selectedDate
         ? data.filter((v) => {
-            const fechaObj = new Date(v.fecha);
-            const yyyy = fechaObj.getFullYear();
-            const mm = String(fechaObj.getMonth() + 1).padStart(2, "0");
-            const dd = String(fechaObj.getDate()).padStart(2, "0");
-            const fechaFormateada = `${yyyy}-${mm}-${dd}`;
-            return fechaFormateada === selectedDate;
-          })
+          const fechaObj = new Date(v.fecha);
+          const yyyy = fechaObj.getFullYear();
+          const mm = String(fechaObj.getMonth() + 1).padStart(2, "0");
+          const dd = String(fechaObj.getDate()).padStart(2, "0");
+          const fechaFormateada = `${yyyy}-${mm}-${dd}`;
+          return fechaFormateada === selectedDate;
+        })
         : data;
       filtradas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       setVentas(filtradas);
@@ -107,116 +110,214 @@ export const AdminVentasDetalle = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="mb-2">
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate("/admin/dashboard")}>
-          ← Volver
-        </button>
+      {/* ===== Header compacto v2 ===== */}
+      <div className="ag-header mb-3">
+        <div className="ag-header-top">
+
+          <div className="ag-brand-dot" />
+        </div>
+
+        <div className="ag-title-wrap">
+          <h1 className="ag-title">
+            Ventas {nombreRestaurante ? `- ${nombreRestaurante}` : ""}
+          </h1>
+          <p className="ag-subtitle">Consulta y gestiona las ventas registradas por fecha.</p>
+        </div>
       </div>
 
-      <h1 className="dashboard-title mb-3">
-        Ventas {nombreRestaurante ? `${nombreRestaurante}` : ""}
-      </h1>
-
       {mensaje && (
-        <div className={`alert mt-2 ${mensaje.includes("éxito") || mensaje.includes("eliminada") ? "alert-success" : "alert-danger"}`}>
+        <div className={`alert text-center ${mensaje.includes("éxito") || mensaje.includes("eliminada") ? "alert-success" : "alert-danger"}`} role="alert">
           {mensaje}
         </div>
       )}
 
-      <div className="d-flex align-items-center gap-3 mb-3 flex-wrap">
-        <div className="d-flex align-items-center gap-2">
-          <label>Seleccionar mes:</label>
-          <input
-            type="month"
-            className="form-control w-auto"
-            value={`${anoSeleccionado}-${String(mesSeleccionado).padStart(2, "0")}`}
-            onChange={(e) => {
-              const [yy, mm] = e.target.value.split("-");
-              setAnoSeleccionado(parseInt(yy));
-              setMesSeleccionado(parseInt(mm));
-            }}
-          />
+      {/* ===== Filtros responsive ===== */}
+      <div className="ag-card mb-3">
+        <div className="ag-card-header">
+          <div className="ag-icon">📅</div>
+          <h5 className="mb-0">Filtros de Fecha</h5>
         </div>
-
-        <div className="d-flex align-items-center gap-2">
-          <label>Filtrar por fecha:</label>
-          <input
-            type="date"
-            className="form-control w-auto"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-          />
-          <button className="btn btn-success" onClick={() => setSelectedDate("")}>
-            Ver todo el mes
-          </button>
+        <div className="p-3">
+          <div className="row g-2">
+            <div className="col-12 col-sm-6">
+              <label className="form-label small fw-bold">Seleccionar mes:</label>
+              <input
+                type="month"
+                className="form-control"
+                value={`${anoSeleccionado}-${String(mesSeleccionado).padStart(2, "0")}`}
+                onChange={(e) => {
+                  const [yy, mm] = e.target.value.split("-");
+                  setAnoSeleccionado(parseInt(yy));
+                  setMesSeleccionado(parseInt(mm));
+                }}
+              />
+            </div>
+            <div className="col-12 col-sm-6">
+              <label className="form-label small fw-bold">Filtrar por fecha específica:</label>
+              <div className="input-group">
+                <input
+                  type="date"
+                  className="form-control"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                />
+                <button className="btn btn-outline-success" onClick={() => setSelectedDate("")}>
+                  Todo el mes
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {loading ? (
-        <p>Cargando...</p>
+        <div className="text-center py-4">
+          <div className="ag-icon mx-auto mb-2" style={{ width: 48, height: 48, fontSize: '1.5rem' }}>⏳</div>
+          Cargando...
+        </div>
       ) : ventas.length === 0 ? (
-        <p>No hay ventas registradas este mes.</p>
+        <div className="text-center py-4">
+          <div className="ag-icon mx-auto mb-2" style={{ width: 48, height: 48, fontSize: '1.5rem' }}>📊</div>
+          <p className="text-muted">No hay ventas registradas para este período.</p>
+        </div>
       ) : (
         <>
-          <div className="rounded shadow-sm p-2 col-sm-12 col-md-7 col-lg-6 col-xl-4 col-xxl-3 text-center bg-info-subtle d-flex flex-direction-row">
-            <div className="icono-circular ms-2 me-4 rounded-circle bg-white text-info mt-1">📈</div>
-            <div className="d-flex flex-column text-start">
-              <h6 className="fw-bold text-info">Promedio diario: <span className="fw-bold">€{promedio.toFixed(2)}</span></h6>
-              <div className="fs-5 text-info">Total: <span className="fw-bold">€{total.toFixed(2)}</span></div>
+          {/* ===== Resumen KPIs ===== */}
+          <div className="ag-card mb-3">
+            <div className="ag-card-header">
+              <div className="ag-icon">📈</div>
+              <h5 className="mb-0">Resumen del Período</h5>
+            </div>
+            <div className="p-3">
+              <div className="row g-3">
+                <div className="col-6 col-sm-4">
+                  <div className="text-center">
+                    <div className="fw-bold text-success" style={{ fontSize: '1.3rem' }}>
+                      {simbolo}{total.toFixed(2)}
+                    </div>
+                    <div className="text-muted small">Total</div>
+                  </div>
+                </div>
+                <div className="col-6 col-sm-4">
+                  <div className="text-center">
+                    <div className="fw-bold text-info" style={{ fontSize: '1.3rem' }}>
+                      {simbolo}{promedio.toFixed(2)}
+                    </div>
+                    <div className="text-muted small">Promedio diario</div>
+                  </div>
+                </div>
+                <div className="col-12 col-sm-4">
+                  <div className="text-center">
+                    <div className="fw-bold text-primary" style={{ fontSize: '1.3rem' }}>
+                      {ventas.length}
+                    </div>
+                    <div className="text-muted small">Ventas registradas</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="table-responsive mt-4">
-            <table className="table table-striped users-table">
+          {/* ===== Lista mobile (cards) ===== */}
+          <ul className="list-unstyled d-sm-none">
+            {ventas.map((v) => {
+              const f = new Date(v.fecha);
+              const dd = String(f.getDate()).padStart(2, "0");
+              const mm = String(f.getMonth() + 1).padStart(2, "0");
+              const yyyy = f.getFullYear();
+              const fechaFormateada = `${dd}-${mm}-${yyyy}`;
+
+              return (
+                <li key={v.id} className="ag-card p-3 mb-2">
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <div className="flex-grow-1">
+                      <div className="fw-bold" style={{ fontSize: "1.05rem" }}>{fechaFormateada}</div>
+                      <div className="text-muted" style={{ fontSize: ".9rem" }}>
+                        {v.turno ? (
+                          <span className="badge bg-secondary me-2">{v.turno}</span>
+                        ) : (
+                          <span className="text-muted">Sin turno especificado</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-end">
+                      <div className="fw-bold text-success" style={{ fontSize: "1.1rem" }}>
+                        {simbolo}{parseFloat(v.monto).toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="d-flex gap-2 justify-content-end">
+                    <button
+                      className="action-icon-button edit-button"
+                      onClick={() => abrirModalEdicion(v)}
+                      title="Editar"
+                      aria-label="Editar"
+                    >
+                      <FiEdit2 size={18} />
+                    </button>
+                    <button
+                      className="action-icon-button delete-button"
+                      onClick={() => eliminarVenta(v.id)}
+                      title="Eliminar"
+                      aria-label="Eliminar"
+                    >
+                      <FiTrash2 size={18} />
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* ===== Tabla desktop ===== */}
+          <div className="table-responsive d-none d-sm-block">
+            <table className="table users-table mt-2 mb-0">
               <thead>
                 <tr>
                   <th>Fecha</th>
                   <th>Monto ({simbolo})</th>
                   <th>Turno</th>
-                  <th>Acciones</th>
+                  <th className="text-end">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {ventas.map((v) => (
-                  <tr key={v.id}>
-                    <td>
-                      {(() => {
-                        const f = new Date(v.fecha);
-                        const dd = String(f.getDate()).padStart(2, "0");
-                        const mm = String(f.getMonth() + 1).padStart(2, "0");
-                        const yyyy = f.getFullYear();
-                        return `${dd}-${mm}-${yyyy}`;
-                      })()}
-                    </td>
-                    <td>{v.monto}</td>
-                    <td>{v.turno || "-"}</td>
-                    <td>
-                      <button
-  className="action-icon-button edit-button"
-  onClick={() => abrirModalEdicion(v)}
-  title="Editar"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="feather feather-edit-2"
-  >
-    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-  </svg>
-</button>
-                      <button className="action-icon-button delete-button" onClick={() => eliminarVenta(v.id)} title="Eliminar">
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {ventas.map((v) => {
+                  const f = new Date(v.fecha);
+                  const dd = String(f.getDate()).padStart(2, "0");
+                  const mm = String(f.getMonth() + 1).padStart(2, "0");
+                  const yyyy = f.getFullYear();
+                  const fechaFormateada = `${dd}-${mm}-${yyyy}`;
+
+                  return (
+                    <tr key={v.id}>
+                      <td>{fechaFormateada}</td>
+                      <td className="fw-bold text-success">{simbolo}{parseFloat(v.monto).toFixed(2)}</td>
+                      <td>
+                        {v.turno ? (
+                          <span className="badge bg-secondary">{v.turno}</span>
+                        ) : (
+                          <span className="text-muted">-</span>
+                        )}
+                      </td>
+                      <td className="text-end">
+                        <button
+                          className="action-icon-button edit-button me-2"
+                          onClick={() => abrirModalEdicion(v)}
+                          title="Editar"
+                        >
+                          <FiEdit2 size={18} />
+                        </button>
+                        <button
+                          className="action-icon-button delete-button"
+                          onClick={() => eliminarVenta(v.id)}
+                          title="Eliminar"
+                        >
+                          <FiTrash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

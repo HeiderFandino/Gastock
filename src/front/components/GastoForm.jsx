@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import gastoServices from "../services/GastoServices";
-import "../styles/Gastoform.css";
+// Estilos ya incluidos en brand-unified.css
 
 
 export const GastoForm = () => {
@@ -155,18 +155,18 @@ export const GastoForm = () => {
 
 
   return (
-    <div className="container-fluidd bg-gasto px-4 py-4">
-      <button onClick={() => navigate(-1)} className="btn-gastock-outline mb-3">
-        ← Volver
-      </button>
+    <div className="gasto-form-container">
+      <div className="gf-header">
+        <h1 className="gf-title">Registrar Gastos</h1>
+        <p className="gf-subtitle">Registra los gastos del restaurante organizados por proveedor y categoría</p>
+      </div>
 
-      <h2 className="mb-2">Registrar Gastos</h2>
-      <div className="card p-3 shadow-sm">
-        <div className="d-flex align-items-center gap-2 mb-3">
-          <label className="fw-semibold">Fecha:</label>
+      <div className="gf-main-card">
+        <div className="gf-date-row">
+          <label className="gf-date-label">📅 Fecha:</label>
           <input
             type="date"
-            className="form-control w-auto"
+            className="gf-date-input"
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
           />
@@ -174,79 +174,81 @@ export const GastoForm = () => {
 
         {/* Listado de gastos */}
         {gastos.map((gasto, index) => (
-          <div className="row g-2 align-items-end mb-2" key={index}>
-            <div className="col-12 col-md-4">
-              <label className="form-label fw-semibold">Proveedor</label>
+          <div className="gf-gasto-row" key={index}>
+            <div className="row g-3">
+              <div className="col-12 col-md-4">
+                <label className="gf-label">🏢 Proveedor</label>
+                <Select
+                  className="gf-react-select"
+                  classNamePrefix="select"
+                  components={{ IndicatorSeparator: () => null }}
+                  value={
+                    gasto.proveedor_id
+                      ? {
+                        value: gasto.proveedor_id,
+                        label:
+                          proveedores.find((p) => p.id === parseInt(gasto.proveedor_id, 10))
+                            ?.nombre || gasto.proveedor_id,
+                      }
+                      : null
+                  }
+                  onChange={(option) => handleProveedorChange(index, option ? option.value : "")}
+                  options={proveedores.map((p) => ({
+                    value: p.id,
+                    label: p.nombre,
+                  }))}
+                  placeholder="Selecciona un proveedor..."
+                  isClearable
+                  isSearchable
+                />
+              </div>
 
-              <Select
-                classNamePrefix="select"
-                components={{ IndicatorSeparator: () => null }}
-                value={
-                  gasto.proveedor_id
-                    ? {
-                      value: gasto.proveedor_id,
-                      label:
-                        proveedores.find((p) => p.id === parseInt(gasto.proveedor_id, 10))
-                          ?.nombre || gasto.proveedor_id,
-                    }
-                    : null
-                }
-                onChange={(option) => handleProveedorChange(index, option ? option.value : "")}
-                options={proveedores.map((p) => ({
-                  value: p.id,
-                  label: p.nombre,
-                }))}
-                placeholder="Seleccione un proveedor"
-                isClearable
-                isSearchable   // 🔎 permite escribir y buscar
-              />
-            </div>
+              <div className="col-12 col-md-3">
+                <label className="gf-label">📋 Categoría</label>
+                <input
+                  type="text"
+                  className="gf-input"
+                  value={gasto.categoria}
+                  onChange={(e) => handleInputChange(index, "categoria", e.target.value)}
+                  placeholder="Ej: Alimentos, Bebidas..."
+                />
+              </div>
 
-            <div className="col-12 col-md-3">
-              <label className="form-label fw-semibold">Categoría</label>
-              <input
-                type="text"
-                className="form-control"
-                value={gasto.categoria}
-                onChange={(e) => handleInputChange(index, "categoria", e.target.value)}
-                placeholder="Ej: alimentos"
-              />
-            </div>
+              <div className="col-12 col-md-3">
+                <label className="gf-label">💰 Monto</label>
+                <input
+                  type="text"
+                  className="gf-input"
+                  value={gasto.monto}
+                  onChange={(e) => handleInputChange(index, "monto", e.target.value)}
+                  placeholder="0.00 (permite cálculos)"
+                />
+              </div>
 
-            <div className="col-12 col-md-3">
-              <label className="form-label fw-semibold">Monto</label>
-              <input
-                type="text"
-                className="form-control"
-                value={gasto.monto}
-                onChange={(e) => handleInputChange(index, "monto", e.target.value)}
-                placeholder="0.00 (permite 10+2-1,5)"
-              />
-            </div>
+              <div className="col-12 col-md-2">
+                <label className="gf-label">📝 Nota</label>
+                <input
+                  type="text"
+                  className="gf-input"
+                  value={gasto.nota}
+                  onChange={(e) => handleInputChange(index, "nota", e.target.value)}
+                  placeholder="Opcional..."
+                />
+              </div>
 
-            <div className="col-12 col-md-2">
-              <label className="form-label fw-semibold">Nota</label>
-              <input
-                type="text"
-                className="form-control"
-                value={gasto.nota}
-                onChange={(e) => handleInputChange(index, "nota", e.target.value)}
-                placeholder="Opcional"
-              />
-            </div>
-
-            {/* Botón Eliminar */}
-            <div className="col-12 d-flex justify-content-end mt-2">
+              {/* Botón Eliminar */}
               {gastos.length > 1 && (
-                <button
-                  type="button"
-                  className="btn-gastock-outline"
-                  onClick={() => eliminarGasto(index)}
-                  aria-label="Eliminar gasto"
-                  title="Eliminar gasto"
-                >
-                  Eliminar
-                </button>
+                <div className="col-12 d-flex justify-content-end">
+                  <button
+                    type="button"
+                    className="gf-remove-btn"
+                    onClick={() => eliminarGasto(index)}
+                    aria-label="Eliminar gasto"
+                    title="Eliminar este gasto"
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </div>
               )}
             </div>
           </div>

@@ -103,9 +103,7 @@ const AdminRestaurante = () => {
       {/* ===== Header compacto v2 ===== */}
       <div className="ag-header mb-3">
         <div className="ag-header-top">
-          <button className="btn btn-light ag-back" onClick={() => navigate("/admin/dashboard")}>
-            ← Volver
-          </button>
+
           <div className="ag-brand-dot" />
         </div>
 

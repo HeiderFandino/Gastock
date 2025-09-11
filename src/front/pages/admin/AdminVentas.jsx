@@ -47,13 +47,7 @@ const AdminVentas = () => {
       {/* HEADER COMPACTO V2 PARA VENTAS */}
       <div className="ag-header mb-3">
         <div className="ag-header-top">
-          <button
-            className="btn btn-light ag-back"
-            onClick={() => navigate("/admin/dashboard")}
-            aria-label="Volver"
-          >
-            ← Volver
-          </button>
+
           <div className="ag-brand-dot" />
         </div>
 

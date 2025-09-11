@@ -3,6 +3,8 @@ import useGlobalReducer from "../../hooks/useGlobalReducer";
 import ventaServices from "../../services/ventaServices";
 import { useNavigate } from "react-router-dom";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
+import "../../styles/AdminGastos.css";
+import { FiArrowLeft, FiSave } from "react-icons/fi";
 
 export const RegistrarVenta = () => {
   useEffect(() => {
@@ -52,66 +54,97 @@ export const RegistrarVenta = () => {
   };
 
   return (
-    <div className="dashboard-container">
-      <button onClick={() => navigate('/encargado/ventas')} className="back-button">← Volver a ventas</button>
-      <h1 className="dashboard-title">Registrar Venta</h1>
-      <h5 className="dashboard-welcome text-white mt-2 mb-4 d-inline-block rounded">Mes actual: {nombreMes.toUpperCase()}</h5>
-
-      <form onSubmit={handleSubmit} className="proveedor-card m-0 bg-white col-12 col-sm-12 col-md-12 col-lg-10 col-xx-9 p-4 shadow rounded">
-        {/* Fecha */}
-        <div className="row align-items-end mb-3">
-          <div className="col-12 col-sm-12 col-md-12 col-lg-6 mt-2">
-            <label className="form-label">Fecha</label>
-            <input
-              type="date"
-              name="fecha"
-              className="form-control"
-              value={form.fecha}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
-
-        {/* Monto */}
-        <div className="row align-items-end mb-3">
-          <div className="col-12 col-sm-12 col-md-12 col-lg-6 mt-2">
-            <label className="form-label">Monto ({simbolo})</label>
-            <input
-              type="number"
-              name="monto"
-              className="form-control"
-              value={form.monto}
-              onChange={handleChange}
-              required
-              min="0"
-              step="0.01"
-            />
-          </div>
-
-          {/* Turno */}
-          <div className="col-12 col-sm-12 col-md-12 col-lg-6 mt-2">
-            <label className="form-label">Turno</label>
-            <select name="turno" className="form-select" value={form.turno} onChange={handleChange}>
-              <option value="mañana">Mañana</option>
-              <option value="tarde">Tarde</option>
-              <option value="noche">Noche</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <button type="submit" className="btn btn-success mt-3" disabled={estado.loading}>
-            {estado.loading ? "Guardando..." : "Registrar Venta"}
+    <div className="dashboard-container admin-bb">
+      {/* ===== Header compacto v2 ===== */}
+      <div className="ag-header mb-3">
+        <div className="ag-header-top">
+          <button className="btn btn-light ag-back" onClick={() => navigate('/encargado/ventas')}>
+            <FiArrowLeft size={16} className="me-1" /> Volver
           </button>
+          <div className="ag-brand-dot" />
         </div>
 
-        {estado.mensaje && (
-          <div className={`alert mt-3 ${estado.error ? "alert-danger" : "alert-success"}`}>
-            {estado.mensaje}
-          </div>
-        )}
-      </form>
+        <div className="ag-title-wrap">
+          <h1 className="ag-title">Registrar Venta</h1>
+          <p className="ag-subtitle">Registra una nueva venta para el mes actual: {nombreMes}</p>
+        </div>
+      </div>
+
+      {estado.mensaje && (
+        <div className={`alert text-center ${estado.error ? "alert-danger" : "alert-success"}`} role="alert">
+          {estado.mensaje}
+        </div>
+      )}
+
+      {/* ===== Formulario ===== */}
+      <div className="ag-card">
+        <div className="ag-card-header">
+          <div className="ag-icon">💰</div>
+          <h5 className="mb-0">Datos de la Venta</h5>
+        </div>
+        <div className="p-3 p-md-4">
+          <form onSubmit={handleSubmit}>
+            <div className="row g-3">
+              {/* Fecha */}
+              <div className="col-12 col-md-6">
+                <label className="form-label fw-bold">Fecha</label>
+                <input
+                  type="date"
+                  name="fecha"
+                  className="form-control"
+                  value={form.fecha}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {/* Turno */}
+              <div className="col-12 col-md-6">
+                <label className="form-label fw-bold">Turno</label>
+                <select name="turno" className="form-control" value={form.turno} onChange={handleChange}>
+                  <option value="mañana">Mañana</option>
+                  <option value="tarde">Tarde</option>
+                  <option value="noche">Noche</option>
+                </select>
+              </div>
+
+              {/* Monto */}
+              <div className="col-12">
+                <label className="form-label fw-bold">Monto ({simbolo})</label>
+                <input
+                  type="number"
+                  name="monto"
+                  className="form-control"
+                  value={form.monto}
+                  onChange={handleChange}
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div className="d-flex gap-2 mt-4">
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => navigate('/encargado/ventas')}
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                className="btn btn-success" 
+                disabled={estado.loading}
+              >
+                <FiSave size={16} className="me-1" />
+                {estado.loading ? "Guardando..." : "Registrar Venta"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };

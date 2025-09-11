@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../../styles/PasswordModal.css"; // Opcional: si quieres extraer estilos
+// Estilos ya incluidos en brand-unified.css
 
 const PasswordModal = ({ isOpen, onClose, onConfirm }) => {
   const [password, setPassword] = useState("");
@@ -17,24 +17,58 @@ const PasswordModal = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-box">
-        <h3 className="titulo">Confirmar acción</h3>
-        <p>Introduce tu contraseña de administrador:</p>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="password"
-            value={password}
-            placeholder="Contraseña"
-            onChange={(e) => setPassword(e.target.value)}
-            className="modal-input"
-            required
-          />
-          <div className="modal-actions">
-            <button type="submit" className="btn-confirm">Aceptar</button>
-            <button type="button" className="btn-cancel" onClick={onClose}>Cancelar</button>
+    <div className="modal fade show brand-modal" style={{ display: 'block' }} tabIndex="-1">
+      <div className="modal-dialog modal-dialog-centered modal-sm">
+        <div className="modal-content">
+          <div className="modal-header">
+            <div className="modal-icon">🔐</div>
+            <h5 className="modal-title">Confirmar Acción</h5>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onClose}
+              aria-label="Close"
+            ></button>
           </div>
-        </form>
+
+          <form onSubmit={handleSubmit}>
+            <div className="modal-body">
+              <p className="text-muted mb-3">
+                Para continuar, introduce tu contraseña de administrador:
+              </p>
+              
+              <div className="mb-3">
+                <label className="form-label">🔒 Contraseña</label>
+                <input
+                  type="password"
+                  value={password}
+                  placeholder="Contraseña de administrador"
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-control"
+                  required
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="modal-btn-secondary"
+                onClick={onClose}
+              >
+                ❌ Cancelar
+              </button>
+              <button
+                type="submit"
+                className="modal-btn-primary"
+                disabled={!password.trim()}
+              >
+                🔓 Confirmar
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

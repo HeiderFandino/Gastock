@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import adminService from "../services/adminService";
-import "../styles/AdminDashboardBB.css";
+// Estilos ya incluidos en brand-unified.css
 import { QuickActionsAdmin } from "../components/QuickActionsAdmin";
 import { MonedaSimbolo } from "../services/MonedaSimbolo";
 
@@ -106,9 +106,7 @@ const AdminDashboardBB = () => {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h1 className="dashboard-title m-0">Vista General</h1>
-        <button onClick={() => navigate(-1)} className="btn-gastock-outline d-none d-md-inline-flex">
-          ← Volver
-        </button>
+
       </div>
 
       {/* Desktop: selector de mes */}

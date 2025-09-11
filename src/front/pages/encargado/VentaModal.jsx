@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../../styles/UserModal.css";
+// Estilos ya incluidos en brand-unified.css
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
 
 const VentaModal = ({ onSave, onClose }) => {
@@ -43,29 +43,92 @@ const VentaModal = ({ onSave, onClose }) => {
   }
 
   return (
-    <div className="modaal-backdrop">
-      <div className="modaal">
-        <h2 className="titulo text-brand">Registrar Venta</h2>
-        <form onSubmit={handleSubmit} className="modaal-form px-0">
-          <input type="date" name="fecha" value={form.fecha} onChange={handleChange} required />
-          <input type="number" name="monto" placeholder={`Monto (${simbolo})`} value={form.monto} onChange={handleChange} min="0" step="0.01" required />
-          <select name="turno" value={form.turno} onChange={handleChange}>
-            <option value="mañana">Mañana</option>
-            <option value="tarde">Tarde</option>
-            <option value="noche">Noche</option>
-          </select>
-
-          {mensaje && (
-            <div className="alert alert-danger text-center mt-3 py-2 fw-bold">
-              {mensaje}
-            </div>
-          )}
-
-          <div className="modaal-actions mt-3">
-            <button type="button" onClick={onClose} className="btn-cancelar">Cancelar</button>
-            <button type="submit" className="btn-guardar">Guardar</button>
+    <div className="modal fade show brand-modal" style={{ display: 'block' }} tabIndex="-1">
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content">
+          <div className="modal-header">
+            <div className="modal-icon">💰</div>
+            <h5 className="modal-title">Registrar Nueva Venta</h5>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onClose}
+              aria-label="Close"
+            ></button>
           </div>
-        </form>
+
+          <form onSubmit={handleSubmit}>
+            <div className="modal-body">
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label">📅 Fecha</label>
+                  <input 
+                    type="date" 
+                    name="fecha" 
+                    value={form.fecha} 
+                    onChange={handleChange} 
+                    className="form-control"
+                    required 
+                  />
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">⏰ Turno</label>
+                  <select 
+                    name="turno" 
+                    value={form.turno} 
+                    onChange={handleChange}
+                    className="form-select"
+                  >
+                    <option value="mañana">🌅 Mañana</option>
+                    <option value="tarde">☀️ Tarde</option>
+                    <option value="noche">🌙 Noche</option>
+                  </select>
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">💰 Monto de la venta</label>
+                  <div className="input-group">
+                    <span className="input-group-text">{simbolo}</span>
+                    <input 
+                      type="number" 
+                      name="monto" 
+                      placeholder="0.00"
+                      value={form.monto} 
+                      onChange={handleChange} 
+                      min="0" 
+                      step="0.01" 
+                      className="form-control"
+                      required 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {mensaje && (
+                <div className="alert alert-danger mt-3 text-center">
+                  {mensaje}
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="modal-btn-secondary"
+                onClick={onClose}
+              >
+                ❌ Cancelar
+              </button>
+              <button
+                type="submit"
+                className="modal-btn-primary"
+              >
+                💾 Registrar Venta
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

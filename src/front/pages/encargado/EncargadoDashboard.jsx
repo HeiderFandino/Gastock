@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import GastosChef from "../../components/GastosChef";
 import { QuickActionsEncargado } from "../../components/QuickActionsEncargado";
 import "../../styles/EncargadoDashboard.css";
+import "../../styles/AdminGastos.css";
 import encargadoServices from "../../services/encargadoServices";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
@@ -10,6 +11,7 @@ import VentaModal from "./VentaModal";
 import ventaServices from "../../services/ventaServices";
 import { useNavigate } from "react-router-dom";
 import { PatchAnnouncement } from "../../components/PatchAnnouncement";
+import { FiArrowLeft, FiTrendingUp, FiDollarSign, FiPercent, FiPlus } from "react-icons/fi";
 
 export const EncargadoDashboard = () => {
   const { store } = useGlobalReducer();
@@ -23,8 +25,8 @@ export const EncargadoDashboard = () => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mensaje, setMensaje] = useState("");
 
+  const hoy = useMemo(() => new Date(), []);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
-    const hoy = new Date();
     return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
   });
 
@@ -41,6 +43,11 @@ export const EncargadoDashboard = () => {
 
   const [ano, mes] = fechaSeleccionada.split("-").map(Number);
   const diasDelMes = new Date(ano, mes, 0).getDate();
+
+  const nombreMes = useMemo(() => {
+    const [a, m] = fechaSeleccionada.split("-").map(Number);
+    return new Date(a, m - 1).toLocaleString("es", { month: "long", year: "numeric" });
+  }, [fechaSeleccionada]);
 
   const guardarVenta = async (form) => {
     try {
@@ -123,185 +130,99 @@ export const EncargadoDashboard = () => {
   }
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container admin-bb">
       {(user?.rol === "encargado" || user?.rol === "chef") && <PatchAnnouncement />}
 
-      <h1 className="dashboard-title">Resumen De Tu Restaurante</h1>
+      {/* ===== Header compacto v2 ===== */}
+      <div className="ag-header mb-3">
+        <div className="ag-header-top">
+          <div className="ag-brand-dot" />
+        </div>
 
-      {/* CONTROLES FECHA — MÓVIL (SIN CAMBIOS) */}
-      <div className="dm-sticky-controls d-flex d-md-none align-items-center gap-2 mb-3 ms-md-3">
-        <label className="fw-bold mb-0 d-none d-md-inline">Fecha:</label>
-        <button
-          className="btn btn-sm px-2 py-1 text-white"
-          style={{ backgroundColor: "var(--color-primary)", borderRadius: "var(--radius-md)" }}
-          onClick={retrocederMes}
-          aria-label="Mes anterior"
-        >
-          ←
-        </button>
-        <input
-          type="month"
-          className="form-control text-center border"
-          style={{ flex: 1 }}
-          value={fechaSeleccionada}
-          onChange={(e) => setFechaSeleccionada(e.target.value)}
-          aria-label="Seleccionar mes"
-        />
-        <button
-          className="btn btn-sm px-2 py-1 text-white"
-          style={{ backgroundColor: "var(--color-primary)", borderRadius: "var(--radius-md)" }}
-          onClick={avanzarMes}
-          aria-label="Mes siguiente"
-        >
-          →
-        </button>
+        <div className="ag-title-wrap">
+          <h1 className="ag-title">Resumen De Tu Restaurante</h1>
+          <p className="ag-subtitle">Dashboard principal con métricas de ventas y gastos del restaurante.</p>
+        </div>
+
+        {/* Controles Mes (compactos y centrados) */}
+        <div className="ag-monthbar">
+          <button className="ag-monthbtn" onClick={retrocederMes} aria-label="Mes anterior">←</button>
+
+          <div className="ag-monthpill">
+            {nombreMes}
+            {/* input real (oculto) para accesibilidad y teclado */}
+            <input
+              type="month"
+              className="ag-month-hidden"
+              value={fechaSeleccionada}
+              onChange={(e) => setFechaSeleccionada(e.target.value)}
+              aria-label="Seleccionar mes"
+            />
+          </div>
+
+          <button className="ag-monthbtn" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
+        </div>
       </div>
 
-      {/* CONTROLES FECHA — DESKTOP (TOKENS) */}
-      <div className="dm-sticky-controls d-none d-md-flex align-items-center gap-2 mb-3 ms-md-3">
-        <label className="fw-bold mb-0">Fecha:</label>
-        <button
-          className="btn btn-sm px-2 py-1 text-white"
-          style={{ backgroundColor: "var(--color-primary)", borderRadius: "var(--radius-md)" }}
-          onClick={retrocederMes}
-          aria-label="Mes anterior"
-        >
-          ←
-        </button>
-        <input
-          type="month"
-          className="form-control text-center border"
-          style={{ flex: 1 }}
-          value={fechaSeleccionada}
-          onChange={(e) => setFechaSeleccionada(e.target.value)}
-          aria-label="Seleccionar mes"
-        />
-        <button
-          className="btn btn-sm px-2 py-1 text-white"
-          style={{ backgroundColor: "var(--color-primary)", borderRadius: "var(--radius-md)" }}
-          onClick={avanzarMes}
-          aria-label="Mes siguiente"
-        >
-          →
-        </button>
-      </div>
 
-      {/* ========== MOBILE: KPIs y GRÁFICOS DESPLEGADOS ========== */}
-      <div className="d-block d-md-none dm-no-shadow">
-
-        {/* 1) KPIs Ventas */}
-        <div className="dm-kpi-row">
-          <div className="dm-chip">
-            <h6 className="text-warning mb-1">Ventas actuales</h6>
-            <p className="dm-valor text-warning">
-              {parseFloat(totalVentas).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              {simbolo}
-            </p>
-          </div>
-          <div className="dm-chip">
-            <h6 className="text-info mb-1">Promedio diario</h6>
-            <p className="dm-valor text-info">
-              {parseFloat(promedioDiario).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              {simbolo}
-            </p>
-          </div>
-          <div className="dm-chip">
-            <h6 className="text-success mb-1">Proyección mensual</h6>
-            <p className="dm-valor text-success">
-              {parseFloat(proyeccionMensual).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              {simbolo}
-            </p>
-          </div>
+      {/* ===== VENTAS ===== */}
+      <div className="ag-card mb-4">
+        <div className="ag-card-header">
+          <div className="ag-icon">📊</div>
+          <h5 className="mb-0">Análisis de Ventas</h5>
         </div>
-
-        {/* 2) Gráfico Ventas */}
-        <div className="dm-chart mb-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={ventas}>
-              <XAxis dataKey="dia" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="monto" fill="#ffa94d" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* 3) KPIs Gastos */}
-        <div className="dm-kpi-row mt-2">
-          <div className="dm-chip">
-            <h6 className="text-info mb-1">Gastos actuales</h6>
-            <p className="dm-valor text-info">
-              {parseFloat(gasto).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              {simbolo}
-            </p>
-          </div>
-          <div className="dm-chip">
-            <h6 className={`${textClass} mb-1`}>% Gastos</h6>
-            <p className={`dm-valor ${textClass}`}>{porcentaje} %</p>
-          </div>
-        </div>
-
-        {/* 4) Gráfico Gastos */}
-        <div className="dm-chart">
-          <GastosChef
-            datos={gastoDatos}
-            ancho="100%"
-            alto={180}
-            rol="encargado"
-            xAxisProps={{
-              dataKey: "dia",
-              type: "number",
-              domain: [1, diasDelMes],
-              allowDecimals: false,
-              tickCount: diasDelMes,
-            }}
-            yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
-            tooltipProps={{ formatter: (v) => `${v}%` }}
-            lineProps={{ dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 2 }, name: "% gasto" }}
-          />
-        </div>
-
-        {/* Acciones rápidas compactas */}
-
-        <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
-
-      </div>
-
-      {/* ========== DESKTOP: igual que ya tenías ========== */}
-      <div className="d-none d-md-block">
-        <div className="section-title">VENTAS</div>
-        <div className="section-wrapper">
-          <div className="row align-items-center ms-md-3">
-            <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center mt-2">
-              <div className="rounded shadow-sm p-3 text-center bg-warning-subtle w-100">
-                <div className="icono-circular bg-white text-warning mb-2">💰</div>
-                <h6 className="fw-bold text-warning">Ventas actuales</h6>
-                <div className="fs-4 fw-bold text-warning">
-                  {parseFloat(totalVentas).toLocaleString("es-ES", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                  {simbolo}
-                </div>
-              </div>
-              <div className="rounded shadow-sm p-3 text-center bg-info-subtle w-100">
-                <div className="icono-circular rounded-circle bg-white text-info d-inline-flex align-items-center justify-content-center mb-2">📈</div>
-                <h6 className="fw-bold text-info">Promedio diario</h6>
-                <div className="fs-5 fw-bold text-info" style={{ textShadow: "0 0 1px white" }}>
-                  {parseFloat(promedioDiario).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  {simbolo}
-                </div>
-              </div>
-              <div className="rounded shadow-sm p-3 text-center bg-success-subtle w-100">
-                <div className="icono-circular rounded-circle bg-white text-success d-inline-flex align-items-center justify-content-center mb-2">📊</div>
-                <h6 className="fw-bold text-success">Proyección mensual</h6>
-                <div className="fs-5 fw-bold text-success" style={{ textShadow: "0 0 1px white" }}>
-                  {parseFloat(proyeccionMensual).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  {simbolo}
+        <div className="p-3 p-md-4">
+          {/* KPIs móviles de ventas */}
+          <div className="row g-2 mb-3 d-md-none">
+            <div className="col-4">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
+                    💰
+                  </div>
+                  <div className="fw-bold text-warning" style={{ fontSize: '0.9rem' }}>
+                    {totalVentas.toLocaleString("es-ES", { maximumFractionDigits: 0 })}{simbolo}
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>Ventas</div>
                 </div>
               </div>
             </div>
-            <div className="col-md-9">
+            <div className="col-4">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-info-12)', color: 'var(--color-info)', width: 40, height: 40, fontSize: '1rem' }}>
+                    📈
+                  </div>
+                  <div className="fw-bold text-info" style={{ fontSize: '0.9rem' }}>
+                    {promedioDiario.toLocaleString("es-ES", { maximumFractionDigits: 0 })}{simbolo}
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>Promedio</div>
+                </div>
+              </div>
+            </div>
+            <div className="col-4">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-success-12)', color: 'var(--color-success)', width: 40, height: 40, fontSize: '1rem' }}>
+                    📊
+                  </div>
+                  <div className="fw-bold text-success" style={{ fontSize: '0.9rem' }}>
+                    {proyeccionMensual.toLocaleString("es-ES", { maximumFractionDigits: 0 })}{simbolo}
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>Proyección</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="row align-items-center">
+            <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch d-none d-md-flex">
+              <ResumenCard icon="💰" color="warning" label="Ventas actuales" value={totalVentas} simbolo={simbolo} />
+              <ResumenCard icon="📈" color="info" label="Promedio diario" value={promedioDiario} simbolo={simbolo} />
+              <ResumenCard icon="📊" color="success" label="Proyección mensual" value={proyeccionMensual} simbolo={simbolo} />
+            </div>
+
+            <div className="col-12 col-md-9 mt-3 mt-md-0">
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={ventas}>
                   <XAxis dataKey="dia" />
@@ -313,33 +234,63 @@ export const EncargadoDashboard = () => {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* GASTOS */}
-        <div className="section-title">GASTOS</div>
-        <div className="section-wrapper">
-          <div className="row align-items-center ms-md-3">
-            <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center mt-2">
-              <div className="rounded shadow-sm p-3 text-center bg-info-subtle w-100">
-                <div className="icono-circular bg-white text-info mb-2">💸</div>
-                <h6 className="fw-bold text-info">Gastos actuales</h6>
-                <div className="fs-4 fw-bold text-info">
-                  {parseFloat(gasto).toLocaleString("es-ES", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                  {simbolo}
-                </div>
-              </div>
-              <div className={`rounded shadow-sm p-3 text-center w-100 ${bgClass}`}>
-                <div className={`icono-circular rounded-circle ${textClass} bg-white d-inline-flex align-items-center justify-content-center mb-2`}>{icono}</div>
-                <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
-                <div className={`fs-4 fw-bold ${textClass}`} style={{ textShadow: "0 0 1px white" }}>
-                  {porcentaje} %
+      {/* ===== GASTOS ===== */}
+      <div className="ag-card mb-4">
+        <div className="ag-card-header">
+          <div className="ag-icon">💸</div>
+          <h5 className="mb-0">Análisis de Gastos</h5>
+        </div>
+        <div className="p-3 p-md-4">
+          {/* KPIs móviles de gastos */}
+          <div className="row g-2 mb-3 d-md-none">
+            <div className="col-6">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-info-12)', color: 'var(--color-info)', width: 40, height: 40, fontSize: '1rem' }}>
+                    💸
+                  </div>
+                  <div className="fw-bold text-info" style={{ fontSize: '0.9rem' }}>
+                    {gasto.toLocaleString("es-ES", { maximumFractionDigits: 0 })}{simbolo}
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>Gastos totales</div>
                 </div>
               </div>
             </div>
-            <div className="col-md-9">
-              <h6 className="text-center mb-3">Gráfico Diario de Gastos</h6>
+            <div className="col-6">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
+                    {icono}
+                  </div>
+                  <div className={`fw-bold ${textClass}`} style={{ fontSize: '0.9rem' }}>
+                    {porcentaje.toFixed(1)}%
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>% Gastos</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="row align-items-center">
+            <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch d-none d-md-flex">
+              <ResumenCard icon="💸" color="info" label="Gastos actuales" value={gasto} simbolo={simbolo} />
+
+              <div className="card-brand p-3 text-center w-100">
+                <div
+                  className={`icono-circular rounded-circle d-inline-flex align-items-center justify-content-center mb-2 ${textClass}`}
+                  aria-hidden="true"
+                >
+                  {icono}
+                </div>
+                <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
+                <div className={`fs-4 fw-bold ${textClass}`}>{porcentaje.toFixed(2)} %</div>
+              </div>
+            </div>
+
+            <div className="col-12 col-md-9 mt-3 mt-md-0">
+              <h6 className="text-center mb-3 d-none d-md-block">Gráfico Diario de Gastos</h6>
               <GastosChef
                 datos={gastoDatos}
                 ancho="100%"
@@ -359,11 +310,28 @@ export const EncargadoDashboard = () => {
             </div>
           </div>
         </div>
-
-
-        <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
-
       </div>
+
+      {/* ===== Acciones rápidas ===== */}
+      <div className="ag-card">
+        <div className="ag-card-header">
+          <div className="ag-icon">⚡</div>
+          <h5 className="mb-0">Acciones Rápidas</h5>
+        </div>
+        <div className="p-3 p-md-4">
+          <QuickActionsEncargado onNuevaVenta={() => setMostrarModal(true)} />
+        </div>
+      </div>
+
+      {/* FAB móvil para nueva venta */}
+      <button
+        className="ag-fab d-md-none"
+        onClick={() => setMostrarModal(true)}
+        aria-label="Nueva venta"
+        title="Registrar nueva venta"
+      >
+        <FiPlus size={24} />
+      </button>
 
       {mensaje && (
         <div className={`alert mt-3 ${mensaje.includes("éxito") ? "alert-success" : "alert-danger"}`}>
@@ -377,3 +345,19 @@ export const EncargadoDashboard = () => {
     </div>
   );
 };
+
+const ResumenCard = ({ icon, color, label, value, simbolo }) => (
+  <div className="card-brand p-3 text-center w-100">
+    <div
+      className={`rounded-circle d-inline-flex align-items-center justify-content-center mb-2 text-${color} icono-circular`}
+      aria-hidden="true"
+    >
+      {icon}
+    </div>
+    <h6 className={`fw-bold text-${color}`}>{label}</h6>
+    <div className={`fs-5 fw-bold text-${color}`}>
+      {parseFloat(value || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      {simbolo}
+    </div>
+  </div>
+);

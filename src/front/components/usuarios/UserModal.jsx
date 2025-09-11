@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../../styles/UserModal.css";
+// Estilos ya incluidos en brand-unified.css
 
 const UserModal = ({ user, onSave, onClose, restaurants }) => {
   const [formData, setFormData] = useState({
@@ -47,78 +47,134 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
   };
 
   return (
-    <div className="modaal-backdrop">
-      <div className="modaal">
-        <h2 className="titulo">{user ? "Editar Usuario" : "Crear Usuario"}</h2>
-        <form onSubmit={handleSubmit} className="modaal-form px-0">
-          <input
-            type="text"
-            name="nombre"
-            placeholder="Nombre"
-            value={formData.nombre}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            type="email"
-            name="email"
-            placeholder="Correo electrónico"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-
-          <input
-            type="password"
-            name="password"
-            placeholder={user ? "Nueva contraseña (opcional)" : "Contraseña del nuevo usuario"}
-            value={formData.password}
-            onChange={handleChange}
-            required={!user}
-          />
-
-          <select
-            name="rol"
-            value={formData.rol}
-            onChange={handleChange}
-            required
-          >
-            <option value="encargado">Encargado</option>
-            <option value="chef">Chef</option>
-          </select>
-
-          <select
-            name="restaurante_id"
-            value={formData.restaurante_id}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Selecciona un restaurante</option>
-            {Array.isArray(restaurants) && restaurants.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.nombre}
-              </option>
-            ))}
-          </select>
-
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            required
-          >
-            <option value="active">Activo</option>
-            <option value="inactive">Inactivo</option>
-          </select>
-
-          <div className="modaal-actions">
-            <button type="button" onClick={onClose}>
-              Cancelar
-            </button>
-            <button type="submit">Guardar</button>
+    <div className="modal fade show brand-modal" style={{ display: 'block' }} tabIndex="-1">
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content">
+          <div className="modal-header">
+            <div className="modal-icon">👤</div>
+            <h5 className="modal-title">
+              {user ? "Editar Usuario" : "Crear Nuevo Usuario"}
+            </h5>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onClose}
+              aria-label="Close"
+            ></button>
           </div>
-        </form>
+
+          <form onSubmit={handleSubmit}>
+            <div className="modal-body">
+              <div className="row g-3">
+                <div className="col-12">
+                  <label className="form-label">👤 Nombre completo</label>
+                  <input
+                    type="text"
+                    name="nombre"
+                    className="form-control"
+                    placeholder="Ingresa el nombre completo"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">📧 Correo electrónico</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className="form-control"
+                    placeholder="usuario@ejemplo.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">🔒 Contraseña</label>
+                  <input
+                    type="password"
+                    name="password"
+                    className="form-control"
+                    placeholder={user ? "Nueva contraseña (opcional)" : "Contraseña del usuario"}
+                    value={formData.password}
+                    onChange={handleChange}
+                    required={!user}
+                  />
+                  {user && (
+                    <small className="form-text text-muted">
+                      Deja vacío para mantener la contraseña actual
+                    </small>
+                  )}
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">👔 Rol</label>
+                  <select
+                    name="rol"
+                    className="form-select"
+                    value={formData.rol}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="encargado">👨‍💼 Encargado</option>
+                    <option value="chef">👨‍🍳 Chef</option>
+                  </select>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">🏪 Restaurante</label>
+                  <select
+                    name="restaurante_id"
+                    className="form-select"
+                    value={formData.restaurante_id}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Selecciona restaurante...</option>
+                    {Array.isArray(restaurants) && restaurants.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">⚡ Estado</label>
+                  <select
+                    name="status"
+                    className="form-select"
+                    value={formData.status}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="active">✅ Activo</option>
+                    <option value="inactive">❌ Inactivo</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="modal-btn-secondary"
+                onClick={onClose}
+              >
+                ❌ Cancelar
+              </button>
+              <button
+                type="submit"
+                className="modal-btn-primary"
+              >
+                💾 {user ? "Actualizar" : "Crear"} Usuario
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
