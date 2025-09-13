@@ -579,7 +579,7 @@ export const DetalleGastosMensual = () => {
                           title="Editar"
                           aria-label="Editar"
                         >
-                          <FiEdit2 size={18} />
+                          <FiEdit2 size={16} />
                         </button>
                         <button
                           className="action-icon-button delete-button"
@@ -587,7 +587,7 @@ export const DetalleGastosMensual = () => {
                           title="Eliminar"
                           aria-label="Eliminar"
                         >
-                          <FiTrash2 size={18} />
+                          <FiTrash2 size={16} />
                         </button>
                       </div>
                     </li>
@@ -619,14 +619,14 @@ export const DetalleGastosMensual = () => {
                               onClick={() => abrirModalEditar(g.id)}
                               title="Editar"
                             >
-                              <FiEdit2 size={18} />
+                              <FiEdit2 size={16} />
                             </button>
                             <button
                               className="action-icon-button delete-button"
                               onClick={() => eliminar(g.id)}
                               title="Eliminar"
                             >
-                              <FiTrash2 size={18} />
+                              <FiTrash2 size={16} />
                             </button>
                           </td>
                         </tr>

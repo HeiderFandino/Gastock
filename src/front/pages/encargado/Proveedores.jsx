@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
 import proveedorServices from "../../services/proveedorServices";
 import ProveedorModal from "../../components/shared/ProveedorModal";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 // Estilos ya incluidos en brand-unified.css
 
 export const Proveedores = () => {
@@ -123,41 +124,41 @@ export const Proveedores = () => {
           {/* LISTA MÓVIL */}
           <div className="d-sm-none">
             {proveedores.map((p) => (
-              <div key={p.id} className="ag-card mb-3">
+              <div key={p.id} className="ag-card p-3 mb-3">
                 <div className="d-flex justify-content-between align-items-start">
-                  <div className="flex-grow-1">
-                    <div className="d-flex align-items-center gap-2 mb-1">
+                  <div className="flex-grow-1 pe-3">
+                    <div className="d-flex align-items-center gap-2 mb-2">
                       <span className="ag-icon">🏢</span>
                       <h6 className="mb-0 fw-bold">{p.nombre}</h6>
                     </div>
-                    <div className="text-muted small">
+                    <div className="text-muted small mb-1">
                       📋 {p.categoria || "Sin categoría"}
                     </div>
                     {p.contacto && (
-                      <div className="text-muted small">
+                      <div className="text-muted small mb-1">
                         👤 {p.contacto}
                       </div>
                     )}
                     {p.telefono && (
-                      <div className="text-muted small">
+                      <div className="text-muted small mb-1">
                         📞 {p.telefono}
                       </div>
                     )}
                   </div>
-                  <div className="d-flex gap-2">
+                  <div className="d-flex flex-column gap-2">
                     <button
                       className="action-icon-button edit-button"
                       onClick={() => abrirModalEditar(p.id)}
                       title="Editar proveedor"
                     >
-                      ✏️
+                      <FiEdit2 size={16} />
                     </button>
                     <button
                       className="action-icon-button delete-button"
                       onClick={() => eliminar(p.id)}
                       title="Eliminar proveedor"
                     >
-                      🗑️
+                      <FiTrash2 size={16} />
                     </button>
                   </div>
                 </div>
@@ -195,14 +196,14 @@ export const Proveedores = () => {
                         onClick={() => abrirModalEditar(p.id)}
                         title="Editar proveedor"
                       >
-                        ✏️
+                        <FiEdit2 size={16} />
                       </button>
                       <button
                         className="action-icon-button delete-button"
                         onClick={() => eliminar(p.id)}
                         title="Eliminar proveedor"
                       >
-                        🗑️
+                        <FiTrash2 size={16} />
                       </button>
                     </td>
                   </tr>
@@ -238,7 +239,6 @@ export const Proveedores = () => {
             borderRadius: '50%',
             background: 'rgba(135, 206, 235, 0.6)',
             backdropFilter: 'blur(15px)',
-            border: '1px solid rgba(135, 206, 235, 0.2)',
             border: 'none',
             color: 'white',
             fontSize: '1.5rem',

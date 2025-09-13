@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
 import proveedorServices from "../../services/proveedorServices";
-import { ProveedorForm } from "../../components/shared/ProveedorForm";
+import ProveedorModal from "../../components/shared/ProveedorModal";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
 export const ChefProveedores = () => {
   const { store } = useGlobalReducer();
@@ -75,72 +76,189 @@ export const ChefProveedores = () => {
   };
 
   return (
-    <div className="dashboard-container ">
+    <div className="dashboard-container">
+      {/* Header estilo gastock */}
+      <div className="ag-header mb-4">
+        <div className="ag-title-wrap">
+          <h1 className="ag-title">🏢 Proveedores Chef</h1>
+          <p className="ag-subtitle">Gestiona los proveedores del restaurante</p>
+        </div>
 
-      <div className="d-flex justify-content-between align-items-center mb-3">
-
-        <h1 className="dashboard-title">Proveedores</h1>
-        <button className="btn btn-success" onClick={abrirModalCrear}>
-          + Nuevo Proveedor
+        {/* Botón en desktop */}
+        <button className="btn-gastock d-none d-md-inline-flex" onClick={abrirModalCrear}>
+          ➕ Nuevo Proveedor
         </button>
       </div>
 
-      {mensajeError && <div className="alert alert-danger">{mensajeError}</div>}
-      {mensajeExito && <div className="alert alert-success">{mensajeExito}</div>}
-
-      {loading ? (
-        <p>Cargando...</p>
-      ) : proveedores.length === 0 ? (
-        <p>No hay proveedores registrados.</p>
-      ) : (
-        <div className="table-responsive">
-          <table className="table table-striped users-table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {proveedores.map(p => (
-                <tr key={p.id}>
-                  <td>{p.nombre}</td>
-                  <td>{p.categoria}</td>
-                  <td>
-                    <button class="action-icon-button edit-button"
-                      onClick={() => abrirModalEditar(p.id)}
-                      title="Edit User"><svg xmlns="http://www.w3.org/2000/svg"
-                        width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" strokeLinejoin="round"
-                        class="feather feather-edit-2">
-                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z">
-                        </path>
-                      </svg>
-                    </button>
-
-
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {mensajeError && (
+        <div className="alert alert-danger d-flex align-items-center gap-2 mb-3">
+          ⚠️ {mensajeError}
+        </div>
+      )}
+      {mensajeExito && (
+        <div className="alert alert-success d-flex align-items-center gap-2 mb-3">
+          ✅ {mensajeExito}
         </div>
       )}
 
-      {mostrarModal && (
-        <div className="modal d-block" style={{ backgroundColor: "#00000066" }}>
-          <div className="modal-dialog">
-            <div className="modal-content p-3">
-              <ProveedorForm
-                proveedor={proveedorEditando}
-                onSuccess={handleSuccess}
-                onCancel={cerrarModal}
-              />
-            </div>
+      {loading ? (
+        <div className="text-center py-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Cargando...</span>
           </div>
+          <p className="mt-3 text-muted">Cargando proveedores...</p>
         </div>
+      ) : proveedores.length === 0 ? (
+        <div className="empty-state text-center py-5">
+          <div className="empty-icon mb-3">🏢</div>
+          <h3 className="empty-title">Sin proveedores</h3>
+          <p className="empty-text mb-4">No hay proveedores registrados en este restaurante</p>
+          <button className="btn-gastock" onClick={abrirModalCrear}>
+            ➕ Registrar Primer Proveedor
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Lista móvil */}
+          <div className="d-sm-none">
+            {proveedores.map((p) => (
+              <div key={p.id} className="ag-card p-3 mb-3">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div className="flex-grow-1 pe-3">
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                      <span className="ag-icon">🏢</span>
+                      <h6 className="mb-0 fw-bold">{p.nombre}</h6>
+                    </div>
+                    <div className="text-muted small mb-1">
+                      📋 {p.categoria || "Sin categoría"}
+                    </div>
+                    {p.contacto && (
+                      <div className="text-muted small mb-1">
+                        👤 {p.contacto}
+                      </div>
+                    )}
+                    {p.telefono && (
+                      <div className="text-muted small mb-1">
+                        📞 {p.telefono}
+                      </div>
+                    )}
+                  </div>
+                  <div className="d-flex flex-column gap-2">
+                    <button
+                      className="action-icon-button edit-button"
+                      onClick={() => abrirModalEditar(p.id)}
+                      title="Editar proveedor"
+                    >
+                      <FiEdit2 size={16} />
+                    </button>
+                    <button
+                      className="action-icon-button delete-button"
+                      onClick={() => eliminar(p.id)}
+                      title="Eliminar proveedor"
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabla desktop */}
+          <div className="table-responsive d-none d-sm-block">
+            <table className="table ag-table mb-0">
+              <thead>
+                <tr>
+                  <th>🏢 Proveedor</th>
+                  <th>📋 Categoría</th>
+                  <th>👤 Contacto</th>
+                  <th>📞 Teléfono</th>
+                  <th className="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {proveedores.map((p) => (
+                  <tr key={p.id}>
+                    <td>
+                      <div className="fw-bold">{p.nombre}</div>
+                      {p.direccion && (
+                        <small className="text-muted">📍 {p.direccion}</small>
+                      )}
+                    </td>
+                    <td>{p.categoria || "—"}</td>
+                    <td>{p.contacto || "—"}</td>
+                    <td>{p.telefono || "—"}</td>
+                    <td className="text-end">
+                      <button
+                        className="action-icon-button edit-button me-2"
+                        onClick={() => abrirModalEditar(p.id)}
+                        title="Editar proveedor"
+                      >
+                        <FiEdit2 size={16} />
+                      </button>
+                      <button
+                        className="action-icon-button delete-button"
+                        onClick={() => eliminar(p.id)}
+                        title="Eliminar proveedor"
+                      >
+                        <FiTrash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      <ProveedorModal
+        show={mostrarModal}
+        onHide={cerrarModal}
+        onSuccess={handleSuccess}
+        proveedor={proveedorEditando}
+        modo={modoEditar ? "editar" : "crear"}
+      />
+
+      {/* FAB para móvil */}
+      {!mostrarModal && (
+        <button
+          className="d-md-none"
+          onClick={abrirModalCrear}
+          title="Nuevo proveedor"
+          style={{
+            position: 'fixed',
+            bottom: '120px',
+            right: '24px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'rgba(135, 206, 235, 0.6)',
+            backdropFilter: 'blur(15px)',
+            border: 'none',
+            color: 'white',
+            fontSize: '1.5rem',
+            boxShadow: '0 4px 16px rgba(135, 206, 235, 0.4)',
+            zIndex: 1000,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'scale(1.1)';
+            e.target.style.boxShadow = '0 6px 20px rgba(135, 206, 235, 0.6)';
+            e.target.style.background = 'rgba(135, 206, 235, 0.8)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 4px 16px rgba(135, 206, 235, 0.4)';
+            e.target.style.background = 'rgba(135, 206, 235, 0.6)';
+          }}
+        >
+          🏢
+        </button>
       )}
     </div>
   );

@@ -166,7 +166,7 @@ const AdminRestaurante = () => {
                     title="Editar"
                     aria-label="Editar"
                   >
-                    <FiEdit2 size={18} />
+                    <FiEdit2 size={16} />
                   </button>
                   <button
                     className="action-icon-button delete-button"
@@ -174,7 +174,7 @@ const AdminRestaurante = () => {
                     title="Eliminar"
                     aria-label="Eliminar"
                   >
-                    <FiTrash2 size={18} />
+                    <FiTrash2 size={16} />
                   </button>
                 </div>
               </div>
@@ -209,10 +209,10 @@ const AdminRestaurante = () => {
                   <td>{r.email_contacto || "-"}</td>
                   <td className="text-end">
                     <button className="action-icon-button edit-button me-2" onClick={() => handleEdit(r)} title="Editar">
-                      <FiEdit2 size={18} />
+                      <FiEdit2 size={16} />
                     </button>
                     <button className="action-icon-button delete-button" onClick={() => handleRequestDelete(r)} title="Eliminar">
-                      <FiTrash2 size={18} />
+                      <FiTrash2 size={16} />
                     </button>
                   </td>
                 </tr>

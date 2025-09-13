@@ -322,7 +322,7 @@ const Users = () => {
                       aria-label="Editar"
                     >
                       {/* icono lápiz inline (ligero) */}
-                      <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="18" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
+                      <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
                     </button>
                     <button
                       className="action-icon-button delete-button"
@@ -330,7 +330,7 @@ const Users = () => {
                       title="Eliminar"
                       aria-label="Eliminar"
                     >
-                      <FiTrash2 size={22} />
+                      <FiTrash2 size={16} />
                     </button>
                   </div>
                 </div>
@@ -392,14 +392,14 @@ const Users = () => {
                       onClick={() => handleEditUser(user)}
                       title="Editar"
                     >
-                      <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="18" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
+                      <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
                     </button>
                     <button
                       className="action-icon-button delete-button"
                       onClick={() => handleDeleteUser(user.id)}
                       title="Eliminar"
                     >
-                      <FiTrash2 size={22} />
+                      <FiTrash2 size={16} />
                     </button>
                   </td>
                 </tr>

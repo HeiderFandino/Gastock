@@ -59,59 +59,60 @@ export const TortaCategorias = () => {
       });
   }, []);
 
-  if (!data) return <p className="text-muted">Cargando gráfica de categorías...</p>;
+  if (!data) return (
+    <div className="text-center py-4">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Cargando...</span>
+      </div>
+      <p className="mt-3 text-muted">Cargando gráfica de categorías...</p>
+    </div>
+  );
 
   return (
     <div className="row">
-      <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-3 pe-md-0 ms-4">
-        {leyenda.map((item, i) => {
-          let icono = "📦";
-          const nombre = item.label.toLowerCase();
+      {/* Leyenda simple */}
+      <div className="col-12 col-md-4">
+        <div className="d-flex d-md-block gap-2 flex-wrap">
+          {leyenda.map((item, i) => {
+            let icono = "📦";
+            const nombre = item.label.toLowerCase();
 
-          if (nombre.includes("alimento")) icono = "🍎";
-          else if (nombre.includes("bebida")) icono = "🥤";
-          else if (nombre.includes("limpieza")) icono = "🧽";
-          else icono = "🎯";
+            if (nombre.includes("alimento")) icono = "🍎";
+            else if (nombre.includes("bebida")) icono = "🥤";
+            else if (nombre.includes("limpieza")) icono = "🧽";
+            else icono = "🎯";
 
-          let textClass = "text-dark";
-          if (item.color === "#b6effb") textClass = "text-info";
-          else if (item.color === "#f8cfcf") textClass = "text-danger";
-          else if (item.color === "#ffe299") textClass = "text-warning";
-          else if (item.color === "#a3dbc5") textClass = "text-success";
-
-          return (
-            <div
-              key={i}
-              className="rounded shadow-sm text-center px-3 py-2 mb-2"
-              style={{ backgroundColor: item.color }}
-            >
-              <div
-                className="rounded-circle bg-white border d-inline-flex align-items-center justify-content-center mb-2 fw-bold"
-                style={{ width: "50px", height: "50px", fontSize: "1.5rem", color: item.color }}
-              >
-                {icono}
+            return (
+              <div key={i} className="d-flex align-items-center gap-2 p-2 mb-2 rounded" style={{
+                backgroundColor: item.color,
+                minWidth: '140px'
+              }}>
+                <span style={{ fontSize: '1.2rem' }}>{icono}</span>
+                <div>
+                  <div className="fw-bold text-dark" style={{ fontSize: '0.9rem' }}>
+                    {item.label}
+                  </div>
+                  <div className="text-dark" style={{ fontSize: '0.8rem' }}>
+                    €{item.valor.toFixed(2)} ({item.porcentaje}%)
+                  </div>
+                </div>
               </div>
-              <h6 className={`fw-bold fs-4 ${textClass} mb-1`} style={{ fontSize: "0.95rem", textShadow: "0 0 2px white" }}>
-                {item.label}
-              </h6>
-              <div className={`fs-5 fw-bold ${textClass}`} style={{ fontSize: "0.9rem", textShadow: "0 0 1px white" }}>
-                {item.valor.toFixed(2)}€
-              </div>
-              <div className={`fs-5 fw-bold ${textClass}`} style={{ fontSize: "0.9rem", textShadow: "0 0 1px white" }}>
-                {item.porcentaje}%
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      <div className="col-md-8 d-flex justify-content-center align-items-center">
-        <div style={{ maxWidth: "800px", height: "450px" }}>
+      {/* Gráfico simple */}
+      <div className="col-12 col-md-8">
+        <div className="d-flex justify-content-center" style={{ height: '300px' }}>
           <Pie
             data={data}
             options={{
               responsive: true,
               maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              }
             }}
           />
         </div>

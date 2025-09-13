@@ -7,25 +7,27 @@ import { QuickActionsChef } from "../../components/QuickActionsChef";
 export const ChefDashboard = () => {
   const [datos, SetDatos] = useState([]);
   const [resumenMensual, setResumenMensual] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fecha = new Date();
     const mes = fecha.getMonth() + 1;
     const ano = fecha.getFullYear();
 
-    chefServices.resumenDiarioGastos(mes, ano)
-      .then((resumen) => {
-        const data = resumen.map((item) => ({
+    Promise.all([
+      chefServices.resumenDiarioGastos(mes, ano),
+      chefServices.resumenGastoMensual(mes, ano)
+    ])
+      .then(([resumenDiario, resumenMensual]) => {
+        const data = resumenDiario.map((item) => ({
           name: `${item.dia}`,
           porcentaje: item.porcentaje,
         }));
         SetDatos(data);
+        setResumenMensual(resumenMensual);
       })
-      .catch((err) => console.error(err));
-
-    chefServices.resumenGastoMensual(mes, ano)
-      .then((resumen) => setResumenMensual(resumen))
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
 
     const el = document.getElementsByClassName("custom-sidebar")[0];
     if (el) el.scrollTo(0, 0);
@@ -48,61 +50,80 @@ export const ChefDashboard = () => {
     icono = "⚠️";
   }
 
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <div className="text-center py-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-3 text-muted">Cargando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-container">
-      <h1 className="dashboard-title">Gráficas en Porcentajes</h1>
-      <p className="dashboard-welcome mb-4">Gráficas de gastos</p>
+      {/* Header unificado estilo gastock */}
+      <div className="ag-header mb-4">
+        <div className="ag-title-wrap">
+          <h1 className="ag-title">👨‍🍳 Dashboard Chef</h1>
+          <p className="ag-subtitle">Monitorea los gastos y categorías del restaurante</p>
+        </div>
+      </div>
 
-      {/* GASTOS */}
-      <div className="card shadow-sm border rounded p-4 pt-0 px-0 mb-4">
-        <h5 className="mb-3 fw-bold barralarga">GASTOS</h5>
-        <div className="row align-items-center ms-3">
-          <div className="col-11 col-sm-11 col-md-3 d-flex flex-column gap-4 align-items-center">
-            <div className="rounded shadow-sm p-3 text-center bg-info-subtle w-100">
-              <div className="rounded-circle bg-white text-info d-inline-flex align-items-center justify-content-center mb-2" style={{ width: "50px", height: "50px", fontSize: "1.5rem" }}>
-                💸
-              </div>
-              <h6 className="fw-bold text-info">Gastos Actuales</h6>
-              <div className="fs-4 fw-bold text-info">
-                {gasto} €
-              </div>
-            </div>
-
-            <div className={`rounded shadow-sm p-3 text-center w-100 ${bgClass}`}>
-              <div className={`rounded-circle ${textClass} bg-white d-inline-flex align-items-center justify-content-center mb-2`} style={{ width: "50px", height: "50px", fontSize: "1.5rem" }}>
-                {icono}
-              </div>
-              <h6 className={`fw-bold ${textClass}`}>Porcentaje Gastos</h6>
-              <div className={`fs-4 fw-bold ${textClass}`}>
-                {porcentaje} %
+      {/* Métricas simples */}
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-md-6">
+          <div className="ag-card p-4">
+            <div className="d-flex align-items-center gap-3">
+              <div className="ag-icon">💸</div>
+              <div>
+                <h6 className="ag-card-title mb-1">Gastos del Mes</h6>
+                <div className="ag-card-value">{gasto} €</div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="col-md-9">
-            <h6 className="text-center mb-3">Gráfico Diario de Gastos</h6>
-            <GastosChef
-              datos={datos}
-              ancho={800}
-              alto={300}
-              rol="chef"
-              xAxisProps={{ dataKey: "name", interval: 0 }}
-              yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
-              tooltipProps={{ formatter: (v) => `${v}%` }}
-              lineProps={{ dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 3 } }}
-            />
+        <div className="col-12 col-md-6">
+          <div className="ag-card p-4">
+            <div className="d-flex align-items-center gap-3">
+              <div className="ag-icon">{icono}</div>
+              <div>
+                <h6 className="ag-card-title mb-1">Porcentaje</h6>
+                <div className={`ag-card-value ${textClass}`}>{porcentaje}%</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* DISTRIBUCIÓN */}
-      <div className="card mt-4 shadow-sm border rounded p-4 px-0 pt-0">
-        <h5 className="mb-3 fw-bold barralarga">DISTRIBUCIÓN POR CATEGORÍA</h5>
+      {/* Gráfico diario */}
+      <div className="ag-card p-4 mb-4">
+        <div className="d-flex align-items-center gap-2 mb-3">
+          <span className="ag-icon">📊</span>
+          <h5 className="ag-section-title mb-0">Evolución Diaria</h5>
+        </div>
+        <GastosChef datos={datos} alto={280} />
+      </div>
+
+      {/* Distribución por categorías */}
+      <div className="ag-card p-4 mb-4">
+        <div className="d-flex align-items-center gap-2 mb-3">
+          <span className="ag-icon">🍰</span>
+          <h5 className="ag-section-title mb-0">Distribución por Categoría</h5>
+        </div>
         <TortaCategorias />
       </div>
 
-      {/* ACCIONES */}
-      <div className="card mt-4 shadow-sm border rounded p-4 px-0 pt-0">
+      {/* Acciones rápidas */}
+      <div className="ag-card p-4">
+        <div className="d-flex align-items-center gap-2 mb-3">
+          <span className="ag-icon">⚡</span>
+          <h5 className="ag-section-title mb-0">Acciones Rápidas</h5>
+        </div>
         <QuickActionsChef />
       </div>
     </div>
