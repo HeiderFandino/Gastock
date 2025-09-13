@@ -4,7 +4,7 @@ import ventaServices from "../../services/ventaServices";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
 import VentaModal from "./VentaModal";
 import { useNavigate } from "react-router-dom";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
+// import { FiEdit2, FiTrash2 } from "react-icons/fi"; // Comentado para compatibilidad con producción
 // Estilos ya incluidos en brand-unified.css
 
 export const EncargadoVentas = () => {
@@ -290,14 +290,14 @@ export const EncargadoVentas = () => {
                         onClick={() => abrirModalEdicion(v)}
                         title="Editar"
                       >
-                        <FiEdit2 size={16} />
+✏️
                       </button>
                       <button
                         className="action-icon-button delete-button"
                         onClick={() => eliminarVenta(v.id)}
                         title="Eliminar"
                       >
-                        <FiTrash2 size={16} />
+🗑️
                       </button>
                     </div>
                   </li>
@@ -341,14 +341,14 @@ export const EncargadoVentas = () => {
                             onClick={() => abrirModalEdicion(v)}
                             title="Editar"
                           >
-                            <FiEdit2 size={16} />
+    ✏️
                           </button>
                           <button
                             className="action-icon-button delete-button"
                             onClick={() => eliminarVenta(v.id)}
                             title="Eliminar"
                           >
-                            <FiTrash2 size={16} />
+    🗑️
                           </button>
                         </td>
                       </tr>

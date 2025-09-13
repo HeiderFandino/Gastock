@@ -11,6 +11,7 @@ const AdminDashboardBB = () => {
 
   const [resumenes, setResumenes] = useState([]);
   const [ultimaVentaPorRest, setUltimaVentaPorRest] = useState({});
+  const [ultimaVentaDetalle, setUltimaVentaDetalle] = useState({});
   const [cargando, setCargando] = useState(false);
 
   // Fija --navbar-h según el header real
@@ -49,15 +50,24 @@ const AdminDashboardBB = () => {
 
         const packs = await Promise.all(
           lista.map((r) =>
-            adminService.getVentasDiarias(r.restaurante_id, mes, ano).then((ventas) => ({
-              restaurante_id: r.restaurante_id,
-              lastDate: getUltimaFecha(ventas),
-            }))
+            adminService.getVentasDiarias(r.restaurante_id, mes, ano).then((ventas) => {
+              const ultimaVenta = getUltimaVentaCompleta(ventas);
+              return {
+                restaurante_id: r.restaurante_id,
+                lastDate: ultimaVenta ? ultimaVenta.fecha : null,
+                lastAmount: ultimaVenta ? ultimaVenta.monto : 0,
+              };
+            })
           )
         );
-        const mapa = {};
-        packs.forEach(({ restaurante_id, lastDate }) => (mapa[restaurante_id] = lastDate));
-        setUltimaVentaPorRest(mapa);
+        const mapaFechas = {};
+        const mapaDetalles = {};
+        packs.forEach(({ restaurante_id, lastDate, lastAmount }) => {
+          mapaFechas[restaurante_id] = lastDate;
+          mapaDetalles[restaurante_id] = { fecha: lastDate, monto: lastAmount };
+        });
+        setUltimaVentaPorRest(mapaFechas);
+        setUltimaVentaDetalle(mapaDetalles);
       } catch (e) {
         console.error("Error cargando la vista admin:", e);
       } finally {
@@ -239,8 +249,10 @@ const AdminDashboardBB = () => {
                             <div className="ultima-venta-content">
                               <div className="ultima-venta-fecha">{formateaFechaCorta(lastDate)}</div>
                               <div className="ultima-venta-monto">
-                                {/* Aquí necesitarías el monto de la última venta específica */}
-                                {((r.venta_total / new Date().getDate()) / 1).toFixed(0)} {simbolo}
+                                {ultimaVentaDetalle[r.restaurante_id] && ultimaVentaDetalle[r.restaurante_id].monto > 0
+                                  ? `${ultimaVentaDetalle[r.restaurante_id].monto.toFixed(0)} ${simbolo}`
+                                  : 'Sin ventas'
+                                }
                               </div>
                             </div>
                           </div>
@@ -295,6 +307,31 @@ function getUltimaFecha(ventas = []) {
   const fechas = ventas.map((v) => (v.fecha ? new Date(v.fecha) : null)).filter(Boolean);
   if (fechas.length === 0) return null;
   return new Date(Math.max(...fechas.map((d) => d.getTime())));
+}
+
+function getUltimaVentaCompleta(ventas = []) {
+  if (!Array.isArray(ventas) || ventas.length === 0) return null;
+
+  // Filtrar ventas válidas y convertir fechas
+  const ventasValidas = ventas
+    .filter(v => v && v.fecha && v.monto)
+    .map(v => ({
+      ...v,
+      fechaObj: new Date(v.fecha)
+    }))
+    .filter(v => !isNaN(v.fechaObj.getTime()));
+
+  if (ventasValidas.length === 0) return null;
+
+  // Encontrar la venta con la fecha más reciente
+  const ultimaVenta = ventasValidas.reduce((ultima, actual) =>
+    actual.fechaObj > ultima.fechaObj ? actual : ultima
+  );
+
+  return {
+    fecha: ultimaVenta.fechaObj,
+    monto: parseFloat(ultimaVenta.monto) || 0
+  };
 }
 
 export default AdminDashboardBB;

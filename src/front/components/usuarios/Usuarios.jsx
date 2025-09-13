@@ -330,7 +330,7 @@ const Users = () => {
                       title="Eliminar"
                       aria-label="Eliminar"
                     >
-                      <FiTrash2 size={16} />
+🗑️
                     </button>
                   </div>
                 </div>
@@ -399,7 +399,7 @@ const Users = () => {
                       onClick={() => handleDeleteUser(user.id)}
                       title="Eliminar"
                     >
-                      <FiTrash2 size={16} />
+🗑️
                     </button>
                   </td>
                 </tr>
