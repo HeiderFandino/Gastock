@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import adminService from "../services/adminService";
-// Estilos ya incluidos en brand-unified.css
 import { QuickActionsAdmin } from "../components/QuickActionsAdmin";
 import { MonedaSimbolo } from "../services/MonedaSimbolo";
+import "../styles/AdminDashboardBB.css";
 
 const AdminDashboardBB = () => {
   const navigate = useNavigate();
@@ -133,41 +133,140 @@ const AdminDashboardBB = () => {
               const [bgClass, textClass, icono] = getColorClasses(r.porcentaje_gasto);
               const lastDate = ultimaVentaPorRest[r.restaurante_id] || null;
 
+              // Layout unificado: mismo diseño para móvil y desktop
               return (
                 <div key={r.restaurante_id} className="rest-block">
-                  <h4 className="text-center fw-bold rest-block__title mb-1">
-                    <span title={r.nombre}>{r.nombre}</span>
-                  </h4>
+                  {/* DESKTOP: Nuevo layout unificado (oculto temporalmente) */}
+                  <div className="d-none">
+                    <h4 className="text-center fw-bold rest-block__title mb-1">
+                      <span title={r.nombre}>{r.nombre}</span>
+                    </h4>
 
-                  <p className="text-center text-muted mb-3 rest-block__legend">
-                    Últ. venta: {formateaFechaCorta(lastDate)}
-                  </p>
+                    <p className="text-center text-muted mb-3 rest-block__legend">
+                      Últ. venta: {formateaFechaCorta(lastDate)}
+                    </p>
 
-                  <div className="d-flex flex-column flex-sm-row gap-2 gap-md-3 justify-content-between text-center">
-                    <div className="rest-stat bg-info-subtle">
-                      <div className="icono-circular">💰</div>
-                      <p className="fw-bold text-info mb-1 small">Ventas</p>
-                      <p className="fw-bold mb-0 rest-stat__value">
-                        {r.venta_total.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {simbolo}
-                      </p>
+                    <div className="d-flex flex-column flex-sm-row gap-2 gap-md-3 justify-content-between text-center">
+                      <div className="rest-stat bg-info-subtle">
+                        <div className="icono-circular">💰</div>
+                        <p className="fw-bold text-info mb-1 small">Ventas</p>
+                        <p className="fw-bold mb-0 rest-stat__value">
+                          {r.venta_total.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {simbolo}
+                        </p>
+                      </div>
+
+                      <div className={`rest-stat ${bgClass}`}>
+                        <div className="icono-circular" aria-hidden="true">{icono}</div>
+                        <p className={`fw-bold mb-1 small ${textClass}`}>% Gasto</p>
+                        <p className={`fw-bold mb-0 rest-stat__value ${textClass}`}>
+                          {r.venta_total > 0 ? `${r.porcentaje_gasto}%` : "0%"}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className={`rest-stat ${bgClass}`}>
-                      <div className="icono-circular" aria-hidden="true">{icono}</div>
-                      <p className={`fw-bold mb-1 small ${textClass}`}>% Gasto</p>
-                      <p className={`fw-bold mb-0 rest-stat__value ${textClass}`}>
-                        {r.venta_total > 0 ? `${r.porcentaje_gasto}%` : "0%"}
-                      </p>
+                    <div className="text-center mt-3">
+                      <button
+                        className="btn-gastock-outline btn-sm"
+                        onClick={() => navigate(`/admin/restaurante/${r.restaurante_id}?mes=${mes}&ano=${ano}`)}
+                      >
+                        Ver todo
+                      </button>
                     </div>
                   </div>
 
-                  <div className="text-center mt-3">
-                    <button
-                      className="btn-gastock-outline btn-sm"
-                      onClick={() => navigate(`/admin/restaurante/${r.restaurante_id}?mes=${mes}&ano=${ano}`)}
-                    >
-                      Ver todo
-                    </button>
+                  {/* UNIFICADO: Diseño para móvil y desktop */}
+                  <div>
+                    <div className="new-mobile-card">
+                      {/* Header: Nombre centrado en negrita */}
+                      <h4 className="restaurant-title">
+                        {r.nombre}
+                      </h4>
+
+                      {/* Última actualización */}
+                      <p className="last-update-info">
+                        Últ act: {formateaFechaCorta(lastDate)}
+                      </p>
+
+                      {/* 2 divs principales en columna */}
+                      <div className="mobile-stats-column">
+                        {/* Div 1: KPIs de ventas */}
+                        <div className="mobile-stat-box ventas-box">
+                          <div className="stat-icon">💰</div>
+                          <p className="stat-label">Ventas del mes</p>
+
+                          {/* KPIs en mini-grid */}
+                          <div className="kpis-grid">
+                            {/* Resumen total */}
+                            <div className="kpi-item">
+                              <div className="kpi-icon">💰</div>
+                              <div className="kpi-content">
+                                <div className="kpi-label">Total</div>
+                                <div className="kpi-value">
+                                  {(r.venta_total / 1000).toFixed(0)}k{simbolo}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Promedio diario */}
+                            <div className="kpi-item">
+                              <div className="kpi-icon">📈</div>
+                              <div className="kpi-content">
+                                <div className="kpi-label">Promedio</div>
+                                <div className="kpi-value">
+                                  {((r.venta_total / new Date().getDate()) / 1000).toFixed(1)}k{simbolo}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Proyección mensual */}
+                            <div className="kpi-item">
+                              <div className="kpi-icon">📊</div>
+                              <div className="kpi-content">
+                                <div className="kpi-label">Proyección</div>
+                                <div className="kpi-value">
+                                  {(((r.venta_total / new Date().getDate()) * 30) / 1000).toFixed(0)}k{simbolo}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Última venta con fecha y monto */}
+                          <div className="ultima-venta-info">
+                            <div className="ultima-venta-header">
+                              <span className="ultima-venta-icon">🕐</span>
+                              <span className="ultima-venta-title">Última venta</span>
+                            </div>
+                            <div className="ultima-venta-content">
+                              <div className="ultima-venta-fecha">{formateaFechaCorta(lastDate)}</div>
+                              <div className="ultima-venta-monto">
+                                {/* Aquí necesitarías el monto de la última venta específica */}
+                                {((r.venta_total / new Date().getDate()) / 1).toFixed(0)} {simbolo}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Div 2: % Gasto con bg dinámico */}
+                        <div className={`mobile-stat-box gasto-box ${bgClass}`}>
+                          <div className="stat-icon">{icono}</div>
+                          <p className={`stat-label ${textClass}`}>% Gasto</p>
+                          <p className={`stat-value ${textClass}`}>
+                            {r.venta_total > 0 ? `${r.porcentaje_gasto}%` : "0%"}
+                          </p>
+                          <p className={`stat-extra ${textClass}`}>del total</p>
+                        </div>
+                      </div>
+
+                      {/* Botón Ver todo */}
+                      <div className="mobile-action">
+                        <button
+                          className="btn-ver-todo"
+                          onClick={() => navigate(`/admin/restaurante/${r.restaurante_id}?mes=${mes}&ano=${ano}`)}
+                        >
+                          Ver todo
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );

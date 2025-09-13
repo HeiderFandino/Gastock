@@ -3,11 +3,7 @@
   height: 100px; /* altura consistente */
   display: flex;
   align-items: center; /* centra verticalmente todo dentro */
-  background: linear-gradient(
-    35deg,
-    color-mix(in srgb, var(--brand-900) 20%, #98b9d4),
-    color-mix(in srgb, var(--brand-600) 20%, #dfe4e6)
-  );
+  background: linear-gradient(90deg, #87abe5, rgba(255, 255, 255, 0.9));
   color: var(--color-text);
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
@@ -16,6 +12,13 @@
   z-index: var(--z-nav, 10000); /* ⬅️ por encima de la barra de fecha */
   transform: none !important; /* evita stacking contexts inesperados */
   filter: none !important;
+}
+
+/* Altura específica para móvil */
+@media (max-width: 767.98px) {
+  .navbar {
+    height: 70px !important;
+  }
 }
 
 /* Marca */
@@ -35,6 +38,7 @@
   } /* más grande en escritorio */
 }
 .brand-text {
+  font-family: "Gastock", sans-serif;
   font-size: 1.1rem;
   font-weight: 600;
   line-height: 1;
@@ -73,14 +77,17 @@
   max-width: 220px;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--brand-600, #0d6efd); /* ⬅️ azul brand */
+  font-family: "Gastock", sans-serif;
+  color: #87abe5; /* Color Gastock azul suave */
 }
 .user-role {
-  color: var(--brand-500, #0a58ca); /* ⬅️ rol también en tono azul */
+  font-family: "Gastock", sans-serif;
+  color: #6b95d1; /* Color Gastock azul medio */
 }
 .user-restaurant {
   max-width: 220px;
-  color: var(--text-medium, #666); /* ⬅️ gris medio para diferenciar */
+  font-family: "Gastock", sans-serif;
+  color: #5a7fb8; /* Color Gastock azul más intenso */
 }
 
 /* Menú desplegable (links) */

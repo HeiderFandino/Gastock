@@ -58,7 +58,7 @@ const VentasPorRestauranteChart = ({
 
   if (loading) return (
     <div className="text-center py-4">
-      <div className="spinner-border" style={{ color: '#2563eb' }} role="status">
+      <div className="spinner-border" style={{ color: '#87abe5' }} role="status">
         <span className="visually-hidden">Cargando...</span>
       </div>
       <p className="mt-3 text-muted">Cargando gráfico...</p>
@@ -86,7 +86,7 @@ const VentasPorRestauranteChart = ({
   const maxIndex = valores.reduce((maxIdx, v, i, arr) => (v > arr[maxIdx] ? i : maxIdx), 0);
 
   const backgroundColors = valores.map((_, i) =>
-    i === maxIndex ? "#2563eb" : "#f3f4f6"
+    i === maxIndex ? "#87abe5" : "#f3f4f6"
   );
   const borderColors = valores.map((_, i) =>
     i === maxIndex ? "#1d4ed8" : "#e5e7eb"

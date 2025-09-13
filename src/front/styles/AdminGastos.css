@@ -58,7 +58,7 @@
 
 /* ——— Card ——— */
 .ag-card {
-  background: #fff;
+  background: linear-gradient(135deg, rgba(135, 171, 229, 0.08), rgba(255, 255, 255, 0.95));
   border: 1px solid var(--border-100);
   border-radius: 14px;
   box-shadow: var(--shadow-100);

@@ -360,7 +360,11 @@
 
 /* Cards unificadas */
 .ag-card {
-  background: var(--color-bg-card);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 39, 103, 0.08),
+    rgba(88, 11, 11, 0.95)
+  );
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -1045,14 +1049,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg-card);
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+/* Action buttons larger on mobile */
+@media (max-width: 767.98px) {
+  .action-icon-button {
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
+  }
 }
 
 .action-icon-button:hover {
@@ -1343,29 +1356,29 @@
   .gf-header {
     padding: 1.5rem 1rem;
   }
-  
+
   .gf-title {
     font-size: 1.5rem;
   }
-  
+
   .gf-main-card {
     padding: 1.5rem;
   }
-  
+
   .gf-date-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .gf-date-input {
     max-width: 100%;
   }
-  
+
   .gf-gasto-row {
     padding: 1rem;
   }
-  
+
   .gf-actions {
     flex-direction: column;
   }

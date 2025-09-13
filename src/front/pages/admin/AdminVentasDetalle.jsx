@@ -4,7 +4,6 @@ import useGlobalReducer from "../../hooks/useGlobalReducer";
 import ventaServices from "../../services/ventaServices";
 import restauranteService from "../../services/restauranteServices";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import "../../styles/EncargadoDashboard.css";
 import "../../styles/AdminGastos.css";
 
@@ -41,9 +40,6 @@ export const AdminVentasDetalle = () => {
 
   const [ventas, setVentas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
-  const [nuevoMonto, setNuevoMonto] = useState("");
-  const [mensaje, setMensaje] = useState("");
   const [nombreRestaurante, setNombreRestaurante] = useState("");
 
   // Cargar ventas para mes/ano/restaurante
@@ -124,63 +120,11 @@ export const AdminVentasDetalle = () => {
     year: "numeric",
   });
 
-  const abrirModalEdicion = (venta) => {
-    setVentaSeleccionada(venta);
-    setNuevoMonto(String(Number(venta.monto || 0).toFixed(2)));
-  };
-
-  // Cerrar modal con Escape
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.key === "Escape") setVentaSeleccionada(null);
-    };
-    if (ventaSeleccionada) document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [ventaSeleccionada]);
-
-  const guardarEdicion = async () => {
-    if (!ventaSeleccionada) return;
-    const montoNum = parseFloat(nuevoMonto);
-    if (Number.isNaN(montoNum) || montoNum < 0) {
-      setMensaje("Introduce un monto válido");
-      setTimeout(() => setMensaje(""), 2500);
-      return;
-    }
-
-    try {
-      await ventaServices.editarVenta(ventaSeleccionada.id, { monto: montoNum });
-      setMensaje("✅ Venta actualizada con éxito");
-      setTimeout(() => setMensaje(""), 3000);
-      setVentaSeleccionada(null);
-      cargarVentas(mes, ano, restaurante_id);
-    } catch (error) {
-      console.error("Error editando venta:", error);
-      setMensaje("⚠️ Error al actualizar venta");
-      setTimeout(() => setMensaje(""), 3000);
-    }
-  };
-
-  const eliminarVenta = async (id) => {
-    if (!window.confirm("¿Eliminar esta venta?")) return;
-    try {
-      await ventaServices.eliminarVenta(id);
-      setMensaje("Venta eliminada correctamente");
-      setTimeout(() => setMensaje(""), 2000);
-      cargarVentas(mes, ano, restaurante_id);
-    } catch (error) {
-      console.error("Error eliminando venta:", error);
-      setMensaje("Error al eliminar venta");
-      setTimeout(() => setMensaje(""), 2000);
-    }
-  };
 
   return (
     <div className="dashboard-container admin-bb">
       {/* ===== Header compacto v2 ===== */}
       <div className="ag-header mb-3">
-        <div className="ag-header-top">
-          <div className="ag-brand-dot" />
-        </div>
 
         <div className="ag-title-wrap">
           <div className="d-flex align-items-center gap-3">
@@ -236,15 +180,6 @@ export const AdminVentasDetalle = () => {
         </div>
       </div>
 
-      {mensaje && (
-        <div
-          className={`alert alert-dismissible fade show mb-4 ${/éxito|eliminad/i.test(mensaje) ? "alert-success" : "alert-danger"}`}
-          role="alert"
-          style={{ borderRadius: "12px" }}
-        >
-          {mensaje}
-        </div>
-      )}
 
       {loading ? (
         <div className="text-center py-4">
@@ -285,22 +220,6 @@ export const AdminVentasDetalle = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="d-flex gap-2 justify-content-end">
-                    <button
-                      className="action-icon-button edit-button"
-                      onClick={() => abrirModalEdicion(v)}
-                      title="Editar"
-                    >
-                      <FiEdit2 />
-                    </button>
-                    <button
-                      className="action-icon-button delete-button"
-                      onClick={() => eliminarVenta(v.id)}
-                      title="Eliminar"
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </div>
                 </li>
               );
             })}
@@ -314,7 +233,6 @@ export const AdminVentasDetalle = () => {
                   <th>Fecha</th>
                   <th>Monto ({simbolo})</th>
                   <th>Turno</th>
-                  <th className="text-end">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -333,22 +251,6 @@ export const AdminVentasDetalle = () => {
                           <span className="text-muted">-</span>
                         )}
                       </td>
-                      <td className="text-end">
-                        <button
-                          className="action-icon-button edit-button me-2"
-                          onClick={() => abrirModalEdicion(v)}
-                          title="Editar"
-                        >
-                          <FiEdit2 />
-                        </button>
-                        <button
-                          className="action-icon-button delete-button"
-                          onClick={() => eliminarVenta(v.id)}
-                          title="Eliminar"
-                        >
-                          <FiTrash2 />
-                        </button>
-                      </td>
                     </tr>
                   );
                 })}
@@ -358,56 +260,6 @@ export const AdminVentasDetalle = () => {
         </>
       )}
 
-      {/* Modal edición */}
-      {ventaSeleccionada && (
-        <>
-          <div className="modal-backdrop show" />
-          <div className="modal fade show brand-modal" style={{ display: 'block' }} tabIndex="-1">
-            <div className="modal-dialog modal-dialog-centered modal-sm">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <div className="modal-icon">✏️</div>
-                  <h5 className="modal-title">Editar Venta</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setVentaSeleccionada(null)}
-                    aria-label="Close"
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <label className="form-label">💰 Monto ({simbolo})</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={nuevoMonto}
-                    onChange={(e) => setNuevoMonto(e.target.value)}
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="modal-btn-secondary"
-                    onClick={() => setVentaSeleccionada(null)}
-                  >
-                    ❌ Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    className="modal-btn-primary"
-                    onClick={guardarEdicion}
-                  >
-                    💾 Guardar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 };

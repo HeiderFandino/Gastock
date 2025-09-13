@@ -192,10 +192,6 @@ const Users = () => {
     <div className="dashboard-container users-container">
       {/* ===== Header compacto v2 (brand) ===== */}
       <div className="ag-header mb-3">
-        <div className="ag-header-top">
-
-          <div className="ag-brand-dot" />
-        </div>
 
         <div className="ag-title-wrap">
           <h1 className="ag-title">Usuarios</h1>
@@ -291,7 +287,7 @@ const Users = () => {
               <div className="d-flex justify-content-between align-items-start gap-2">
                 <div className="d-flex align-items-center gap-2">
                   <div className="user-avatar-pill">
-                    <FiUser size={18} />
+                    <FiUser size={24} />
                   </div>
                   <div>
                     <div className="fw-bold" style={{ fontSize: "1.02rem" }}>
@@ -334,7 +330,7 @@ const Users = () => {
                       title="Eliminar"
                       aria-label="Eliminar"
                     >
-                      <FiTrash2 size={18} />
+                      <FiTrash2 size={22} />
                     </button>
                   </div>
                 </div>
@@ -369,7 +365,7 @@ const Users = () => {
                   <td>
                     <div className="user-info d-flex align-items-center gap-2">
                       <div className="user-avatar-pill">
-                        <FiUser size={18} />
+                        <FiUser size={22} />
                       </div>
                       <div className="user-details">
                         <div className="user-name">{user.nombre}</div>
@@ -403,7 +399,7 @@ const Users = () => {
                       onClick={() => handleDeleteUser(user.id)}
                       title="Eliminar"
                     >
-                      <FiTrash2 size={18} />
+                      <FiTrash2 size={22} />
                     </button>
                   </td>
                 </tr>

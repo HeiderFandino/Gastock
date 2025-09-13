@@ -149,9 +149,6 @@ const AdminRestaurantDetail = () => {
     <div className="dashboard-container admin-bb">
       {/* ===== Header compacto v2 ===== */}
       <div className="ag-header mb-3">
-        <div className="ag-header-top">
-          <div className="ag-brand-dot" />
-        </div>
 
         <div className="ag-title-wrap">
           <h1 className="ag-title">🏢 {restaurante?.nombre || `Restaurante #${id}`}</h1>
@@ -250,7 +247,7 @@ const AdminRestaurantDetail = () => {
                   <XAxis dataKey="dia" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="monto" fill="#ffa94d" />
+                  <Bar dataKey="monto" fill="#87abe5" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -327,7 +324,7 @@ const AdminRestaurantDetail = () => {
                 }}
                 yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
                 tooltipProps={{ formatter: (v) => `${v}%` }}
-                lineProps={{ dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }}
+                lineProps={{ dataKey: "porcentaje", stroke: "#87abe5", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }}
               />
             </div>
           </div>

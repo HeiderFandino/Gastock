@@ -5,7 +5,7 @@ import useGlobalReducer from "../../hooks/useGlobalReducer";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
 import GastoModal from "../../components/GastoModal";
 import restauranteService from "../../services/restauranteServices";
-import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
+import { FiPlus } from "react-icons/fi";
 import "../../styles/EncargadoDashboard.css";
 import "../../styles/AdminGastos.css";
 
@@ -55,8 +55,6 @@ const AdminGastosDetalle = () => {
   const [proveedoresList, setProveedoresList] = useState([]);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
-  const [gastoEditar, setGastoEditar] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Helpers
@@ -220,58 +218,6 @@ const AdminGastosDetalle = () => {
 
   const nombreMes = new Date(ano, mes - 1).toLocaleString("es", { month: "long", year: "numeric" });
 
-  const abrirModalEditar = (id) => {
-    const gasto = dailyData.find((g) => g.id === id);
-    if (gasto) {
-      setGastoEditar({ ...gasto });
-      setModalVisible(true);
-    }
-  };
-
-  const guardarEdicion = async (editado) => {
-    try {
-      await gastoServices.editarGasto(editado.id, editado);
-      setMensaje("✅ Gasto actualizado");
-      setTipoMensaje("success");
-
-      setDailyData((prev) =>
-        prev.map((g) =>
-          g.id === editado.id
-            ? {
-              ...g,
-              ...editado,
-              fecha: selectedDate,
-              restaurante_id: rid,
-            }
-            : g
-        )
-      );
-    } catch (err) {
-      console.error("Error actualizando gasto:", err);
-      setMensaje("❌ Error al actualizar gasto");
-      setTipoMensaje("error");
-    } finally {
-      setModalVisible(false);
-      setGastoEditar(null);
-      setTimeout(() => setMensaje(""), 3000);
-    }
-  };
-
-  const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar este gasto?")) return;
-    try {
-      await gastoServices.eliminarGasto(id);
-      setDailyData((prev) => prev.filter((g) => g.id !== id));
-      setMensaje("✅ Gasto eliminado correctamente");
-      setTipoMensaje("success");
-    } catch (err) {
-      console.error("Error eliminando gasto:", err);
-      setMensaje("❌ No se pudo eliminar el gasto");
-      setTipoMensaje("error");
-    } finally {
-      setTimeout(() => setMensaje(""), 3000);
-    }
-  };
 
   const displayedDaily = dailyData
     .filter((g) => !filterProveedor || Number(g.proveedor_id) === Number(filterProveedor))
@@ -561,24 +507,6 @@ const AdminGastosDetalle = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="d-flex gap-2 justify-content-end">
-                        <button
-                          className="action-icon-button edit-button"
-                          onClick={() => abrirModalEditar(g.id)}
-                          title="Editar"
-                          aria-label="Editar"
-                        >
-                          <FiEdit2 size={18} />
-                        </button>
-                        <button
-                          className="action-icon-button delete-button"
-                          onClick={() => eliminar(g.id)}
-                          title="Eliminar"
-                          aria-label="Eliminar"
-                        >
-                          <FiTrash2 size={18} />
-                        </button>
-                      </div>
                     </li>
                   ))}
                 </ul>
@@ -592,7 +520,6 @@ const AdminGastosDetalle = () => {
                         <th>Categoría</th>
                         <th>Monto ({simbolo})</th>
                         <th>Nota</th>
-                        <th className="text-end">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -602,22 +529,6 @@ const AdminGastosDetalle = () => {
                           <td><span className="badge bg-secondary">{g.categoria}</span></td>
                           <td className="fw-bold text-success">{simbolo}{Number(g.monto || 0).toFixed(2)}</td>
                           <td>{g.nota || "-"}</td>
-                          <td className="text-end">
-                            <button
-                              className="action-icon-button edit-button me-2"
-                              onClick={() => abrirModalEditar(g.id)}
-                              title="Editar"
-                            >
-                              <FiEdit2 size={18} />
-                            </button>
-                            <button
-                              className="action-icon-button delete-button"
-                              onClick={() => eliminar(g.id)}
-                              title="Eliminar"
-                            >
-                              <FiTrash2 size={18} />
-                            </button>
-                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -644,14 +555,6 @@ const AdminGastosDetalle = () => {
         </button>
 
         {/* Modal edición */}
-        {modalVisible && (
-          <GastoModal
-            gasto={gastoEditar}
-            proveedores={proveedoresList}
-            onSave={guardarEdicion}
-            onClose={() => setModalVisible(false)}
-          />
-        )}
       </div>
     </div>
   );

@@ -144,6 +144,291 @@
   }
 }
 
+/* Nuevo diseño unificado para móvil y desktop */
+.new-mobile-card {
+  padding: 0.75rem;
+}
+
+/* Ajustes específicos para desktop */
+@media (min-width: 768px) {
+  .new-mobile-card {
+    padding: 1rem;
+  }
+
+  .restaurant-title {
+    font-size: 1.25rem;
+  }
+
+  .mobile-stat-box {
+    padding: 0.75rem;
+  }
+
+  .gasto-box {
+    padding: 0.6rem !important;
+  }
+
+  .gasto-box .stat-icon {
+    font-size: 1.4rem;
+  }
+
+  .gasto-box .stat-value {
+    font-size: 1.3rem;
+  }
+
+  /* KPIs mejorados en desktop */
+  .kpi-item {
+    padding: 0.5rem;
+  }
+
+  .kpi-icon {
+    font-size: 1rem;
+  }
+
+  .kpi-label {
+    font-size: 0.65rem;
+  }
+
+  .kpi-value {
+    font-size: 0.8rem;
+  }
+
+  /* Textos generales más grandes en desktop */
+  .stat-label {
+    font-size: 0.9rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .stat-extra {
+    font-size: 0.8rem;
+  }
+
+  .last-update-info {
+    font-size: 0.85rem;
+  }
+}
+
+.restaurant-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-text);
+  margin: 0 0 0.3rem 0;
+  line-height: 1.2;
+}
+
+.last-update-info {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0 0 1rem 0;
+  font-weight: 500;
+}
+
+.mobile-stats-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+/* Hacer que el div de gasto sea más pequeño */
+.gasto-box {
+  padding: 0.45rem !important;
+  min-height: auto;
+}
+
+.gasto-box .stat-icon {
+  font-size: 1.2rem;
+  margin-bottom: 0.15rem;
+}
+
+.gasto-box .stat-label {
+  font-size: 0.7rem;
+  margin: 0 0 0.15rem 0;
+}
+
+.gasto-box .stat-value {
+  font-size: 1.1rem;
+  margin: 0 0 0.1rem 0;
+}
+
+.gasto-box .stat-extra {
+  font-size: 0.6rem;
+  margin: 0;
+}
+
+.mobile-stat-box {
+  text-align: center;
+  padding: 0.6rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  position: relative;
+}
+
+.ventas-box {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.gasto-box {
+  /* El background se aplica dinámicamente con las clases bgClass */
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.2;
+}
+
+.stat-extra {
+  font-size: 0.75rem;
+  margin: 0;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+/* KPIs grid dentro del div de ventas */
+.kpis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+  padding: 0 0.2rem;
+}
+
+.kpi-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  background: linear-gradient(135deg, #87abe5, rgba(135, 171, 229, 0.6));
+  border-radius: 8px;
+  border: 1px solid rgba(135, 171, 229, 0.3);
+  box-shadow: 0 2px 6px rgba(135, 171, 229, 0.2);
+  min-width: 0;
+}
+
+.kpi-icon {
+  font-size: 0.8rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.kpi-content {
+  flex-grow: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.kpi-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 0.1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-value {
+  font-size: 0.72rem;
+  color: white;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Última venta info */
+.ultima-venta-info {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(135, 171, 229, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.ultima-venta-header {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.ultima-venta-icon {
+  font-size: 0.8rem;
+}
+
+.ultima-venta-title {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ultima-venta-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ultima-venta-fecha {
+  font-size: 0.75rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.ultima-venta-monto {
+  font-size: 0.8rem;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.mobile-action {
+  text-align: center;
+}
+
+.btn-ver-todo {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.btn-ver-todo:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
 /* Desktop */
 .selector-mes {
   max-width: 520px;
@@ -151,7 +436,7 @@
 .selector-mes__input {
   max-width: 220px;
   min-width: 160px;
-  background: #540606;
+  background: #ffffff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -166,6 +451,23 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 14px;
+}
+
+/* Grid responsive mejorado para móvil */
+@media (max-width: 767.98px) {
+  .rest-list {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+    padding: 0 0.5rem;
+  }
+}
+
+/* Para pantallas muy pequeñas (menos de 600px) permitir cards más pequeñas */
+@media (max-width: 599.98px) {
+  .rest-list {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 8px;
+  }
 }
 .rest-block {
   border: 1px solid var(--color-border);
@@ -223,14 +525,16 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .rest-list {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
   }
 }
-@media (min-width: 1400px) {
+@media (min-width: 1200px) {
   .rest-list {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 18px;
   }
 }
 

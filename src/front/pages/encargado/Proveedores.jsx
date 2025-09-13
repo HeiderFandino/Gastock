@@ -86,7 +86,7 @@ export const Proveedores = () => {
         </div>
 
         {/* Botón en desktop */}
-        <button className="btn-gastock d-none d-sm-inline-flex" onClick={abrirModalCrear}>
+        <button className="btn-gastock d-none d-md-inline-flex" onClick={abrirModalCrear}>
           ➕ Nuevo Proveedor
         </button>
       </div>
@@ -226,11 +226,42 @@ export const Proveedores = () => {
       {/* FAB para móvil */}
       {!mostrarModal && (
         <button
-          className="fab d-sm-none"
+          className="d-md-none"
           onClick={abrirModalCrear}
           title="Nuevo proveedor"
+          style={{
+            position: 'fixed',
+            bottom: '120px',
+            right: '24px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'rgba(135, 206, 235, 0.6)',
+            backdropFilter: 'blur(15px)',
+            border: '1px solid rgba(135, 206, 235, 0.2)',
+            border: 'none',
+            color: 'white',
+            fontSize: '1.5rem',
+            boxShadow: '0 4px 16px rgba(135, 206, 235, 0.4)',
+            zIndex: 1000,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'scale(1.1)';
+            e.target.style.boxShadow = '0 6px 20px rgba(135, 206, 235, 0.6)';
+            e.target.style.background = 'rgba(135, 206, 235, 0.8)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 4px 16px rgba(135, 206, 235, 0.4)';
+            e.target.style.background = 'rgba(135, 206, 235, 0.6)';
+          }}
         >
-          ➕
+          🏢
         </button>
       )}
     </div>

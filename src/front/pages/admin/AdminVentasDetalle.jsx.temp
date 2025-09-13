@@ -151,10 +151,9 @@ export const AdminVentasDetalle = () => {
     <div className="dashboard-container admin-bb">
       {/* ===== Header compacto v2 ===== */}
       <div className="ag-header mb-3">
-        <div className="ag-header-top">
-          <div className="ag-brand-dot" />
+        <div className="d-flex justify-content-end mb-3">
           <button
-            className="btn-gastock-outline btn-sm d-flex align-items-center gap-2 ms-auto"
+            className="btn-gastock-outline btn-sm d-flex align-items-center gap-2"
             onClick={() => navigate(`/admin/restaurant-detail/${restaurante_id}?mes=${mes}&ano=${ano}`)}
             style={{ padding: '8px 12px' }}
           >

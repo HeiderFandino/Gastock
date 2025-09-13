@@ -102,10 +102,6 @@ const AdminRestaurante = () => {
     <div className="dashboard-container">
       {/* ===== Header compacto v2 ===== */}
       <div className="ag-header mb-3">
-        <div className="ag-header-top">
-
-          <div className="ag-brand-dot" />
-        </div>
 
         <div className="ag-title-wrap">
           <h1 className="ag-title">Restaurantes</h1>

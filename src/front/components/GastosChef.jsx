@@ -19,7 +19,7 @@ const GastosChef = ({
   xAxisProps = { dataKey: "dia", type: "number", interval: 0 },
   yAxisProps = { domain: [0, 100], tickFormatter: (v) => `${v}%` },
   tooltipProps = { formatter: (v) => `${v}%` },
-  lineProps = { dataKey: "porcentaje", stroke: "#82ca9d", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }
+  lineProps = { dataKey: "porcentaje", stroke: "#87abe5", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }
 }) => {
   return (
     <div role={rol} style={{ width: "100%" }}>

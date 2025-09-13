@@ -75,10 +75,10 @@ const GastoPorRestauranteChart = ({ mes, ano }) => {
   const maxIndex = valores.reduce((maxIdx, v, i, arr) => (v > arr[maxIdx] ? i : maxIdx), 0);
 
   const backgroundColors = valores.map((_, i) =>
-    i === maxIndex ? "#2563eb" : "#f3f4f6"
+    i === maxIndex ? "#87abe5" : "#f3f4f6"
   );
   const borderColors = valores.map((_, i) =>
-    i === maxIndex ? "#1d4ed8" : "#e5e7eb"
+    i === maxIndex ? "#6b95d1" : "#e5e7eb"
   );
 
   const chartData = {

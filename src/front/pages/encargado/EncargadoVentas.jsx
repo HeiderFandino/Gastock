@@ -121,8 +121,8 @@ export const EncargadoVentas = () => {
             </div>
 
             <button
-              className="btn d-flex align-items-center gap-2 px-4 py-2"
-              style={{ 
+              className="btn d-none d-md-flex align-items-center gap-2 px-4 py-2"
+              style={{
                 background: 'linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 85%, var(--brand-600)))',
                 border: 'none',
                 borderRadius: '12px',
@@ -362,9 +362,36 @@ export const EncargadoVentas = () => {
 
       {/* FAB móvil */}
       <button
-        className="fab d-sm-none"
+        className="fab d-md-none"
         onClick={() => setMostrarModal(true)}
         title="Nueva venta"
+        style={{
+          position: 'fixed',
+          bottom: '120px',
+          right: '24px',
+          width: '56px',
+          height: '56px',
+          borderRadius: '50%',
+          background: 'rgba(135, 206, 235, 0.6)',
+          backdropFilter: 'blur(15px)',
+          border: '1px solid rgba(135, 206, 235, 0.2)',
+          color: 'white',
+          fontSize: '1.5rem',
+          boxShadow: '0 4px 16px rgba(135, 206, 235, 0.4)',
+          zIndex: 1000,
+          transition: 'all 0.3s ease',
+          cursor: 'pointer'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.transform = 'scale(1.1)';
+          e.target.style.boxShadow = '0 6px 20px rgba(135, 206, 235, 0.6)';
+          e.target.style.background = 'rgba(135, 206, 235, 0.8)';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.transform = 'scale(1)';
+          e.target.style.boxShadow = '0 4px 16px rgba(135, 206, 235, 0.4)';
+          e.target.style.background = 'rgba(135, 206, 235, 0.6)';
+        }}
       >
         ➕
       </button>

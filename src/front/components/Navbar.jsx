@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import logo from "../assets/img/gastock2_tmp.png";
+import "../styles/nabvar.css";
 
 export const Navbar = () => {
   const { store, dispatch } = useGlobalReducer();
@@ -49,20 +50,14 @@ export const Navbar = () => {
   }, [open]);
 
   return (
-    <nav 
-      ref={navRef} 
-      className="navbar sticky-top" 
-      style={{ 
-        background: "var(--color-bg-card)", 
-        borderBottom: "1px solid var(--color-border)", 
-        backdropFilter: "blur(10px)",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
-      }}
+    <nav
+      ref={navRef}
+      className="navbar sticky-top"
     >
-      <div className="container-fluid align-items-center py-2">
+      <div className="container-fluid align-items-center" style={{ padding: "0.25rem 0.75rem" }}>
         {/* Brand */}
-        <Link 
-          className="navbar-brand d-flex align-items-center gap-2" 
+        <Link
+          className="navbar-brand d-flex align-items-center gap-2"
           to="/"
           style={{ color: "var(--color-text)" }}
         >
@@ -71,42 +66,40 @@ export const Navbar = () => {
             alt="Gastock Logo"
             className="brand-logo"
             onError={(e) => { e.currentTarget.style.display = "none"; }}
-            style={{ height: "32px", width: "auto" }}
+            style={{ height: "24px", width: "auto" }}
           />
         </Link>
 
         {/* Bloque compacto: texto pegado al icono */}
         <div className="user-compact d-flex align-items-center ms-auto">
-          <div className="user-lines me-3 text-end d-none d-md-block">
-            <div 
-              className="user-name fw-semibold text-truncate" 
+          <div className="user-lines me-2 text-end d-block">
+            <div
+              className="user-name fw-semibold text-truncate"
               title={nombre}
-              style={{ 
-                color: "var(--color-text)", 
-                fontSize: "0.9rem",
-                lineHeight: "1.2"
+              style={{
+                fontSize: "0.8rem",
+                lineHeight: "1.1",
+                maxWidth: "120px"
               }}
             >
               {nombre}
             </div>
-            <div 
-              className="user-role text-capitalize" 
-              style={{ 
-                color: "var(--color-text-secondary)", 
-                fontSize: "0.75rem",
-                lineHeight: "1.2"
+            <div
+              className="user-role text-capitalize"
+              style={{
+                fontSize: "0.65rem",
+                lineHeight: "1.1"
               }}
             >
               {rol}
             </div>
             {rol !== "admin" && (
-              <div 
-                className="user-restaurant text-truncate" 
+              <div
+                className="user-restaurant text-truncate"
                 title={restaurante}
-                style={{ 
-                  color: "var(--color-text-muted)", 
-                  fontSize: "0.7rem",
-                  lineHeight: "1.2"
+                style={{
+                  fontSize: "0.6rem",
+                  lineHeight: "1.1"
                 }}
               >
                 {restaurante}
@@ -119,9 +112,9 @@ export const Navbar = () => {
             type="button"
             className="btn d-flex align-items-center justify-content-center"
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "12px",
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
               background: "var(--color-primary)",
               border: "none",
               color: "white",
@@ -143,7 +136,7 @@ export const Navbar = () => {
               setOpen((v) => !v);
             }}
           >
-            <i className="bi bi-person-circle" style={{ fontSize: "1.2rem" }} />
+            <i className="bi bi-person-circle" style={{ fontSize: "1rem" }} />
           </button>
         </div>
 
@@ -151,16 +144,16 @@ export const Navbar = () => {
         {open && (
           <>
             {/* Fondo clicable para cerrar */}
-            <div 
+            <div
               className="position-fixed top-0 start-0 w-100 h-100"
-              style={{ 
+              style={{
                 background: "rgba(0, 0, 0, 0.1)",
                 zIndex: 999,
                 backdropFilter: "blur(2px)"
               }}
             />
-            <div 
-              ref={menuRef} 
+            <div
+              ref={menuRef}
               className="position-absolute"
               style={{
                 top: "calc(100% + 8px)",
@@ -176,20 +169,20 @@ export const Navbar = () => {
             >
               {/* Cabecera móvil */}
               <div className="d-md-none px-3 py-2 mb-2 border-bottom" style={{ borderColor: "var(--color-border)" }}>
-                <div 
-                  className="fw-semibold" 
+                <div
+                  className="fw-semibold"
                   style={{ color: "var(--color-text)", fontSize: "0.9rem" }}
                 >
                   {nombre}
                 </div>
-                <div 
-                  className="text-capitalize" 
+                <div
+                  className="text-capitalize"
                   style={{ color: "var(--color-text-secondary)", fontSize: "0.75rem" }}
                 >
                   {rol}
                 </div>
                 {rol !== "admin" && (
-                  <div 
+                  <div
                     style={{ color: "var(--color-text-muted)", fontSize: "0.7rem" }}
                   >
                     {restaurante}
@@ -199,9 +192,9 @@ export const Navbar = () => {
 
               <ul className="list-unstyled mb-0">
                 <li>
-                  <Link 
+                  <Link
                     className="d-flex align-items-center px-3 py-2 text-decoration-none rounded-2"
-                    to="/profile" 
+                    to="/profile"
                     onClick={() => setOpen(false)}
                     style={{
                       color: "var(--color-text)",
@@ -218,9 +211,9 @@ export const Navbar = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link 
+                  <Link
                     className="d-flex align-items-center px-3 py-2 text-decoration-none rounded-2"
-                    to={`/${rol}/settings`} 
+                    to={`/${rol}/settings`}
                     onClick={() => setOpen(false)}
                     style={{
                       color: "var(--color-text)",
@@ -237,13 +230,13 @@ export const Navbar = () => {
                   </Link>
                 </li>
                 <li>
-                  <hr 
-                    className="my-2" 
-                    style={{ borderColor: "var(--color-border)", margin: "8px 0" }} 
+                  <hr
+                    className="my-2"
+                    style={{ borderColor: "var(--color-border)", margin: "8px 0" }}
                   />
                 </li>
                 <li>
-                  <button 
+                  <button
                     className="btn w-100 d-flex align-items-center px-3 py-2 rounded-2"
                     onClick={handleLogout}
                     style={{

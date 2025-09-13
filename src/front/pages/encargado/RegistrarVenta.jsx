@@ -57,9 +57,6 @@ export const RegistrarVenta = () => {
     <div className="dashboard-container admin-bb">
       {/* ===== Header compacto v2 ===== */}
       <div className="ag-header mb-3">
-        <div className="ag-header-top">
-          <div className="ag-brand-dot" />
-        </div>
 
         <div className="ag-title-wrap">
           <h1 className="ag-title">Registrar Venta</h1>
