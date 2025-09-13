@@ -289,20 +289,12 @@ export const EncargadoDashboard = () => {
             <div className="col-12 col-md-9 mt-3 mt-md-0">
               <h6 className="text-center mb-3 d-none d-md-block">Gráfico Diario de Gastos</h6>
               <GastosChef
-                datos={gastoDatos}
-                ancho="100%"
+                datos={gastoDatos.map(item => ({
+                  name: item.dia.toString(),
+                  porcentaje: item.porcentaje
+                }))}
                 alto={250}
                 rol="encargado"
-                xAxisProps={{
-                  dataKey: "dia",
-                  type: "number",
-                  domain: [1, diasDelMes],
-                  allowDecimals: false,
-                  tickCount: diasDelMes,
-                }}
-                yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
-                tooltipProps={{ formatter: (v) => `${v}%` }}
-                lineProps={{ dataKey: "porcentaje", stroke: "#87abe5", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }}
               />
             </div>
           </div>

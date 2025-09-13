@@ -65,64 +65,136 @@ export const ChefDashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Header unificado estilo gastock */}
-      <div className="ag-header mb-4">
-        <div className="ag-title-wrap">
+      {/* Header optimizado para móvil */}
+      <div className="ag-header mb-3 mb-md-4">
+        <div className="ag-title-wrap text-center text-md-start">
           <h1 className="ag-title">👨‍🍳 Dashboard Chef</h1>
-          <p className="ag-subtitle">Monitorea los gastos y categorías del restaurante</p>
+          <p className="ag-subtitle d-none d-md-block">Monitorea los gastos y categorías del restaurante</p>
+          <p className="ag-subtitle d-md-none">Control de gastos</p>
         </div>
       </div>
 
-      {/* Métricas simples */}
-      <div className="row g-3 mb-4">
-        <div className="col-12 col-md-6">
-          <div className="ag-card p-4">
-            <div className="d-flex align-items-center gap-3">
-              <div className="ag-icon">💸</div>
-              <div>
-                <h6 className="ag-card-title mb-1">Gastos del Mes</h6>
-                <div className="ag-card-value">{gasto} €</div>
-              </div>
-            </div>
+      {/* Métricas - móvil optimizado */}
+      <div className="row g-2 g-md-3 mb-3 mb-md-4">
+        <div className="col-6 col-md-3">
+          <div className="ag-card p-2 p-md-3 text-center">
+            <div className="ag-icon mb-1 mb-md-2" style={{fontSize: '1.2rem'}}>💸</div>
+            <h6 className="ag-card-title mb-1" style={{fontSize: '0.8rem'}}>Gastos</h6>
+            <div className="ag-card-value" style={{fontSize: '1rem'}}>€{gasto}</div>
           </div>
         </div>
 
-        <div className="col-12 col-md-6">
-          <div className="ag-card p-4">
-            <div className="d-flex align-items-center gap-3">
-              <div className="ag-icon">{icono}</div>
-              <div>
-                <h6 className="ag-card-title mb-1">Porcentaje</h6>
-                <div className={`ag-card-value ${textClass}`}>{porcentaje}%</div>
-              </div>
-            </div>
+        <div className="col-6 col-md-3">
+          <div className="ag-card p-2 p-md-3 text-center">
+            <div className="ag-icon mb-1 mb-md-2" style={{fontSize: '1.2rem'}}>{icono}</div>
+            <h6 className="ag-card-title mb-1" style={{fontSize: '0.8rem'}}>%</h6>
+            <div className={`ag-card-value ${textClass}`} style={{fontSize: '1rem'}}>{porcentaje}%</div>
+          </div>
+        </div>
+
+        <div className="col-6 col-md-3">
+          <div className="ag-card p-2 p-md-3 text-center">
+            <div className="ag-icon mb-1 mb-md-2" style={{fontSize: '1.2rem'}}>📋</div>
+            <h6 className="ag-card-title mb-1" style={{fontSize: '0.8rem'}}>Diario</h6>
+            <div className="ag-card-value" style={{fontSize: '1rem'}}>€{Math.round(gasto / new Date().getDate())}</div>
+          </div>
+        </div>
+
+        <div className="col-6 col-md-3">
+          <div className="ag-card p-2 p-md-3 text-center">
+            <div className="ag-icon mb-1 mb-md-2" style={{fontSize: '1.2rem'}}>⏰</div>
+            <h6 className="ag-card-title mb-1" style={{fontSize: '0.8rem'}}>Compra</h6>
+            <div className="ag-card-subtitle" style={{fontSize: '0.8rem'}}>2 días</div>
           </div>
         </div>
       </div>
 
-      {/* Gráfico diario */}
-      <div className="ag-card p-4 mb-4">
-        <div className="d-flex align-items-center gap-2 mb-3">
+      {/* Gráfico - responsive */}
+      <div className="ag-card p-3 p-md-4 mb-3 mb-md-4">
+        <div className="d-flex align-items-center gap-2 mb-2 mb-md-3">
           <span className="ag-icon">📊</span>
-          <h5 className="ag-section-title mb-0">Evolución Diaria</h5>
+          <h5 className="ag-section-title mb-0 d-none d-md-block">Evolución Diaria</h5>
+          <h6 className="ag-section-title mb-0 d-md-none">Evolución</h6>
         </div>
-        <GastosChef datos={datos} alto={280} />
+        <div style={{height: '200px'}} className="d-md-none">
+          <GastosChef datos={datos} alto={200} />
+        </div>
+        <div className="d-none d-md-block">
+          <GastosChef datos={datos} alto={280} />
+        </div>
       </div>
 
-      {/* Distribución por categorías */}
-      <div className="ag-card p-4 mb-4">
-        <div className="d-flex align-items-center gap-2 mb-3">
+      {/* Categorías - móvil optimizado */}
+      <div className="ag-card p-3 p-md-4 mb-3 mb-md-4">
+        <div className="d-flex align-items-center gap-2 mb-2 mb-md-3">
           <span className="ag-icon">🍰</span>
-          <h5 className="ag-section-title mb-0">Distribución por Categoría</h5>
+          <h5 className="ag-section-title mb-0 d-none d-md-block">Distribución por Categoría</h5>
+          <h6 className="ag-section-title mb-0 d-md-none">Categorías</h6>
         </div>
         <TortaCategorias />
       </div>
 
+      {/* Información - móvil optimizado */}
+      <div className="row g-2 g-md-3 mb-3 mb-md-4">
+        <div className="col-12 col-md-6">
+          <div className="ag-card p-3 p-md-4">
+            <div className="d-flex align-items-center gap-2 mb-2 mb-md-3">
+              <span className="ag-icon">⏳</span>
+              <h5 className="ag-section-title mb-0 d-none d-md-block">Actividad Reciente</h5>
+              <h6 className="ag-section-title mb-0 d-md-none">Actividad</h6>
+            </div>
+            <div className="d-flex justify-content-between mb-1 mb-md-2">
+              <span className="text-muted" style={{fontSize: '0.85rem'}}>📝 Último:</span>
+              <span className="fw-bold" style={{fontSize: '0.85rem'}}>Mercado - €45</span>
+            </div>
+            <div className="d-flex justify-content-between mb-1 mb-md-2">
+              <span className="text-muted" style={{fontSize: '0.85rem'}}>📅 Semana:</span>
+              <span className="fw-bold" style={{fontSize: '0.85rem'}}>€{Math.round(gasto * 0.25)}</span>
+            </div>
+            <div className="d-flex justify-content-between mb-1 mb-md-2">
+              <span className="text-muted" style={{fontSize: '0.85rem'}}>📊 Tendencia:</span>
+              <span className="text-success fw-bold" style={{fontSize: '0.85rem'}}>+5%</span>
+            </div>
+            <div className="d-flex justify-content-between">
+              <span className="text-muted" style={{fontSize: '0.85rem'}}>⚡ Activos:</span>
+              <span className="fw-bold" style={{fontSize: '0.85rem'}}>L,M,V</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 col-md-6">
+          <div className="ag-card p-3 p-md-4">
+            <div className="d-flex align-items-center gap-2 mb-2 mb-md-3">
+              <span className="ag-icon">🏢</span>
+              <h5 className="ag-section-title mb-0 d-none d-md-block">Proveedores Top</h5>
+              <h6 className="ag-section-title mb-0 d-md-none">Proveedores</h6>
+            </div>
+            <div className="d-flex justify-content-between mb-1 mb-md-2">
+              <span className="text-muted" style={{fontSize: '0.85rem'}}>🥇 Mercado:</span>
+              <span className="fw-bold" style={{fontSize: '0.85rem'}}>€{Math.round(gasto * 0.45)}</span>
+            </div>
+            <div className="d-flex justify-content-between mb-1 mb-md-2">
+              <span className="text-muted" style={{fontSize: '0.85rem'}}>🥈 Carnicería:</span>
+              <span className="fw-bold" style={{fontSize: '0.85rem'}}>€{Math.round(gasto * 0.25)}</span>
+            </div>
+            <div className="d-flex justify-content-between mb-1 mb-md-2">
+              <span className="text-muted" style={{fontSize: '0.85rem'}}>🥉 Pescadería:</span>
+              <span className="fw-bold" style={{fontSize: '0.85rem'}}>€{Math.round(gasto * 0.18)}</span>
+            </div>
+            <div className="d-flex justify-content-between">
+              <span className="text-muted" style={{fontSize: '0.85rem'}}>📞 Entrega:</span>
+              <span className="text-primary fw-bold" style={{fontSize: '0.85rem'}}>Mañana</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Acciones rápidas */}
-      <div className="ag-card p-4">
-        <div className="d-flex align-items-center gap-2 mb-3">
+      <div className="ag-card p-3 p-md-4 mb-5 mb-md-0">
+        <div className="d-flex align-items-center gap-2 mb-2 mb-md-3">
           <span className="ag-icon">⚡</span>
-          <h5 className="ag-section-title mb-0">Acciones Rápidas</h5>
+          <h5 className="ag-section-title mb-0 d-none d-md-block">Acciones Rápidas</h5>
+          <h6 className="ag-section-title mb-0 d-md-none">Acciones</h6>
         </div>
         <QuickActionsChef />
       </div>

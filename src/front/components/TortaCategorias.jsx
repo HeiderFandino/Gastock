@@ -68,55 +68,57 @@ export const TortaCategorias = () => {
     </div>
   );
 
+  const total = leyenda.reduce((acc, item) => acc + item.valor, 0);
+
   return (
-    <div className="row">
-      {/* Leyenda simple */}
-      <div className="col-12 col-md-4">
-        <div className="d-flex d-md-block gap-2 flex-wrap">
-          {leyenda.map((item, i) => {
-            let icono = "📦";
-            const nombre = item.label.toLowerCase();
+    <div className="row g-3">
+      {leyenda.map((item, i) => {
+        let icono = "📦";
+        const nombre = item.label.toLowerCase();
 
-            if (nombre.includes("alimento")) icono = "🍎";
-            else if (nombre.includes("bebida")) icono = "🥤";
-            else if (nombre.includes("limpieza")) icono = "🧽";
-            else icono = "🎯";
+        if (nombre.includes("alimento")) icono = "🍎";
+        else if (nombre.includes("bebida")) icono = "🥤";
+        else if (nombre.includes("limpieza")) icono = "🧽";
+        else icono = "🎯";
 
-            return (
-              <div key={i} className="d-flex align-items-center gap-2 p-2 mb-2 rounded" style={{
-                backgroundColor: item.color,
-                minWidth: '140px'
-              }}>
-                <span style={{ fontSize: '1.2rem' }}>{icono}</span>
-                <div>
-                  <div className="fw-bold text-dark" style={{ fontSize: '0.9rem' }}>
-                    {item.label}
-                  </div>
-                  <div className="text-dark" style={{ fontSize: '0.8rem' }}>
-                    €{item.valor.toFixed(2)} ({item.porcentaje}%)
-                  </div>
+        const porcentajeWidth = (item.valor / total) * 100;
+
+        return (
+          <div key={i} className="col-12 col-md-6 col-lg-3">
+            <div className="ag-card p-3">
+              <div className="d-flex align-items-center gap-2 mb-2">
+                <span className="ag-icon" style={{ fontSize: '1.5rem' }}>{icono}</span>
+                <div className="flex-grow-1">
+                  <h6 className="ag-card-title mb-0">{item.label}</h6>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* Gráfico simple */}
-      <div className="col-12 col-md-8">
-        <div className="d-flex justify-content-center" style={{ height: '300px' }}>
-          <Pie
-            data={data}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false }
-              }
-            }}
-          />
-        </div>
-      </div>
+              <div className="ag-card-value mb-2">€{item.valor.toFixed(2)}</div>
+
+              <div className="mb-2">
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <small className="text-muted">Porcentaje del total</small>
+                  <small className="fw-bold">{item.porcentaje}%</small>
+                </div>
+                <div className="progress" style={{ height: '6px' }}>
+                  <div
+                    className="progress-bar"
+                    style={{
+                      width: `${porcentajeWidth}%`,
+                      backgroundColor: item.color
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.8rem' }}>
+                <span>Promedio día</span>
+                <span>€{(item.valor / new Date().getDate()).toFixed(1)}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
