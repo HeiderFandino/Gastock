@@ -8,9 +8,9 @@ npm run build
 pip install pipenv
 pipenv install
 
-# Ver qué heads existen y forzar upgrade al correcto
-echo "=== Heads disponibles ==="
-pipenv run flask db heads || echo "No heads found"
+# Marcar migración como aplicada sin ejecutarla (tablas ya existen)
+echo "=== Marcando migración como aplicada ==="
+pipenv run flask db stamp 2e5db5dafba1
 
-echo "=== Forzando upgrade a nuestro head ==="
-pipenv run flask db upgrade 2e5db5dafba1
+echo "=== Verificando estado final ==="
+pipenv run flask db current
