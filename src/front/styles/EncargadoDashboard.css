@@ -1,11 +1,6 @@
 /* EncargadoDashboard.css – tokenizado a brand.css */
 
-/* Variables útiles */
-:root {
-  --navbar-h: 56px;
-  --bottom-nav-h: 68px;
-  --resumen-rapido-h: 50px;
-}
+/* Layout específico para EncargadoDashboard - las variables base están en brand-unified.css */
 
 /* Título/Sección */
 .section-title {
@@ -332,9 +327,10 @@
 }
 
 /* ===== Header con estilo de card ===== */
+/* .ag-card-header base está en brand-unified.css - solo override específico */
 .header-card .ag-card-header {
   padding: 1.25rem 1.5rem 0.75rem 1.5rem;
-  background: #f7fbff;
+  background: var(--color-bg-subtle);
 }
 
 .header-content {

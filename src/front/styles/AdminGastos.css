@@ -3,17 +3,7 @@
    Usa variables del brand y evita hardcodes
    ========================================= */
 
-/* ——— Acentos (si tu brand no define naranja) ——— */
-:root {
-  --accent: var(--brand-accent, #ff5b00); /* botón primario/acento */
-  --brand-surface: var(--brand-50, #f4f9ff); /* fondos suaves */
-  --brand-primary: var(--color-primary, #4ba1db); /* azul principal */
-  --ink-900: #0f172a; /* texto fuerte */
-  --ink-600: #334155; /* texto medio */
-  --ink-500: #64748b; /* texto secondary */
-  --border-100: rgba(0, 0, 0, 0.06);
-  --shadow-100: 0 3px 12px rgba(0, 0, 0, 0.04);
-}
+/* Variables específicas solo para AdminGastos - las variables base están en brand-unified.css */
 
 /* ——— Controles ——— */
 .ag-controls {

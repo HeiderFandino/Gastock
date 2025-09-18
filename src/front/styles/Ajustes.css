@@ -144,21 +144,7 @@
   border-color: var(--brand-600);
   box-shadow: 0 0 0 0.18rem var(--focus-ring, rgba(96, 139, 193, 0.28));
 }
-.btn-gastock {
-  background: linear-gradient(
-    180deg,
-    var(--brand-600),
-    var(--color-primary) 78%
-  );
-  color: #fff !important;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 65%, #000 35%);
-  border-radius: var(--radius-md, 10px);
-  padding: 0.6rem 1rem;
-  font-weight: 700;
-}
-.btn-gastock:hover {
-  filter: brightness(1.07);
-}
+/* .btn-gastock está definido en brand-unified.css */
 
 /* Vista sin menú: panel centrado y ancho cómodo */
 .aj-content {
