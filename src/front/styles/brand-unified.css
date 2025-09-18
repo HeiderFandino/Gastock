@@ -360,11 +360,6 @@
 
 /* Cards unificadas */
 .ag-card {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 39, 103, 0.08),
-    rgba(88, 11, 11, 0.95)
-  );
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -1067,7 +1062,6 @@
     font-size: 1.1rem;
   }
 }
-
 
 .action-icon-button:hover {
   border-color: var(--color-border-strong);

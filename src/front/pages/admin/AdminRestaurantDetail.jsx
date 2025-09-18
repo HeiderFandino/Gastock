@@ -182,7 +182,7 @@ const AdminRestaurantDetail = () => {
         </div>
       </div>
 
-        {/* ===== Header con estilo de card ===== */}
+      {/* ===== Header con estilo de card ===== */}
       <div className="ag-card header-card mb-3">
         <div className="ag-card-header" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
           <div className="mb-2">
