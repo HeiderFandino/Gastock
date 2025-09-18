@@ -268,13 +268,141 @@
   position: relative;
 }
 
+.mobile-stat-box .stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.mobile-stat-box .stat-header .stat-icon {
+  font-size: 1.2rem;
+  margin-bottom: 0;
+}
+
+.mobile-stat-box .stat-header .stat-label {
+  margin: 0;
+  text-align: left;
+}
+
 .ventas-box {
   background: rgba(59, 130, 246, 0.08);
   border-color: rgba(59, 130, 246, 0.2);
 }
 
+.tendencia-box {
+  background: linear-gradient(135deg, rgba(106, 90, 205, 0.1), rgba(106, 90, 205, 0.05));
+  border-color: rgba(106, 90, 205, 0.3);
+  padding: 0.4rem !important;
+  min-height: auto;
+}
+
+.tendencia-box .stat-icon {
+  font-size: 1.1rem;
+  margin-bottom: 0.1rem;
+}
+
+.tendencia-box .stat-label {
+  font-size: 0.7rem;
+  margin: 0 0 0.1rem 0;
+}
+
+.tendencia-box .stat-value {
+  font-size: 0.95rem;
+  margin: 0 0 0.05rem 0;
+}
+
+.tendencia-box .stat-extra {
+  font-size: 0.6rem;
+  margin: 0;
+}
+
+/* Grid de tendencias (similar a kpis-grid) */
+.tendencia-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.2rem;
+  margin: 0.3rem 0 0 0;
+  padding: 0;
+}
+
+.tendencia-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.3rem;
+  background: linear-gradient(135deg, rgba(106, 90, 205, 0.2), rgba(106, 90, 205, 0.1));
+  border-radius: 6px;
+  border: 1px solid rgba(106, 90, 205, 0.3);
+  box-shadow: 0 1px 3px rgba(106, 90, 205, 0.1);
+  min-width: 0;
+  overflow: hidden;
+  height: 32px;
+}
+
+.tend-icon {
+  font-size: 0.8rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tend-content {
+  flex-grow: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tend-label {
+  font-size: 0.5rem;
+  color: rgba(106, 90, 205, 0.8);
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tend-value {
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .gasto-box {
   /* El background se aplica dinámicamente con las clases bgClass */
+}
+
+.gasto-content {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+.gasto-porcentaje {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gasto-subtexto {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.8;
 }
 
 .stat-icon {
@@ -307,22 +435,23 @@
 /* KPIs grid dentro del div de ventas */
 .kpis-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0.4rem;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.25rem;
   margin: 0.5rem 0;
-  padding: 0 0.2rem;
+  padding: 0;
 }
 
 .kpi-item {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.35rem;
+  gap: 0.2rem;
+  padding: 0.3rem;
   background: linear-gradient(135deg, #87abe5, rgba(135, 171, 229, 0.6));
   border-radius: 8px;
   border: 1px solid rgba(135, 171, 229, 0.3);
   box-shadow: 0 2px 6px rgba(135, 171, 229, 0.2);
   min-width: 0;
+  overflow: hidden;
 }
 
 .kpi-icon {
@@ -351,7 +480,7 @@
 }
 
 .kpi-value {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   color: white;
   font-weight: 700;
   line-height: 1;

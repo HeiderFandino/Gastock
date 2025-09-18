@@ -37,9 +37,7 @@ class Usuario(db.Model):
     password = db.Column(db.String(250), nullable=False)
     rol = db.Column(db.Enum('admin', 'encargado', 'chef', name='roles'), nullable=False)
     restaurante_id = db.Column(db.Integer, db.ForeignKey('restaurantes.id'), nullable=True)
-    
-    status = db.Column(db.String(20), default="active") 
-    restaurante_id = db.Column(db.Integer, db.ForeignKey('restaurantes.id'), nullable=True)
+    status = db.Column(db.String(20), default="active")
     moneda = db.Column(db.String(10), nullable=True)
 
     def serialize(self):
@@ -120,7 +118,7 @@ class Gasto(db.Model):
             "id": self.id,
             "fecha": self.fecha,
             "monto": self.monto,
-            "categoria": self.category,
+            "categoria": self.categoria,
             "proveedor_id": self.proveedor_id,
             "usuario_id": self.usuario_id,
             "restaurante_id": self.restaurante_id,

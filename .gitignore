@@ -78,5 +78,7 @@ dist/*
 .venv
 database.database
 database.db
+local_dev.db
+create_admin.py
 diagram.png
 __pycache__/

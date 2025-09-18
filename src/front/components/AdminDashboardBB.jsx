@@ -10,6 +10,10 @@ const AdminDashboardBB = () => {
   const simbolo = MonedaSimbolo();
 
   const [resumenes, setResumenes] = useState([]);
+  const [resumenesAnterior, setResumenesAnterior] = useState([]);
+  const [resumenesAnoAnterior, setResumenesAnoAnterior] = useState([]);
+  const [resumenesUltimos3Meses, setResumenesUltimos3Meses] = useState([]);
+  const [ventasDiariasPorRest, setVentasDiariasPorRest] = useState({});
   const [ultimaVentaPorRest, setUltimaVentaPorRest] = useState({});
   const [ultimaVentaDetalle, setUltimaVentaDetalle] = useState({});
   const [cargando, setCargando] = useState(false);
@@ -29,6 +33,70 @@ const AdminDashboardBB = () => {
   });
   const [ano, mes] = fechaSeleccionada.split("-").map(Number);
 
+  // Calcular días transcurridos en el mes seleccionado
+  const diasTranscurridos = useMemo(() => {
+    const hoy = new Date();
+    const mesSeleccionado = new Date(ano, mes - 1, 1);
+    const ultimoDiaDelMes = new Date(ano, mes, 0).getDate();
+
+    // Si es el mes actual, usar el día actual
+    if (hoy.getFullYear() === ano && hoy.getMonth() + 1 === mes) {
+      return hoy.getDate();
+    }
+    // Si es un mes pasado, usar todos los días del mes
+    else if (mesSeleccionado < hoy) {
+      return ultimoDiaDelMes;
+    }
+    // Si es un mes futuro, usar 1 día para evitar división por 0
+    else {
+      return 1;
+    }
+  }, [ano, mes]);
+
+  // Determinar si es mes pasado, actual o futuro
+  const tipoMes = useMemo(() => {
+    const hoy = new Date();
+    const mesSeleccionado = new Date(ano, mes - 1, 1);
+
+    if (hoy.getFullYear() === ano && hoy.getMonth() + 1 === mes) {
+      return 'actual';
+    } else if (mesSeleccionado < hoy) {
+      return 'pasado';
+    } else {
+      return 'futuro';
+    }
+  }, [ano, mes]);
+
+  // Calcular mes anterior
+  const mesAnterior = useMemo(() => {
+    const fecha = new Date(ano, mes - 2, 1); // mes - 2 porque mes está en base 1
+    return {
+      mes: fecha.getMonth() + 1,
+      ano: fecha.getFullYear()
+    };
+  }, [ano, mes]);
+
+  // Calcular mismo mes año anterior
+  const mesAnoAnterior = useMemo(() => {
+    return {
+      mes: mes,
+      ano: ano - 1
+    };
+  }, [ano, mes]);
+
+  // Calcular últimos 3 meses para tendencia
+  const ultimos3Meses = useMemo(() => {
+    const meses = [];
+    for (let i = 2; i >= 0; i--) {
+      const fecha = new Date(ano, mes - 1 - i, 1);
+      meses.push({
+        mes: fecha.getMonth() + 1,
+        ano: fecha.getFullYear()
+      });
+    }
+    return meses;
+  }, [ano, mes]);
+
   const retrocederMes = () => {
     const [a, m] = fechaSeleccionada.split("-").map(Number);
     const nueva = new Date(a, m - 2, 1);
@@ -44,9 +112,42 @@ const AdminDashboardBB = () => {
     const cargar = async () => {
       setCargando(true);
       try {
+        // Cargar datos del mes actual
         const data = await adminService.getResumenGeneral(mes, ano);
         const lista = Array.isArray(data) ? data : [];
         setResumenes(lista);
+
+        // Cargar datos del mes anterior para comparación
+        try {
+          const dataAnterior = await adminService.getResumenGeneral(mesAnterior.mes, mesAnterior.ano);
+          const listaAnterior = Array.isArray(dataAnterior) ? dataAnterior : [];
+          setResumenesAnterior(listaAnterior);
+        } catch (e) {
+          console.warn("No se pudieron cargar datos del mes anterior:", e);
+          setResumenesAnterior([]);
+        }
+
+        // Cargar datos del mismo mes año anterior
+        try {
+          const dataAnoAnterior = await adminService.getResumenGeneral(mesAnoAnterior.mes, mesAnoAnterior.ano);
+          const listaAnoAnterior = Array.isArray(dataAnoAnterior) ? dataAnoAnterior : [];
+          setResumenesAnoAnterior(listaAnoAnterior);
+        } catch (e) {
+          console.warn("No se pudieron cargar datos del año anterior:", e);
+          setResumenesAnoAnterior([]);
+        }
+
+        // Cargar datos de últimos 3 meses para tendencia
+        try {
+          const promesas3Meses = ultimos3Meses.map(({ mes: m, ano: a }) =>
+            adminService.getResumenGeneral(m, a).catch(() => [])
+          );
+          const datos3Meses = await Promise.all(promesas3Meses);
+          setResumenesUltimos3Meses(datos3Meses);
+        } catch (e) {
+          console.warn("No se pudieron cargar datos de últimos 3 meses:", e);
+          setResumenesUltimos3Meses([]);
+        }
 
         const packs = await Promise.all(
           lista.map((r) =>
@@ -54,20 +155,27 @@ const AdminDashboardBB = () => {
               const ultimaVenta = getUltimaVentaCompleta(ventas);
               return {
                 restaurante_id: r.restaurante_id,
+                ventas: ventas || [],
                 lastDate: ultimaVenta ? ultimaVenta.fecha : null,
                 lastAmount: ultimaVenta ? ultimaVenta.monto : 0,
               };
             })
           )
         );
+
         const mapaFechas = {};
         const mapaDetalles = {};
-        packs.forEach(({ restaurante_id, lastDate, lastAmount }) => {
+        const mapaVentasDiarias = {};
+
+        packs.forEach(({ restaurante_id, ventas, lastDate, lastAmount }) => {
           mapaFechas[restaurante_id] = lastDate;
           mapaDetalles[restaurante_id] = { fecha: lastDate, monto: lastAmount };
+          mapaVentasDiarias[restaurante_id] = ventas;
         });
+
         setUltimaVentaPorRest(mapaFechas);
         setUltimaVentaDetalle(mapaDetalles);
+        setVentasDiariasPorRest(mapaVentasDiarias);
       } catch (e) {
         console.error("Error cargando la vista admin:", e);
       } finally {
@@ -75,7 +183,92 @@ const AdminDashboardBB = () => {
       }
     };
     cargar();
-  }, [mes, ano]);
+  }, [mes, ano, mesAnterior.mes, mesAnterior.ano, mesAnoAnterior.mes, mesAnoAnterior.ano, ultimos3Meses]);
+
+  // Función para calcular métricas de tendencia
+  const calcularMetricasTendencia = (restaurante_id, ventaActual, ventasDiarias = []) => {
+    const metricas = {};
+
+    // 1. Cambio vs mes anterior
+    const restauranteAnterior = resumenesAnterior.find(r => r.restaurante_id === restaurante_id);
+    if (restauranteAnterior && restauranteAnterior.venta_total > 0) {
+      const ventaAnterior = restauranteAnterior.venta_total;
+      const cambio = ((ventaActual - ventaAnterior) / ventaAnterior) * 100;
+      metricas.mesAnterior = {
+        porcentaje: cambio,
+        icono: cambio > 5 ? "📈" : cambio < -5 ? "📉" : "➡️",
+        texto: cambio > 0 ? `+${cambio.toFixed(1)}%` : `${cambio.toFixed(1)}%`,
+        color: cambio > 0 ? "text-success" : cambio < 0 ? "text-danger" : "text-muted"
+      };
+    }
+
+    // 2. Mejor día del mes (de las ventas diarias)
+    if (ventasDiarias && ventasDiarias.length > 0) {
+      const mejorDia = ventasDiarias.reduce((max, dia) =>
+        dia.monto > max.monto ? dia : max
+      );
+      if (mejorDia && mejorDia.monto > 0) {
+        const fecha = new Date(mejorDia.fecha);
+        metricas.mejorDia = {
+          monto: mejorDia.monto,
+          dia: fecha.getDate(),
+          texto: `${mejorDia.monto.toFixed(0)}${simbolo}`,
+          icono: "🥇"
+        };
+      }
+    }
+
+    // 3. Vs mismo mes año anterior
+    const restauranteAnoAnterior = resumenesAnoAnterior.find(r => r.restaurante_id === restaurante_id);
+    if (restauranteAnoAnterior && restauranteAnoAnterior.venta_total > 0) {
+      const ventaAnoAnterior = restauranteAnoAnterior.venta_total;
+      const cambioAnual = ((ventaActual - ventaAnoAnterior) / ventaAnoAnterior) * 100;
+      metricas.anoAnterior = {
+        porcentaje: cambioAnual,
+        icono: cambioAnual > 10 ? "🚀" : cambioAnual > 0 ? "📈" : cambioAnual < -10 ? "📉" : "➡️",
+        texto: cambioAnual > 0 ? `+${cambioAnual.toFixed(1)}%` : `${cambioAnual.toFixed(1)}%`,
+        color: cambioAnual > 0 ? "text-success" : cambioAnual < 0 ? "text-danger" : "text-muted"
+      };
+    }
+
+    // 4. Tendencia 3 meses
+    if (resumenesUltimos3Meses.length >= 2) {
+      const ventasPor3Meses = resumenesUltimos3Meses.map(mesData => {
+        const restaurante = Array.isArray(mesData) ? mesData.find(r => r.restaurante_id === restaurante_id) : null;
+        return restaurante ? restaurante.venta_total : 0;
+      }).filter(venta => venta > 0);
+
+      if (ventasPor3Meses.length >= 2) {
+        const primera = ventasPor3Meses[0];
+        const ultima = ventasPor3Meses[ventasPor3Meses.length - 1];
+        const tendencia3M = ((ultima - primera) / primera) * 100;
+
+        metricas.tendencia3M = {
+          porcentaje: tendencia3M,
+          icono: tendencia3M > 5 ? "📈" : tendencia3M < -5 ? "📉" : "➡️",
+          texto: tendencia3M > 0 ? `+${tendencia3M.toFixed(1)}%` : `${tendencia3M.toFixed(1)}%`,
+          color: tendencia3M > 0 ? "text-success" : tendencia3M < 0 ? "text-danger" : "text-muted"
+        };
+      }
+    }
+
+    return metricas;
+  };
+
+  // Función para calcular ranking
+  const calcularRanking = (restaurante_id, ventaActual) => {
+    const resumenesOrdenados = [...resumenes].sort((a, b) => b.venta_total - a.venta_total);
+    const posicion = resumenesOrdenados.findIndex(r => r.restaurante_id === restaurante_id) + 1;
+    const total = resumenesOrdenados.length;
+
+    return {
+      posicion,
+      total,
+      texto: posicion === 1 ? `#${posicion} 🥇` : `#${posicion} de ${total}`,
+      icono: posicion === 1 ? "🏆" : posicion <= 3 ? "🥉" : "📊",
+      color: posicion === 1 ? "text-warning" : posicion <= 3 ? "text-info" : "text-muted"
+    };
+  };
 
   const getColorClasses = (porcentaje) => {
     if (porcentaje > 36) return ["bg-danger-subtle", "text-danger", "🚨"];
@@ -201,8 +394,10 @@ const AdminDashboardBB = () => {
                       <div className="mobile-stats-column">
                         {/* Div 1: KPIs de ventas */}
                         <div className="mobile-stat-box ventas-box">
-                          <div className="stat-icon">💰</div>
-                          <p className="stat-label">Ventas del mes</p>
+                          <div className="stat-header">
+                            <div className="stat-icon">💰</div>
+                            <p className="stat-label">Ventas del mes</p>
+                          </div>
 
                           {/* KPIs en mini-grid */}
                           <div className="kpis-grid">
@@ -210,9 +405,9 @@ const AdminDashboardBB = () => {
                             <div className="kpi-item">
                               <div className="kpi-icon">💰</div>
                               <div className="kpi-content">
-                                <div className="kpi-label">Total</div>
+                                <div className="kpi-label">Ventas</div>
                                 <div className="kpi-value">
-                                  {(r.venta_total / 1000).toFixed(0)}k{simbolo}
+                                  {r.venta_total.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {simbolo}
                                 </div>
                               </div>
                             </div>
@@ -223,21 +418,24 @@ const AdminDashboardBB = () => {
                               <div className="kpi-content">
                                 <div className="kpi-label">Promedio</div>
                                 <div className="kpi-value">
-                                  {((r.venta_total / new Date().getDate()) / 1000).toFixed(1)}k{simbolo}
+                                  {(r.venta_total / diasTranscurridos).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {simbolo}
                                 </div>
                               </div>
                             </div>
 
-                            {/* Proyección mensual */}
-                            <div className="kpi-item">
-                              <div className="kpi-icon">📊</div>
-                              <div className="kpi-content">
-                                <div className="kpi-label">Proyección</div>
-                                <div className="kpi-value">
-                                  {(((r.venta_total / new Date().getDate()) * 30) / 1000).toFixed(0)}k{simbolo}
+
+                            {/* Proyección mensual - solo para mes actual */}
+                            {tipoMes === 'actual' && (
+                              <div className="kpi-item">
+                                <div className="kpi-icon">📊</div>
+                                <div className="kpi-content">
+                                  <div className="kpi-label">Proyección</div>
+                                  <div className="kpi-value">
+                                    {((r.venta_total / diasTranscurridos) * new Date(ano, mes, 0).getDate()).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {simbolo}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
+                            )}
                           </div>
 
                           {/* Última venta con fecha y monto */}
@@ -258,14 +456,108 @@ const AdminDashboardBB = () => {
                           </div>
                         </div>
 
-                        {/* Div 2: % Gasto con bg dinámico */}
+                        {/* Div 2: Tendencias */}
+                        <div className="mobile-stat-box tendencia-box">
+                          <div className="stat-header">
+                            <div className="stat-icon">📊</div>
+                            <p className="stat-label">Tendencias</p>
+                          </div>
+
+                          {/* Mini-grid de métricas de tendencia */}
+                          <div className="tendencia-grid">
+                            {(() => {
+                              const metricas = calcularMetricasTendencia(r.restaurante_id, r.venta_total, ventasDiariasPorRest[r.restaurante_id]);
+                              const ranking = calcularRanking(r.restaurante_id, r.venta_total);
+
+                              const items = [];
+
+                              // Mes anterior
+                              if (metricas.mesAnterior) {
+                                items.push(
+                                  <div key="anterior" className="tendencia-item">
+                                    <div className="tend-icon">{metricas.mesAnterior.icono}</div>
+                                    <div className="tend-content">
+                                      <div className="tend-label">Mes anterior</div>
+                                      <div className={`tend-value ${metricas.mesAnterior.color}`}>
+                                        {metricas.mesAnterior.texto}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              // Ranking
+                              items.push(
+                                <div key="ranking" className="tendencia-item">
+                                  <div className="tend-icon">{ranking.icono}</div>
+                                  <div className="tend-content">
+                                    <div className="tend-label">Ranking</div>
+                                    <div className={`tend-value ${ranking.color}`}>
+                                      {ranking.texto}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+
+                              // Vs año anterior
+                              if (metricas.anoAnterior) {
+                                items.push(
+                                  <div key="ano" className="tendencia-item">
+                                    <div className="tend-icon">{metricas.anoAnterior.icono}</div>
+                                    <div className="tend-content">
+                                      <div className="tend-label">vs 2024</div>
+                                      <div className={`tend-value ${metricas.anoAnterior.color}`}>
+                                        {metricas.anoAnterior.texto}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              // Tendencia 3 meses
+                              if (metricas.tendencia3M) {
+                                items.push(
+                                  <div key="tend3m" className="tendencia-item">
+                                    <div className="tend-icon">{metricas.tendencia3M.icono}</div>
+                                    <div className="tend-content">
+                                      <div className="tend-label">3 meses</div>
+                                      <div className={`tend-value ${metricas.tendencia3M.color}`}>
+                                        {metricas.tendencia3M.texto}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              // Mejor día
+                              if (metricas.mejorDia) {
+                                items.push(
+                                  <div key="mejor" className="tendencia-item">
+                                    <div className="tend-icon">{metricas.mejorDia.icono}</div>
+                                    <div className="tend-content">
+                                      <div className="tend-label">Mejor día</div>
+                                      <div className="tend-value text-success">
+                                        {metricas.mejorDia.texto}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              return items;
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* Div 3: % Gasto con bg dinámico */}
                         <div className={`mobile-stat-box gasto-box ${bgClass}`}>
-                          <div className="stat-icon">{icono}</div>
-                          <p className={`stat-label ${textClass}`}>% Gasto</p>
+                          <div className="stat-header">
+                            <div className="stat-icon">{icono}</div>
+                            <p className={`stat-label ${textClass}`}>Gasto</p>
+                          </div>
                           <p className={`stat-value ${textClass}`}>
                             {r.venta_total > 0 ? `${r.porcentaje_gasto}%` : "0%"}
                           </p>
-                          <p className={`stat-extra ${textClass}`}>del total</p>
                         </div>
                       </div>
 

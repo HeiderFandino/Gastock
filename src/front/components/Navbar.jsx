@@ -66,7 +66,6 @@ export const Navbar = () => {
             alt="Gastock Logo"
             className="brand-logo"
             onError={(e) => { e.currentTarget.style.display = "none"; }}
-            style={{ height: "24px", width: "auto" }}
           />
         </Link>
 
@@ -77,9 +76,11 @@ export const Navbar = () => {
               className="user-name fw-semibold text-truncate"
               title={nombre}
               style={{
-                fontSize: "0.8rem",
-                lineHeight: "1.1",
-                maxWidth: "120px"
+                color: "#000000",
+                fontSize: "1rem",
+                lineHeight: "1.2",
+                maxWidth: "150px",
+                fontWeight: "600"
               }}
             >
               {nombre}
@@ -87,8 +88,10 @@ export const Navbar = () => {
             <div
               className="user-role text-capitalize"
               style={{
-                fontSize: "0.65rem",
-                lineHeight: "1.1"
+                color: "#1d4ed8",
+                fontSize: "0.85rem",
+                lineHeight: "1.2",
+                fontWeight: "500"
               }}
             >
               {rol}
@@ -98,8 +101,10 @@ export const Navbar = () => {
                 className="user-restaurant text-truncate"
                 title={restaurante}
                 style={{
-                  fontSize: "0.6rem",
-                  lineHeight: "1.1"
+                  color: "#60a5fa",
+                  fontSize: "0.8rem",
+                  lineHeight: "1.2",
+                  fontWeight: "500"
                 }}
               >
                 {restaurante}
@@ -112,8 +117,8 @@ export const Navbar = () => {
             type="button"
             className="btn d-flex align-items-center justify-content-center"
             style={{
-              width: "32px",
-              height: "32px",
+              width: "40px",
+              height: "40px",
               borderRadius: "8px",
               background: "var(--color-primary)",
               border: "none",
@@ -136,7 +141,7 @@ export const Navbar = () => {
               setOpen((v) => !v);
             }}
           >
-            <i className="bi bi-person-circle" style={{ fontSize: "1rem" }} />
+            <i className="bi bi-person-circle" style={{ fontSize: "1.5rem" }} />
           </button>
         </div>
 
