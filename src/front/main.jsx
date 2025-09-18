@@ -18,9 +18,16 @@ import './styles/UserModal.css';
 import './styles/EncargadoGastos.mobile.css';
 import './styles/EncargadoVentasMobile.css';
 import './styles/AdminRestauranteComponent.css';
+import './styles/AdminRestaurantDetail.css';
+import './styles/AdminGastos.css';
+import './styles/AdminDashboardBB.css';
+import './styles/Ajustes.css';
+import './styles/Gastoform.css';
+import './styles/PasswordModal.css';
+import './styles/ProveedorForm.css';
+import './styles/ProveedorRestauranteDetail.css';
+import './styles/Usuarios.css';
 import "./styles/login.css";
-
-// (Si usas este)
 import './styles/chefventas.css';
 
 import { RouterProvider } from "react-router-dom";
