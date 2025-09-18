@@ -446,7 +446,7 @@
 
 @keyframes scroll-left {
   0% {
-    transform: translateX(100%);
+    transform: translateX(0%);
   }
   100% {
     transform: translateX(-100%);
@@ -492,7 +492,7 @@
 /* Responsive para resumen rápido */
 @media (max-width: 767.98px) {
   .resumen-rapido-content {
-    animation: scroll-left 15s linear infinite;
+    animation: scroll-left 25s linear infinite;
   }
 
   .resumen-rapido-metrics {
@@ -506,7 +506,7 @@
 
 @media (max-width: 575.98px) {
   .resumen-rapido-content {
-    animation: scroll-left 12s linear infinite;
+    animation: scroll-left 30s linear infinite;
   }
 
   .resumen-rapido-metrics {
