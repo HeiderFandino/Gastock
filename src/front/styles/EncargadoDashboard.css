@@ -231,7 +231,6 @@
     border-color: var(--stroke-warning-45) !important;
   }
 }
-
 /* ===== Banner de Resumen Rápido ===== */
 .resumen-banner {
   display: flex;
