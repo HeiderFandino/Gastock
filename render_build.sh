@@ -8,4 +8,5 @@ npm run build
 pip install pipenv
 pipenv install
 
-pipenv run upgrade
+# Limpiar migraciones problemáticas
+python reset_migrations.py
