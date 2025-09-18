@@ -244,14 +244,14 @@ export const AdminVentasDetalle = () => {
                         onClick={() => abrirModalEdicion(v)}
                         title="Editar"
                       >
-                        ✏️
+                        <FiEdit2 size={18} aria-hidden="true" focusable="false" />
                       </button>
                       <button
                         className="action-icon-button delete-button"
                         onClick={() => eliminarVenta(v.id)}
                         title="Eliminar"
                       >
-                        🗑️
+                        <FiTrash2 size={18} aria-hidden="true" focusable="false" />
                       </button>
                     </div>
                   </li>
@@ -295,14 +295,14 @@ export const AdminVentasDetalle = () => {
                             onClick={() => abrirModalEdicion(v)}
                             title="Editar"
                           >
-                            ✏️
+                            <FiEdit2 size={18} aria-hidden="true" focusable="false" />
                           </button>
                           <button
                             className="action-icon-button delete-button"
                             onClick={() => eliminarVenta(v.id)}
                             title="Eliminar"
                           >
-                            🗑️
+                            <FiTrash2 size={18} aria-hidden="true" focusable="false" />
                           </button>
                         </td>
                       </tr>
@@ -320,7 +320,7 @@ export const AdminVentasDetalle = () => {
             <div className="modal-dialog modal-dialog-centered modal-sm">
               <div className="modal-content">
                 <div className="modal-header">
-                  <div className="modal-icon">✏️</div>
+                  <div className="modal-icon"><FiEdit2 size={18} aria-hidden="true" focusable="false" /></div>
                   <h5 className="modal-title">Editar Venta</h5>
                   <button
                     type="button"

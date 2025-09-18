@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import gastoServices from "../services/GastoServices";
+import { FiTrash2 } from "react-icons/fi";
 // Estilos ya incluidos en brand-unified.css
 
 
@@ -246,7 +247,7 @@ export const GastoForm = () => {
                     aria-label="Eliminar gasto"
                     title="Eliminar este gasto"
                   >
-                    🗑️ Eliminar
+                    <FiTrash2 size={18} aria-hidden="true" focusable="false" /> Eliminar
                   </button>
                 </div>
               )}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
 import proveedorServices from "../../services/proveedorServices";
 import ProveedorModal from "../../components/shared/ProveedorModal";
-// import { FiEdit2, FiTrash2 } from "react-icons/fi"; // Comentado para compatibilidad con producción
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 // Estilos ya incluidos en brand-unified.css
 
 export const Proveedores = () => {
@@ -151,14 +151,14 @@ export const Proveedores = () => {
                       onClick={() => abrirModalEditar(p.id)}
                       title="Editar proveedor"
                     >
-✏️
+<FiEdit2 size={18} aria-hidden="true" focusable="false" />
                     </button>
                     <button
                       className="action-icon-button delete-button"
                       onClick={() => eliminar(p.id)}
                       title="Eliminar proveedor"
                     >
-🗑️
+<FiTrash2 size={18} aria-hidden="true" focusable="false" />
                     </button>
                   </div>
                 </div>
@@ -196,14 +196,14 @@ export const Proveedores = () => {
                         onClick={() => abrirModalEditar(p.id)}
                         title="Editar proveedor"
                       >
-  ✏️
+  <FiEdit2 size={18} aria-hidden="true" focusable="false" />
                       </button>
                       <button
                         className="action-icon-button delete-button"
                         onClick={() => eliminar(p.id)}
                         title="Eliminar proveedor"
                       >
-  🗑️
+  <FiTrash2 size={18} aria-hidden="true" focusable="false" />
                       </button>
                     </td>
                   </tr>

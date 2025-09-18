@@ -4,7 +4,7 @@ import ventaServices from "../../services/ventaServices";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
 import VentaModal from "./VentaModal";
 import { useNavigate } from "react-router-dom";
-// import { FiEdit2, FiTrash2 } from "react-icons/fi"; // Comentado para compatibilidad con producción
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 // Estilos ya incluidos en brand-unified.css
 
 export const EncargadoVentas = () => {
@@ -290,14 +290,14 @@ export const EncargadoVentas = () => {
                         onClick={() => abrirModalEdicion(v)}
                         title="Editar"
                       >
-✏️
+<FiEdit2 size={18} aria-hidden="true" focusable="false" />
                       </button>
                       <button
                         className="action-icon-button delete-button"
                         onClick={() => eliminarVenta(v.id)}
                         title="Eliminar"
                       >
-🗑️
+<FiTrash2 size={18} aria-hidden="true" focusable="false" />
                       </button>
                     </div>
                   </li>
@@ -341,14 +341,14 @@ export const EncargadoVentas = () => {
                             onClick={() => abrirModalEdicion(v)}
                             title="Editar"
                           >
-    ✏️
+    <FiEdit2 size={18} aria-hidden="true" focusable="false" />
                           </button>
                           <button
                             className="action-icon-button delete-button"
                             onClick={() => eliminarVenta(v.id)}
                             title="Eliminar"
                           >
-    🗑️
+    <FiTrash2 size={18} aria-hidden="true" focusable="false" />
                           </button>
                         </td>
                       </tr>
@@ -403,7 +403,7 @@ export const EncargadoVentas = () => {
           <div className="modal-dialog modal-dialog-centered modal-sm">
             <div className="modal-content">
               <div className="modal-header">
-                <div className="modal-icon">✏️</div>
+                <div className="modal-icon"><FiEdit2 size={28} aria-hidden="true" focusable="false" /></div>
                 <h5 className="modal-title">Editar Venta</h5>
                 <button
                   type="button"

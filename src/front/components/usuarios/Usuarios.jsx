@@ -2,11 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UserModal from "../../components/usuarios/UserModal.jsx";
 import PasswordModal from "../../components/usuarios/PasswordModal.jsx";
-import { FiPlus, FiUser, FiTrash2 } from "react-icons/fi";
-
+import { FiPlus, FiUser, FiTrash2, FiEdit2 } from "react-icons/fi";
 import "../../styles/Usuarios.css";
-
-
 const Users = () => {
   const navigate = useNavigate();
 
@@ -125,7 +122,7 @@ const Users = () => {
       }
 
       await loadData();
-      setMessage("🗑️ Usuario eliminado correctamente.");
+      setMessage("Usuario eliminado correctamente.");
       setTimeout(() => setMessage(""), 4000);
     } catch (err) {
       console.error("Error eliminando usuario", err);
@@ -322,7 +319,7 @@ const Users = () => {
                       aria-label="Editar"
                     >
                       {/* icono lápiz inline (ligero) */}
-✏️
+<FiEdit2 size={18} aria-hidden="true" focusable="false" />
                     </button>
                     <button
                       className="action-icon-button delete-button"
@@ -330,7 +327,7 @@ const Users = () => {
                       title="Eliminar"
                       aria-label="Eliminar"
                     >
-🗑️
+<FiTrash2 size={18} aria-hidden="true" focusable="false" />
                     </button>
                   </div>
                 </div>
@@ -392,14 +389,14 @@ const Users = () => {
                       onClick={() => handleEditUser(user)}
                       title="Editar"
                     >
-✏️
+<FiEdit2 size={18} aria-hidden="true" focusable="false" />
                     </button>
                     <button
                       className="action-icon-button delete-button"
                       onClick={() => handleDeleteUser(user.id)}
                       title="Eliminar"
                     >
-🗑️
+<FiTrash2 size={18} aria-hidden="true" focusable="false" />
                     </button>
                   </td>
                 </tr>
