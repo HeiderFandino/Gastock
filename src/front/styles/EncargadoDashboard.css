@@ -19,7 +19,7 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-/* Wrapper "glass" */
+/* Wrapper “glass” */
 .section-wrapper {
   background: linear-gradient(145deg, #ffffff, var(--brand-50));
   border-radius: var(--radius-lg);
@@ -231,7 +231,6 @@
     border-color: var(--stroke-warning-45) !important;
   }
 }
-
 /* ===== Banner de Resumen Rápido ===== */
 .resumen-banner {
   display: flex;
@@ -515,5 +514,5 @@
 
   .resumen-rapido-metrics {
     gap: 1rem;
-  }
-
+  
+}
