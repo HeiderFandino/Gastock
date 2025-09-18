@@ -20,10 +20,10 @@ sqlalchemy = "*"
 flask-jwt-extended = "*"
 flask-mail = "*"
 sendgrid = "*"
-flask = "*"
 flask-migrate = "*"
 tomli = "*"
 colorama = "*"
+flask = "*"
 
 [requires]
 python_version = "3.13"
