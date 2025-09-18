@@ -78,16 +78,16 @@
   font-size: 1rem;
   font-weight: 600;
   font-family: "Gastock", sans-serif;
-  color: #87abe5; /* Color Gastock azul suave */
+  color: #006bdd !important; /* Color Gastock azul suave */
 }
 .user-role {
   font-family: "Gastock", sans-serif;
-  color: #6b95d1; /* Color Gastock azul medio */
+  color: #000000 !important; /* Color Gastock azul medio */
 }
 .user-restaurant {
   max-width: 220px;
   font-family: "Gastock", sans-serif;
-  color: #5a7fb8; /* Color Gastock azul más intenso */
+  color: #5a80b800; /* Color Gastock azul más intenso */
 }
 
 /* Menú desplegable (links) */
