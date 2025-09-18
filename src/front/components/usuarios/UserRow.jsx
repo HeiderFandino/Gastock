@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiEdit2, FiTrash2, FiEye } from "react-icons/fi";
 
 const UserRow = ({ user }) => {
   return (
@@ -16,9 +17,9 @@ const UserRow = ({ user }) => {
       <td>{user.restaurant}</td>
       <td>
         <div className="user-actions">
-          <button title="View">👁️</button>
-          <button title="Edit">✏️</button>
-          <button className="delete" title="Delete">🗑️</button>
+          <button title="Ver" aria-label="Ver"><FiEye size={18} aria-hidden="true" focusable="false" /></button>
+          <button title="Edit"><FiEdit2 size={18} aria-hidden="true" focusable="false" /></button>
+          <button className="delete" title="Delete"><FiTrash2 size={18} aria-hidden="true" focusable="false" /></button>
         </div>
       </td>
     </tr>
