@@ -8,6 +8,6 @@ export default defineConfig({
     historyApiFallback: true, // ✅ Esta línea es la clave
   },
   build: {
-    outDir: "dist",
+    outDir: "public",
   },
 });
