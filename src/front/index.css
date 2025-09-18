@@ -142,12 +142,7 @@ table thead tr th {
   text-align: left;
 }
 
-/* Contenedores principales */
-.dashboard-container {
-  direction: ltr;
-  align-self: flex-start;
-  background-color: #ffffff;
-}
+/* .dashboard-container base está en brand-unified.css - solo específicos aquí */
 .custom-sidebar {
   overflow: scroll !important;
   direction: rtl;

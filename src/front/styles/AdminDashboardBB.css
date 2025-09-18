@@ -1,10 +1,6 @@
 /* AdminDashboardBB.css – fecha pegada al navbar (móvil) + look Gastock */
 
-:root {
-  --rest-radius: var(--radius-lg);
-  --navbar-h: 56px;
-  --ad-toolbar-h: 44px;
-}
+/* Layout específico para AdminDashboardBB - las variables base están en brand-unified.css */
 
 /* ===== Toolbar móvil pegada al navbar ===== */
 @media (max-width: 767.98px) {

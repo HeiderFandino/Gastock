@@ -95,6 +95,13 @@
   /* Focus ring */
   --focus-ring: 0 0 0 3px
     color-mix(in srgb, var(--color-primary) 25%, transparent);
+
+  /* Layout variables */
+  --navbar-h: 56px;
+  --bottom-nav-h: 68px;
+  --ad-toolbar-h: 44px;
+  --resumen-rapido-h: 50px;
+  --rest-radius: var(--radius-lg);
 }
 
 /* ===== MODO OSCURO ===== */
