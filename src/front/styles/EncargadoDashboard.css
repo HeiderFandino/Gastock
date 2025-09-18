@@ -1,515 +1,1003 @@
 /* EncargadoDashboard.css – tokenizado a brand.css */
 
+
+
 /* Layout específico para EncargadoDashboard - las variables base están en brand-unified.css */
 
+
+
 /* Título/Sección */
+
 .section-title {
+
   margin: 0 0 0.75rem 0.5rem;
+
   padding-bottom: 0.4rem;
+
   font-size: 0.95rem;
+
   font-weight: 700;
+
   letter-spacing: 0.3px;
+
   text-transform: uppercase;
+
   color: var(--color-primary);
+
   border-bottom: 1px solid var(--color-border);
+
 }
+
+
 
 /* Wrapper "glass" */
+
 .section-wrapper {
+
   background: linear-gradient(145deg, #ffffff, var(--brand-50));
+
   border-radius: var(--radius-lg);
+
   border: 1px solid var(--color-border);
+
   box-shadow: var(--shadow-sm);
+
   padding: 1.25rem;
+
   margin-bottom: 1.25rem;
+
   transition: all 0.25s ease;
+
 }
+
 .section-wrapper:hover {
+
   transform: translateY(-1px);
+
   box-shadow: var(--shadow-md);
+
 }
+
+
 
 /* ======== MÓVIL ======== */
+
 @media (max-width: 767.98px) {
+
   .dm-sticky-controls {
+
     position: fixed !important;
+
     top: var(--navbar-h);
+
     left: 0;
+
     right: 0;
+
     z-index: var(--z-sticky);
+
     background: #fff;
+
     border-bottom: 1px solid var(--color-border);
+
     padding: 0.35rem 0.75rem;
+
   }
+
   .dm-sticky-controls .dm-month {
+
     display: flex;
+
     align-items: center;
+
     gap: 0.45rem;
+
     width: 100%;
+
   }
+
   .dm-sticky-controls input[type="month"] {
+
     flex: 1 1 auto;
+
     height: 34px;
+
     font-size: 0.95rem;
+
     border-radius: 10px;
+
     padding: 0.25rem 0.5rem;
+
     border: 1px solid var(--color-border);
+
   }
+
   .dm-ctrl:active {
+
     transform: translateY(1px);
+
   }
+
   .dm-ctrl:disabled {
+
     opacity: 0.6;
+
   }
+
+
 
   .dashboard-title {
+
     font-size: 1.05rem !important;
+
     font-weight: 700;
+
     margin: 0.25rem 0.5rem 0.5rem !important;
+
   }
+
+
 
   .dm-kpi-row {
+
     display: flex;
+
     gap: 0.5rem;
+
     overflow-x: auto;
+
     padding: 0.5rem 0.5rem 0;
+
     scrollbar-width: thin;
-  }
-  .dm-chip {
-    min-width: 160px;
-    background: #fff;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: 0.55rem 0.65rem;
-    box-shadow: var(--shadow-sm);
-  }
-  .dm-chip h6 {
-    margin: 0 0 0.25rem 0;
-    font-size: 0.86rem;
-    font-weight: 700;
-  }
-  .dm-chip .dm-valor {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-primary);
+
   }
 
-  .dm-chart {
-    width: 100%;
-    height: 190px;
-    padding: 0.4rem 0.5rem 0.6rem;
+  .dm-chip {
+
+    min-width: 160px;
+
+    background: #fff;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 12px;
+
+    padding: 0.55rem 0.65rem;
+
+    box-shadow: var(--shadow-sm);
+
   }
+
+  .dm-chip h6 {
+
+    margin: 0 0 0.25rem 0;
+
+    font-size: 0.86rem;
+
+    font-weight: 700;
+
+  }
+
+  .dm-chip .dm-valor {
+
+    margin: 0;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    color: var(--color-primary);
+
+  }
+
+
+
+  .dm-chart {
+
+    width: 100%;
+
+    height: 190px;
+
+    padding: 0.4rem 0.5rem 0.6rem;
+
+  }
+
+
 
   .dm-accordion .accordion-button {
+
     padding: 0.6rem 0.9rem;
+
     font-weight: 600;
+
   }
+
   .dm-accordion .accordion-body {
+
     padding: 0.5rem 0.75rem 0.75rem;
+
   }
+
+
 
   .dm-no-shadow,
+
   .dm-no-shadow * {
+
     text-shadow: none !important;
+
     box-shadow: none !important;
+
   }
+
+
 
   .barralarga {
+
     font-size: 0.95rem;
+
     padding: 0.5rem 0.75rem !important;
+
     margin-bottom: 0.5rem !important;
+
   }
+
+
 
   .section-wrapper {
+
     background: transparent;
+
     border: 0;
+
     box-shadow: none;
+
     padding: 0.5rem 0.25rem;
+
     margin-bottom: 0.75rem;
+
   }
+
   .section-title {
+
     margin: 0.25rem 0.5rem 0.5rem;
+
     font-size: 0.9rem;
+
     border-bottom: 1px solid
+
       color-mix(in srgb, var(--color-border) 80%, transparent);
+
   }
+
   .section-wrapper .row {
+
     margin-left: 0 !important;
+
   }
+
   .section-wrapper .row > [class*="col-"] {
+
     padding-left: 0.5rem;
+
     padding-right: 0.5rem;
+
   }
+
   .section-wrapper .dm-chart {
+
     height: 180px;
+
     margin: 0.25rem 0.5rem 0;
+
   }
+
 }
+
+
 
 /* ======== DESKTOP ======== */
+
 @media (min-width: 768px) {
+
   .dm-chart {
+
     height: 250px;
+
   }
+
   .section-wrapper:hover {
+
     transform: translateY(-2px);
+
   }
+
   .ms-md-3 {
+
     margin-left: 1rem !important;
+
   }
+
 }
+
+
 
 /* Fixes QA cards en desktop */
+
 @media (min-width: 768px) {
+
   .qa-card {
+
     display: inline-block;
+
     color: inherit !important;
+
     text-decoration: none !important;
+
     border: 1px solid var(--color-border) !important;
+
     background: linear-gradient(145deg, #ffffff, var(--brand-50));
+
     border-radius: var(--radius-lg);
+
     box-shadow: var(--shadow-sm);
+
     padding: 1rem;
+
     width: 230px;
+
     min-height: 150px;
+
     cursor: pointer;
+
     transition: transform 0.2s ease, box-shadow 0.2s ease,
+
       border-color 0.2s ease;
+
   }
+
   .qa-card * {
+
     color: inherit !important;
+
     text-decoration: none !important;
+
   }
+
   .qa-card:hover {
+
     transform: translateY(-2px);
+
     box-shadow: var(--shadow-md);
+
   }
+
   .qa-card:focus {
+
     outline: none;
+
   }
+
   .qa-card:focus-visible {
+
     outline: 2px solid color-mix(in srgb, var(--color-info) 60%, transparent);
+
     outline-offset: 2px;
+
   }
+
+
 
   .qa-card__icon {
+
     width: 60px;
+
     height: 60px;
+
     margin: 0 auto 0.75rem;
+
     border-radius: 999px;
+
     font-size: 1.5rem;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     background: var(--brand-50);
+
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06),
+
       0 2px 6px rgba(0, 0, 0, 0.06);
+
   }
+
   .qa-card__title {
+
     font-weight: 700;
+
     font-size: 1rem;
+
     margin-bottom: 0.15rem;
+
   }
+
   .qa-card__sub {
+
     font-size: 0.85rem;
+
     color: var(--color-text-weak);
+
   }
+
+
 
   .qa-card--primary {
+
     border-color: var(--stroke-info-45) !important;
+
   }
+
   .qa-card--success {
+
     border-color: var(--stroke-success-45) !important;
+
   }
+
   .qa-card--warning {
+
     border-color: var(--stroke-warning-45) !important;
+
   }
+
 }
+
+
 
 /* ===== Banner de Resumen Rápido ===== */
+
 .resumen-banner {
+
   display: flex;
+
   align-items: center;
+
   background: linear-gradient(
+
     135deg,
+
     rgba(59, 130, 246, 0.08),
+
     rgba(59, 130, 246, 0.04)
+
   );
+
   border: 1px solid rgba(59, 130, 246, 0.2);
+
   border-radius: 12px;
+
   padding: 0.75rem 1rem;
+
   margin: 1rem 0;
+
   gap: 0.75rem;
+
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+
 }
+
+
 
 .resumen-banner-icon {
+
   font-size: 1.5rem;
+
   width: 40px;
+
   height: 40px;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   background: rgba(59, 130, 246, 0.15);
+
   border-radius: 50%;
+
   flex-shrink: 0;
+
 }
+
+
 
 .resumen-banner-content {
+
   flex: 1;
+
   min-width: 0;
+
 }
+
+
 
 .resumen-banner-title {
+
   font-weight: 700;
+
   font-size: 0.9rem;
+
   color: var(--color-primary);
+
   text-transform: uppercase;
+
   letter-spacing: 0.5px;
+
   display: block;
+
   margin-bottom: 0.5rem;
+
 }
+
+
 
 .resumen-banner-metrics {
+
   display: flex;
+
   flex-wrap: wrap;
+
   gap: 1rem;
+
   align-items: center;
+
 }
+
+
 
 .metric-item {
+
   display: flex;
+
   align-items: center;
+
   gap: 0.3rem;
+
   white-space: nowrap;
+
 }
+
+
 
 .metric-icon {
+
   font-size: 0.9rem;
+
   flex-shrink: 0;
+
 }
+
+
 
 .metric-text {
+
   font-size: 0.85rem;
+
   color: var(--color-text);
+
 }
+
+
 
 /* Responsive */
+
 @media (max-width: 767.98px) {
+
   .resumen-banner {
+
     flex-direction: column;
+
     text-align: center;
+
     padding: 0.6rem;
+
     gap: 0.5rem;
+
   }
 
+
+
   .resumen-banner-metrics {
+
     flex-direction: column;
+
     gap: 0.4rem;
+
   }
+
+
 
   .metric-item {
+
     justify-content: center;
+
   }
+
+
 
   .metric-text {
+
     font-size: 0.8rem;
+
   }
+
 }
 
+
+
 @media (max-width: 575.98px) {
+
   .resumen-banner-metrics {
+
     grid-template-columns: 1fr 1fr;
+
     display: grid;
+
     gap: 0.3rem;
+
   }
+
 }
+
+
 
 /* ===== Header con estilo de card ===== */
+
 /* .ag-card-header base está en brand-unified.css - solo override específico */
+
 .header-card .ag-card-header {
+
   padding: 1.25rem 1.5rem 0.75rem 1.5rem;
+
   background: var(--color-bg-subtle);
+
 }
+
+
 
 .header-content {
+
   flex: 1;
+
   text-align: left;
+
 }
+
+
 
 .header-title {
+
   font-size: 1.5rem;
+
   font-weight: 700;
+
   color: var(--color-text);
+
   margin: 0 0 0.25rem 0;
+
   line-height: 1.3;
+
 }
+
+
 
 .header-subtitle {
+
   font-size: 0.9rem;
+
   color: var(--color-text-muted);
+
   margin: 0;
+
   line-height: 1.4;
+
 }
+
+
 
 /* Controles de mes rediseñados */
+
 .month-controls {
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 1rem;
+
   margin-top: 0.5rem;
+
 }
+
+
 
 .month-btn {
+
   width: 40px;
+
   height: 40px;
+
   border: 1px solid var(--color-border);
+
   border-radius: 8px;
+
   background: #fff;
+
   color: var(--color-text);
+
   font-size: 1.1rem;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   cursor: pointer;
+
   transition: all 0.2s ease;
+
   box-shadow: var(--shadow-sm);
+
 }
+
+
 
 .month-btn:hover {
+
   background: var(--color-bg-subtle);
+
   border-color: var(--color-primary);
+
   transform: translateY(-1px);
+
   box-shadow: var(--shadow-md);
+
 }
+
+
 
 .month-display {
+
   position: relative;
+
   background: var(--color-bg-subtle);
+
   border: 1px solid var(--color-border);
+
   border-radius: 8px;
+
   padding: 0.75rem 1.5rem;
+
   min-width: 200px;
+
   text-align: center;
+
   cursor: pointer;
+
   box-shadow: var(--shadow-sm);
+
 }
+
+
 
 .month-text {
+
   font-weight: 600;
+
   color: var(--color-text);
+
   text-transform: capitalize;
+
 }
+
+
 
 .month-input-hidden {
+
   position: absolute;
+
   top: 0;
+
   left: 0;
+
   width: 100%;
+
   height: 100%;
+
   opacity: 0;
+
   cursor: pointer;
+
 }
+
+
 
 /* ===== Resumen Rápido - Dentro del dashboard pero pegado al navbar ===== */
+
 .resumen-rapido-card-pegado {
+
   background: linear-gradient(135deg, rgb(201, 227, 246), rgb(255, 255, 255));
+
   border: none;
+
   border-radius: 1rem;
+
   padding: 0.5rem 0;
+
   box-shadow: 0 2px 6px rgba(59, 130, 246, 0.08);
+
   overflow: hidden;
+
   position: relative;
+
   margin: 0 0 1rem 0;
+
 }
+
+
 
 /* Ajustar el dashboard para que esté pegado */
+
 .dashboard-with-navbar-ticker {
+
   margin-top: 0;
+
   padding-top: 0;
+
 }
+
+
 
 .resumen-rapido-content {
+
   display: flex;
+
   align-items: center;
+
   gap: 1.5rem;
+
   white-space: nowrap;
+
   animation: scroll-left 18s linear infinite;
+
   padding: 0 1rem;
+
 }
+
+
 
 .resumen-rapido-content:hover {
+
   animation-play-state: paused;
+
 }
+
+
 
 @keyframes scroll-left {
+
   0% {
+
     transform: translateX(100%);
+
   }
+
   100% {
+
     transform: translateX(-100%);
+
   }
+
 }
+
+
 
 .resumen-rapido-title {
+
   display: flex;
+
   align-items: center;
+
   gap: 0.5rem;
+
   font-weight: 700;
+
   font-size: 0.85rem;
+
   color: var(--color-primary);
+
   text-transform: uppercase;
+
   letter-spacing: 0.5px;
+
   white-space: nowrap;
+
   flex-shrink: 0;
+
 }
+
+
 
 .resumen-icon {
+
   font-size: 1rem;
+
 }
+
+
 
 .resumen-rapido-metrics {
+
   display: flex;
+
   gap: 2rem;
+
   align-items: center;
+
   flex-shrink: 0;
+
 }
+
+
 
 .resumen-rapido-metrics .metric-item {
+
   white-space: nowrap;
+
 }
+
+
 
 .resumen-rapido-metrics .metric-icon {
+
   font-size: 0.85rem;
+
 }
+
+
 
 .resumen-rapido-metrics .metric-text {
+
   font-size: 0.8rem;
+
 }
 
-/* Responsive para resumen rápido */
-@media (max-width: 767.98px) {
-  .resumen-rapido-content {
-    animation: scroll-left 15s linear infinite;
-  }
 
-  .resumen-rapido-metrics {
-    gap: 1.5rem;
-  }
 
-  .resumen-rapido-metrics .metric-text {
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .resumen-rapido-content {
-    animation: scroll-left 12s linear infinite;
-  }
-
-  .resumen-rapido-metrics {
-    gap: 1rem;
-  
-}
+/* Responsive para resumen r�pido */
+@media (max-width: 767.98px) {
+  .resumen-rapido-content {
+    animation: scroll-left 15s linear infinite;
+  }
+  .resumen-rapido-metrics {
+    gap: 1.5rem;
+  }
+  .resumen-rapido-metrics .metric-text {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .resumen-rapido-content {
+    animation: scroll-left 12s linear infinite;
+  }
+  .resumen-rapido-metrics {
+    gap: 1rem;
+  }
+}
