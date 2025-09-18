@@ -146,32 +146,91 @@ const AdminRestaurantDetail = () => {
   }, [fechaSeleccionada]);
 
   return (
-    <div className="dashboard-container admin-bb">
-      {/* ===== Header compacto v2 ===== */}
-      <div className="ag-header mb-3">
+    <div className="dashboard-container admin-bb dashboard-with-navbar-ticker">
+      {/* ===== Resumen Rápido - Dentro del dashboard pero pegado al navbar ===== */}
+      <div className="resumen-rapido-card-pegado">
+        <div className="resumen-rapido-content">
+          <div className="resumen-rapido-title">
 
-        <div className="ag-title-wrap">
-          <h1 className="ag-title">🏢 {restaurante?.nombre || `Restaurante #${id}`}</h1>
-          <p className="ag-subtitle">Análisis detallado de ventas y gastos del restaurante.</p>
-        </div>
-
-        {/* Controles Mes (compactos y centrados) */}
-        <div className="ag-monthbar">
-          <button className="ag-monthbtn" onClick={retrocederMes} aria-label="Mes anterior">←</button>
-
-          <div className="ag-monthpill">
-            {nombreMes}
-            {/* input real (oculto) para accesibilidad y teclado */}
-            <input
-              type="month"
-              className="ag-month-hidden"
-              value={fechaSeleccionada}
-              onChange={(e) => onChangeMesInput(e.target.value)}
-              aria-label="Seleccionar mes"
-            />
           </div>
 
-          <button className="ag-monthbtn" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
+          <div className="resumen-rapido-metrics">
+            {/* Ventas totales */}
+            <div className="metric-item">
+              <span className="metric-icon">💰</span>
+              <span className="metric-text">Ventas: <strong className="text-warning">{totalVentas.toFixed(0)}{simbolo}</strong></span>
+            </div>
+
+            {/* Promedio diario */}
+            <div className="metric-item">
+              <span className="metric-icon">📈</span>
+              <span className="metric-text">Promedio: <strong className="text-info">{promedioDiario.toFixed(0)}{simbolo}/día</strong></span>
+            </div>
+
+            {/* Gastos totales */}
+            <div className="metric-item">
+              <span className="metric-icon">💸</span>
+              <span className="metric-text">Gastos: <strong className="text-info">{gastoTotal.toFixed(0)}{simbolo}</strong></span>
+            </div>
+
+            {/* Porcentaje de gastos */}
+            <div className="metric-item">
+              <span className="metric-icon">{icono}</span>
+              <span className="metric-text">% Gastos: <strong className={textClass}>{porcentaje.toFixed(1)}%</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        {/* ===== Header con estilo de card ===== */}
+      <div className="ag-card header-card mb-3">
+        <div className="ag-card-header" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+          <div className="mb-2">
+            <button
+              onClick={() => navigate('/admin/dashboard')}
+              className="btn btn-outline-secondary d-flex align-items-center gap-1"
+              style={{
+                borderRadius: '3px',
+                fontSize: '0.6rem',
+                padding: '0.1rem 0.3rem',
+                fontWeight: '400',
+                height: '18px',
+                lineHeight: '1',
+                minWidth: 'auto'
+              }}
+            >
+              <span style={{ fontSize: '0.6rem' }}>←</span>
+              <span className="d-none d-sm-inline" style={{ fontSize: '0.6rem' }}>Volver</span>
+            </button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div className="ag-icon">🏢</div>
+            <h1 className="header-title">{restaurante?.nombre || `Restaurante #${id}`}</h1>
+          </div>
+          <div className="header-content">
+
+
+          </div>
+        </div>
+
+        <div className="p-3">
+          {/* Controles Mes */}
+          <div className="month-controls">
+            <button className="month-btn" onClick={retrocederMes} aria-label="Mes anterior">←</button>
+
+            <div className="month-display">
+              <span className="month-text">{nombreMes}</span>
+              <input
+                type="month"
+                className="month-input-hidden"
+                value={fechaSeleccionada}
+                onChange={(e) => onChangeMesInput(e.target.value)}
+                aria-label="Seleccionar mes"
+              />
+            </div>
+
+            <button className="month-btn" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
+          </div>
         </div>
       </div>
 
@@ -311,20 +370,12 @@ const AdminRestaurantDetail = () => {
             <div className="col-12 col-md-9 mt-3 mt-md-0">
               <h6 className="text-center mb-3 d-none d-md-block">Gráfico Diario de Gastos</h6>
               <GastosChef
-                datos={gastoDatos}
-                ancho="100%"
+                datos={gastoDatos.map(item => ({
+                  name: item.dia.toString(),
+                  porcentaje: item.porcentaje
+                }))}
                 alto={250}
                 rol="encargado"
-                xAxisProps={{
-                  dataKey: "dia",
-                  type: "number",
-                  domain: [1, diasDelMes],
-                  allowDecimals: false,
-                  tickCount: diasDelMes,
-                }}
-                yAxisProps={{ domain: [0, 100], tickFormatter: (v) => `${v}%` }}
-                tooltipProps={{ formatter: (v) => `${v}%` }}
-                lineProps={{ dataKey: "porcentaje", stroke: "#87abe5", strokeWidth: 2, dot: { r: 3 }, name: "% gasto" }}
               />
             </div>
           </div>

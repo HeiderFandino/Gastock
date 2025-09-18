@@ -12,6 +12,7 @@ import ventaServices from "../../services/ventaServices";
 import { useNavigate } from "react-router-dom";
 import { PatchAnnouncement } from "../../components/PatchAnnouncement";
 import { FiTrendingUp, FiDollarSign, FiPercent, FiPlus } from "react-icons/fi";
+import { getProximoFestivo, esHoyFestivo, esMananaFestivo } from "../../utils/festivosBarcelona";
 
 export const EncargadoDashboard = () => {
   const { store } = useGlobalReducer();
@@ -42,12 +43,47 @@ export const EncargadoDashboard = () => {
   };
 
   const [ano, mes] = fechaSeleccionada.split("-").map(Number);
+
+  // Verificar si estamos después del día 10 del mes actual
+  const mostrarPorcentajeGasto = useMemo(() => {
+    const diaActual = new Date().getDate();
+    const mesActual = new Date().getMonth() + 1;
+    const anoActual = new Date().getFullYear();
+
+    // Si estamos viendo el mes actual, solo mostrar % de gasto después del día 10
+    if (ano === anoActual && mes === mesActual) {
+      return diaActual >= 10;
+    }
+
+    // Si es un mes pasado, siempre mostrar
+    return true;
+  }, [ano, mes]);
   const diasDelMes = new Date(ano, mes, 0).getDate();
 
   const nombreMes = useMemo(() => {
     const [a, m] = fechaSeleccionada.split("-").map(Number);
     return new Date(a, m - 1).toLocaleString("es", { month: "long", year: "numeric" });
   }, [fechaSeleccionada]);
+
+  // Estados para datos comparativos
+  const [ventasMesAnterior, setVentasMesAnterior] = useState([]);
+  const [ventasAnoAnterior, setVentasAnoAnterior] = useState([]);
+
+  // Calcular fechas para comparación
+  const fechaMesAnterior = useMemo(() => {
+    const fecha = new Date(ano, mes - 2, 1);
+    return {
+      mes: fecha.getMonth() + 1,
+      ano: fecha.getFullYear()
+    };
+  }, [ano, mes]);
+
+  const fechaAnoAnterior = useMemo(() => {
+    return {
+      mes: mes,
+      ano: ano - 1
+    };
+  }, [ano, mes]);
 
   const guardarVenta = async (form) => {
     try {
@@ -93,6 +129,23 @@ export const EncargadoDashboard = () => {
     if (el) el.scrollTo(0, 0);
   }, [fechaSeleccionada]);
 
+  // Cargar datos comparativos
+  useEffect(() => {
+    if (!mes || !ano) return;
+
+    // Cargar ventas mes anterior
+    encargadoServices
+      .resumenVentasDiarias(fechaMesAnterior.mes, fechaMesAnterior.ano)
+      .then((data) => setVentasMesAnterior(data))
+      .catch(() => setVentasMesAnterior([]));
+
+    // Cargar ventas año anterior
+    encargadoServices
+      .resumenVentasDiarias(fechaAnoAnterior.mes, fechaAnoAnterior.ano)
+      .then((data) => setVentasAnoAnterior(data))
+      .catch(() => setVentasAnoAnterior([]));
+  }, [fechaMesAnterior.mes, fechaMesAnterior.ano, fechaAnoAnterior.mes, fechaAnoAnterior.ano]);
+
   // Altura real del navbar para que el sticky no se solape (móvil/zoom)
   useEffect(() => {
     const nav = document.querySelector('nav.navbar.sticky-top');
@@ -116,6 +169,100 @@ export const EncargadoDashboard = () => {
   const promedioDiario = ventas.length > 0 ? totalVentas / ventas.length : 0;
   const proyeccionMensual = promedioDiario * diasDelMes;
 
+  // Calcular mejor día del mes
+  const mejorDiaData = useMemo(() => {
+    if (ventas.length === 0) return null;
+    const mejorDia = ventas.reduce((max, venta) =>
+      venta.monto > max.monto ? venta : max
+    );
+
+    return {
+      monto: mejorDia.monto,
+      dia: mejorDia.dia || 'N/A'
+    };
+  }, [ventas]);
+
+  // Calcular cambios vs mes anterior
+  const cambioMesAnterior = useMemo(() => {
+    if (ventasMesAnterior.length === 0) return null;
+    const totalAnterior = ventasMesAnterior.reduce((acc, item) => acc + item.monto, 0);
+    if (totalAnterior === 0) return null;
+
+    const cambio = ((totalVentas - totalAnterior) / totalAnterior) * 100;
+    return {
+      porcentaje: cambio,
+      texto: cambio > 0 ? `+${cambio.toFixed(1)}%` : `${cambio.toFixed(1)}%`,
+      color: cambio > 0 ? "text-success" : cambio < 0 ? "text-danger" : "text-muted"
+    };
+  }, [totalVentas, ventasMesAnterior]);
+
+  // Calcular cambios vs año anterior
+  const cambioAnoAnterior = useMemo(() => {
+    if (ventasAnoAnterior.length === 0) return null;
+    const totalAnoAnterior = ventasAnoAnterior.reduce((acc, item) => acc + item.monto, 0);
+    if (totalAnoAnterior === 0) return null;
+
+    const cambio = ((totalVentas - totalAnoAnterior) / totalAnoAnterior) * 100;
+    return {
+      porcentaje: cambio,
+      texto: cambio > 0 ? `+${cambio.toFixed(1)}%` : `${cambio.toFixed(1)}%`,
+      color: cambio > 0 ? "text-success" : cambio < 0 ? "text-danger" : "text-muted"
+    };
+  }, [totalVentas, ventasAnoAnterior]);
+
+  // Calcular tendencia de ventas (últimos 3 días vs 3 días anteriores)
+  const tendenciaVentas = useMemo(() => {
+    if (ventas.length < 6) return null;
+
+    const ventasOrdenadas = [...ventas].sort((a, b) => a.dia - b.dia);
+    const ultimos3 = ventasOrdenadas.slice(-3);
+    const anteriores3 = ventasOrdenadas.slice(-6, -3);
+
+    const promedioUltimos = ultimos3.reduce((acc, v) => acc + v.monto, 0) / 3;
+    const promedioAnteriores = anteriores3.reduce((acc, v) => acc + v.monto, 0) / 3;
+
+    if (promedioAnteriores === 0) return null;
+
+    const cambio = ((promedioUltimos - promedioAnteriores) / promedioAnteriores) * 100;
+
+    if (cambio > 5) {
+      return { icono: "📈", texto: "Subiendo", color: "text-success" };
+    } else if (cambio < -5) {
+      return { icono: "📉", texto: "Bajando", color: "text-danger" };
+    } else {
+      return { icono: "➡️", texto: "Estable", color: "text-warning" };
+    }
+  }, [ventas]);
+
+  // Información de festivos
+  const infoFestivos = useMemo(() => {
+    const hoyFestivo = esHoyFestivo();
+    const mananaFestivo = esMananaFestivo();
+    const proximoFestivo = getProximoFestivo();
+
+    if (hoyFestivo) {
+      return { icono: "🎉", texto: `Hoy es ${hoyFestivo}`, color: "text-warning" };
+    }
+
+    if (mananaFestivo) {
+      return { icono: "📅", texto: `Mañana: ${mananaFestivo}`, color: "text-info" };
+    }
+
+    if (proximoFestivo) {
+      const fecha = proximoFestivo.fecha;
+      const nombreDia = fecha.toLocaleDateString('es-ES', { weekday: 'long' });
+      const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+
+      return {
+        icono: "🗓️",
+        texto: `Próximo festivo: ${nombreDia} - ${fechaFormateada} - ${proximoFestivo.nombre}`,
+        color: "text-primary"
+      };
+    }
+
+    return null;
+  }, []);
+
   let bgClass = "bg-success-subtle";
   let textClass = "text-success";
   let icono = "✅";
@@ -130,36 +277,104 @@ export const EncargadoDashboard = () => {
   }
 
   return (
-    <div className="dashboard-container admin-bb">
+    <div className="dashboard-container admin-bb dashboard-with-navbar-ticker">
       {(user?.rol === "encargado" || user?.rol === "chef") && <PatchAnnouncement />}
 
-      {/* ===== Header compacto v2 ===== */}
-      <div className="ag-header mb-3">
+      {/* ===== Resumen Rápido - Dentro del dashboard pero pegado al navbar ===== */}
+      <div className="resumen-rapido-card-pegado">
+        <div className="resumen-rapido-content">
+          <div className="resumen-rapido-title">
 
-        <div className="ag-title-wrap">
-          <h1 className="ag-title">Resumen De Tu Restaurante</h1>
-          <p className="ag-subtitle">Dashboard principal con métricas de ventas y gastos del restaurante.</p>
-        </div>
-
-        {/* Controles Mes (compactos y centrados) */}
-        <div className="ag-monthbar">
-          <button className="ag-monthbtn" onClick={retrocederMes} aria-label="Mes anterior">←</button>
-
-          <div className="ag-monthpill">
-            {nombreMes}
-            {/* input real (oculto) para accesibilidad y teclado */}
-            <input
-              type="month"
-              className="ag-month-hidden"
-              value={fechaSeleccionada}
-              onChange={(e) => setFechaSeleccionada(e.target.value)}
-              aria-label="Seleccionar mes"
-            />
           </div>
 
-          <button className="ag-monthbtn" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
+          <div className="resumen-rapido-metrics">
+            {/* Información de festivos - PRIMERO */}
+            {infoFestivos && (
+              <div className="metric-item">
+                <span className="metric-icon">{infoFestivos.icono}</span>
+                <span className="metric-text"><strong className={infoFestivos.color}>{infoFestivos.texto}</strong></span>
+              </div>
+            )}
+
+            {/* Mejor día */}
+            {mejorDiaData && (
+              <div className="metric-item">
+                <span className="metric-icon">🥇</span>
+                <span className="metric-text">Mejor día: <strong className="text-warning">{mejorDiaData.monto.toFixed(0)}{simbolo}</strong> (día {mejorDiaData.dia})</span>
+              </div>
+            )}
+
+            {/* vs Mes anterior */}
+            {cambioMesAnterior && (
+              <div className="metric-item">
+                <span className="metric-icon">📈</span>
+                <span className="metric-text">vs Mes anterior: <strong className={cambioMesAnterior.color}>{cambioMesAnterior.texto}</strong></span>
+              </div>
+            )}
+
+            {/* vs Año anterior - solo mostrar cuando hay un año completo */}
+            {(ano < new Date().getFullYear() || (ano === new Date().getFullYear() && mes < new Date().getMonth() + 1)) && (
+              <div className="metric-item">
+                <span className="metric-icon">🚀</span>
+                <span className="metric-text">vs Año anterior:
+                  {cambioAnoAnterior ? (
+                    <strong className={cambioAnoAnterior.color}>{cambioAnoAnterior.texto}</strong>
+                  ) : (
+                    <strong className="text-muted">Faltan datos</strong>
+                  )}
+                </span>
+              </div>
+            )}
+
+            {/* Tendencia */}
+            {tendenciaVentas && (
+              <div className="metric-item">
+                <span className="metric-icon">{tendenciaVentas.icono}</span>
+                <span className="metric-text">Tendencia: <strong className={tendenciaVentas.color}>{tendenciaVentas.texto}</strong></span>
+              </div>
+            )}
+
+            {/* Promedio diario */}
+            <div className="metric-item">
+              <span className="metric-icon">💰</span>
+              <span className="metric-text">Promedio: <strong className="text-info">{promedioDiario.toFixed(0)}{simbolo}/día</strong></span>
+            </div>
+          </div>
         </div>
       </div>
+
+        {/* ===== Header con estilo de card ===== */}
+      <div className="ag-card header-card mb-3">
+        <div className="ag-card-header">
+          <div className="ag-icon">🏪</div>
+          <h1 className="header-title">Resumen De Tu Restaurante</h1>
+          <div className="header-content">
+
+
+          </div>
+        </div>
+
+        <div className="p-3">
+          {/* Controles Mes */}
+          <div className="month-controls">
+            <button className="month-btn" onClick={retrocederMes} aria-label="Mes anterior">←</button>
+
+            <div className="month-display">
+              <span className="month-text">{nombreMes}</span>
+              <input
+                type="month"
+                className="month-input-hidden"
+                value={fechaSeleccionada}
+                onChange={(e) => setFechaSeleccionada(e.target.value)}
+                aria-label="Seleccionar mes"
+              />
+            </div>
+
+            <button className="month-btn" onClick={avanzarMes} aria-label="Mes siguiente">→</button>
+          </div>
+        </div>
+      </div>
+
 
 
       {/* ===== VENTAS ===== */}
@@ -255,35 +470,39 @@ export const EncargadoDashboard = () => {
                 </div>
               </div>
             </div>
-            <div className="col-6">
-              <div className="ag-card h-100">
-                <div className="p-2 text-center">
-                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
-                    {icono}
+            {mostrarPorcentajeGasto && (
+              <div className="col-6">
+                <div className="ag-card h-100">
+                  <div className="p-2 text-center">
+                    <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
+                      {icono}
+                    </div>
+                    <div className={`fw-bold ${textClass}`} style={{ fontSize: '0.9rem' }}>
+                      {porcentaje.toFixed(1)}%
+                    </div>
+                    <div className="text-muted" style={{ fontSize: '0.7rem' }}>% Gastos</div>
                   </div>
-                  <div className={`fw-bold ${textClass}`} style={{ fontSize: '0.9rem' }}>
-                    {porcentaje.toFixed(1)}%
-                  </div>
-                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>% Gastos</div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="row align-items-center">
             <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch d-none d-md-flex">
               <ResumenCard icon="💸" color="info" label="Gastos actuales" value={gasto} simbolo={simbolo} />
 
-              <div className="card-brand p-3 text-center w-100">
-                <div
-                  className={`icono-circular rounded-circle d-inline-flex align-items-center justify-content-center mb-2 ${textClass}`}
-                  aria-hidden="true"
-                >
-                  {icono}
+              {mostrarPorcentajeGasto && (
+                <div className="card-brand p-3 text-center w-100">
+                  <div
+                    className={`icono-circular rounded-circle d-inline-flex align-items-center justify-content-center mb-2 ${textClass}`}
+                    aria-hidden="true"
+                  >
+                    {icono}
+                  </div>
+                  <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
+                  <div className={`fs-4 fw-bold ${textClass}`}>{porcentaje.toFixed(2)} %</div>
                 </div>
-                <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
-                <div className={`fs-4 fw-bold ${textClass}`}>{porcentaje.toFixed(2)} %</div>
-              </div>
+              )}
             </div>
 
             <div className="col-12 col-md-9 mt-3 mt-md-0">
