@@ -61,7 +61,7 @@ def forgot_password():
         user = Usuario.query.filter_by(email=email).first()
         if not user:
             return jsonify({'success': False, 'msg': 'Correo no registrado'}), 404
-        token = create_access_token(identity=str(user.id))
+        token = create_access_token(identity=str(user.id), expires_delta=timedelta(minutes=30))
         result = send_reset_email(email, token)
         if result['success']:
             return jsonify({'success': True, 'msg': 'Revisa tu correo electrónico', 'token': token}), 200
@@ -80,21 +80,18 @@ def reset_password():
         new_password = data.get("new_password")
         if not token or not new_password:
             return jsonify({"msg": "Faltan datos"}), 400
-        # DEBUG: Verificamos el contenido del token
+        # Verificamos el contenido del token
         try:
-            print("TOKEN RECIBIDO:", token)
             decoded = decode_token(token)
-            print("TOKEN DECODIFICADO:", decoded)
             user_id = decoded["sub"]
         except Exception as e:
-            print("ERROR AL DECODIFICAR TOKEN:", str(e))
             return jsonify({"msg": "Token inválido o expirado"}), 401
         user = db.session.get(Usuario, user_id)
         if not user:
             return jsonify({"msg": "Usuario no encontrado"}), 404
         user.password = generate_password_hash(new_password)
         db.session.commit()
-        return jsonify({"msg": "Contraseña actualizada correctamente"}), 200
+        return jsonify({"success": True, "msg": "Contraseña actualizada correctamente"}), 200
     except Exception as e:
         print("ERROR GENERAL:", str(e))
         return jsonify({"msg": "Error al cambiar contraseña", "error": str(e)}), 500
@@ -283,6 +280,11 @@ def eliminar_usuario(id):
         if user_to_delete.id == current_user_id:
             return jsonify({"error": "No puedes eliminar tu propia cuenta de administrador"}), 400
 
+        # Verificar si el usuario tiene gastos asociados
+        gastos_count = db.session.query(Gasto).filter_by(usuario_id=id).count()
+        if gastos_count > 0:
+            return jsonify({"error": f"No se puede eliminar el usuario. Tiene {gastos_count} gastos asociados"}), 400
+
         db.session.delete(user_to_delete)
         db.session.commit()
         return jsonify({"msg": "Usuario eliminado correctamente"}), 200
@@ -325,6 +327,9 @@ def login():
 
         if not user:
             return jsonify({"error": "Email no encontrado"}), 404
+
+        if user.status != "active":
+            return jsonify({"success": False, "msg": "Usuario inactivo, por favor contacte con el administrador."}), 403
 
         if not check_password_hash(user.password, data["password"]):
             return jsonify({"success": False, "msg": "Email o contraseña incorrectos"}), 401
@@ -2117,3 +2122,87 @@ def private():
         return resp, 200
     except Exception as e:
         return jsonify({"msg": "Error en /private", "error": str(e)}), 500
+
+
+# Endpoint para que el admin actualice sus datos personales
+@api.route('/profile/update', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    try:
+        current_user_id = int(get_jwt_identity())
+        current_user = Usuario.query.get(current_user_id)
+
+        if not current_user:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+        if current_user.rol != "admin":
+            return jsonify({"error": "Solo el admin puede actualizar datos personales"}), 403
+
+        data = request.get_json()
+
+        # Actualizar nombre si se proporciona
+        if data.get('nombre'):
+            current_user.nombre = data['nombre']
+
+        # Actualizar email si se proporciona
+        if data.get('email'):
+            # Verificar que el email no esté en uso por otro usuario
+            existing_user = Usuario.query.filter(Usuario.email == data['email'], Usuario.id != current_user_id).first()
+            if existing_user:
+                return jsonify({"error": "Este email ya está en uso"}), 400
+            current_user.email = data['email']
+
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "msg": "Datos actualizados correctamente",
+            "user": {
+                "nombre": current_user.nombre,
+                "email": current_user.email
+            }
+        }), 200
+
+    except Exception as e:
+        print("Error updating profile:", str(e))
+        return jsonify({"error": "Error al actualizar datos"}), 500
+
+
+# Endpoint para cambiar contraseña (todos los roles)
+@api.route('/profile/change-password', methods=['PUT'])
+@jwt_required()
+def change_password():
+    try:
+        current_user_id = int(get_jwt_identity())
+        current_user = Usuario.query.get(current_user_id)
+
+        if not current_user:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+        data = request.get_json()
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+
+        if not current_password or not new_password:
+            return jsonify({"error": "Faltan datos requeridos"}), 400
+
+        # Verificar contraseña actual
+        if not check_password_hash(current_user.password, current_password):
+            return jsonify({"error": "Contraseña actual incorrecta"}), 400
+
+        # Validar nueva contraseña
+        if len(new_password) < 6:
+            return jsonify({"error": "La nueva contraseña debe tener al menos 6 caracteres"}), 400
+
+        # Actualizar contraseña
+        current_user.password = generate_password_hash(new_password)
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "msg": "Contraseña actualizada correctamente"
+        }), 200
+
+    except Exception as e:
+        print("Error changing password:", str(e))
+        return jsonify({"error": "Error al cambiar contraseña"}), 500

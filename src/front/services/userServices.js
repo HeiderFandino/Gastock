@@ -63,26 +63,31 @@ userServices.login = async (formData) => {
   // Importante para no heredar ruta previa de otra cuenta:
   sessionStorage.removeItem("lastPrivatePath");
 
-  try {
-    const resp = await fetch(backendUrl + "/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    if (!resp.ok) throw Error("something went wrong");
-    const data = await resp.json();
+  const resp = await fetch(backendUrl + "/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData),
+  });
 
-    // Persistir token
-    sessionStorage.setItem("token", data.access_token);
+  const data = await resp
+    .json()
+    .catch(() => ({ msg: "Error al interpretar la respuesta" }));
 
-    // (Mantengo tus líneas tal cual, pero ojo: restaurante_moneda está guardando el nombre)
-    sessionStorage.setItem("restaurante_id", data.user.restaurante_id);
-    sessionStorage.setItem("restaurante_moneda", data.user.restaurante_nombre);
-
-    return data;
-  } catch (error) {
-    console.log(error);
+  if (!resp.ok) {
+    const error = new Error(data.msg || data.error || "Error de autenticación");
+    error.status = resp.status;
+    error.payload = data;
+    throw error;
   }
+
+  // Persistir token
+  sessionStorage.setItem("token", data.access_token);
+
+  // (Mantengo tus líneas tal cual, pero ojo: restaurante_moneda está guardando el nombre)
+  sessionStorage.setItem("restaurante_id", data.user.restaurante_id);
+  sessionStorage.setItem("restaurante_moneda", data.user.restaurante_nombre);
+
+  return data;
 };
 
 // ✅ Logout robusto: limpia TODO, incluida la lastPrivatePath
