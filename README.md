@@ -1,81 +1,77 @@
-# WebApp boilerplate with React JS and Flask API
+# Gastock
 
-Build web applications using React.js for the front end and python/flask for your backend API.
+Gastock es la plataforma que usamos para controlar la salud financiera de varios restaurantes desde un único panel. Combina un backend en Flask con un frontend en React para centralizar ventas, gastos, proveedores y usuarios por rol.
 
-- Documentation can be found here: https://4geeks.com/docs/start/react-flask-template
-- Here is a video on [how to use this template](https://www.loom.com/share/f37c6838b3f1496c95111e515e83dd9b)
-- Integrated with Pipenv for package managing.
-- Fast deployment to Render [in just a few steps here](https://4geeks.com/docs/start/deploy-to-render-com).
-- Use of .env file.
-- SQLAlchemy integration for database abstraction.
+## Características
+- Autenticación con JWT y recuperación de contraseña por correo.
+- Paneles diferenciados para administradores, encargados y chefs.
+- Registro de ventas, gastos y facturas con adjuntos y métricas de comparación mensual.
+- Gestión de restaurantes, proveedores y márgenes objetivo desde una sola consola.
+- Visualizaciones con Chart.js y Recharts para seguir KPIs clave.
 
-### 1) Installation:
+## Tecnologías
+- **Frontend:** React 18 + Vite, React Router, Bootstrap 5, Bootstrap Icons, FontAwesome, Chart.js, Recharts, React-Select.
+- **Backend:** Flask, SQLAlchemy, Alembic/Flask-Migrate, Flask-JWT-Extended, Flask-Mail, SendGrid.
+- **Herramientas:** Pipenv, Node 20, Python 3.13, Render (deploy), Dockerfile y Procfile listos para producción.
 
-> If you use Github Codespaces (recommended) or Gitpod this template will already come with Python, Node and the Posgres Database installed. If you are working locally make sure to install Python 3.10, Node 
-
-It is recomended to install the backend first, make sure you have Python 3.10, Pipenv and a database engine (Posgress recomended)
-
-1. Install the python packages: `$ pipenv install`
-2. Create a .env file based on the .env.example: `$ cp .env.example .env`
-3. Install your database engine and create your database, depending on your database you have to create a DATABASE_URL variable with one of the possible values, make sure you replace the valudes with your database information:
-
-| Engine    | DATABASE_URL                                        |
-| --------- | --------------------------------------------------- |
-| SQLite    | sqlite:////test.db                                  |
-| MySQL     | mysql://username:password@localhost:port/example    |
-| Postgress | postgres://username:password@localhost:5432/example |
-
-4. Migrate the migrations: `$ pipenv run migrate` (skip if you have not made changes to the models on the `./src/api/models.py`)
-5. Run the migrations: `$ pipenv run upgrade`
-6. Run the application: `$ pipenv run start`
-
-> Note: Codespaces users can connect to psql by typing: `psql -h localhost -U gitpod example`
-
-### Undo a migration
-
-You are also able to undo a migration by running
-
-```sh
-$ pipenv run downgrade
+## Estructura del proyecto
+```
+src/
+|- front/          # Aplicación React (páginas, hooks, servicios y estilos)
+|  |- components/
+|  |- pages/
+|  \- services/
+|- api/            # Blueprint Flask (modelos, rutas, emails, comandos)
+|- app.py          # Configuración principal de Flask
+\- wsgi.py
 ```
 
-### Backend Populate Table Users
+## Configuración rápida
+1. Clona el repositorio y ubícate en la carpeta del proyecto.
+2. Prepara un archivo .env (puedes partir del existente) y define:
+   - DATABASE_URL (PostgreSQL recomendado)
+   - JWT_SECRET_KEY
+   - EMAIL_USER y EMAIL_PASS (credenciales SMTP)
+   - EMAIL_SENDER (alias para los correos salientes)
+   - SENDGRID_API_KEY (para notificaciones transaccionales)
+   - FLASK_DEBUG=1 opcional para desarrollo
+   - En el frontend, VITE_BACKEND_URL apuntando al origen del API, por ejemplo http://localhost:3001
 
-To insert test users in the database execute the following command:
-
-```sh
-$ flask insert-test-users 5
+### Backend (Flask)
+```bash
+pipenv install
+pipenv run migrate      # crea las migraciones
+pipenv run upgrade      # aplica los cambios a la base de datos
+pipenv run start        # levanta la API en http://localhost:3001
 ```
 
-And you will see the following message:
-
+### Frontend (React)
+```bash
+npm install
+npm run dev             # UI en http://localhost:5173
 ```
-  Creating test users
-  test_user1@test.com created.
-  test_user2@test.com created.
-  test_user3@test.com created.
-  test_user4@test.com created.
-  test_user5@test.com created.
-  Users created successfully!
-```
+> Ejecuta ambos servicios en terminales separadas. El login usa sessionStorage, así que recuerda cerrar sesión desde la app o borrar datos del navegador cuando cambies de usuario.
 
-### **Important note for the database and the data inside it**
+## Scripts útiles
+- pipenv run insert-test-users 5 genera usuarios de prueba.
+- pipenv run downgrade revierte la última migración.
+- npm run build produce la versión optimizada para producción.
+- render_build.sh automatiza el build al desplegar en Render.
 
-Every Github codespace environment will have **its own database**, so if you're working with more people eveyone will have a different database and different records inside it. This data **will be lost**, so don't spend too much time manually creating records for testing, instead, you can automate adding records to your database by editing ```commands.py``` file inside ```/src/api``` folder. Edit line 32 function ```insert_test_data``` to insert the data according to your model (use the function ```insert_test_users``` above as an example). Then, all you need to do is run ```pipenv run insert-test-data```.
+## Modelos principales
+- Restaurante: datos de cada local y relaciones con usuarios, ventas y gastos.
+- Usuario: roles (admin, encargado, chef), estado y moneda preferida.
+- Venta: monto diario por turno y restaurante.
+- Gasto: categoría, proveedor, adjuntos y notas.
+- Proveedor: contacto, categoría y observaciones por restaurante.
+- FacturaAlbaran y MargenObjetivo: control documental y márgenes objetivo configurables.
 
-### Front-End Manual Installation:
+## Roles en la plataforma
+- **Admin:** gestiona restaurantes, usuarios, compara KPIs entre locales y consulta tendencias mensuales.
+- **Encargado:** registra ventas y gastos diarios, gestiona proveedores del local y revisa reportes rápidos.
+- **Chef:** consulta el presupuesto disponible, gastos por categoría y atajos operativos para el día a día.
 
--   Make sure you are using node version 20 and that you have already successfully installed and runned the backend.
+## Despliegue
+El proyecto incluye render.yaml, Dockerfile.render y Procfile para desplegar rápidamente en Render. Ajusta las variables de entorno en el panel de Render y utiliza render_build.sh como comando de build.
 
-1. Install the packages: `$ npm install`
-2. Start coding! start the webpack dev server `$ npm run start`
-
-## Publish your website!
-
-This boilerplate it's 100% read to deploy with Render.com and Heroku in a matter of minutes. Please read the [official documentation about it](https://4geeks.com/docs/start/deploy-to-render-com).
-
-### Contributors
-
-This template was built as part of the 4Geeks Academy [Coding Bootcamp](https://4geeksacademy.com/us/coding-bootcamp) by [Alejandro Sanchez](https://twitter.com/alesanchezr) and many other contributors. Find out more about our [Full Stack Developer Course](https://4geeksacademy.com/us/coding-bootcamps/part-time-full-stack-developer), and [Data Science Bootcamp](https://4geeksacademy.com/us/coding-bootcamps/datascience-machine-learning).
-
-You can find other templates and resources like this at the [school github page](https://github.com/4geeksacademy/).
+Listo. Con esto tienes una base clara para seguir desarrollando Gastock y presentarla sin depender del README genérico de la plantilla.
