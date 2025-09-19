@@ -318,7 +318,10 @@ export const EncargadoDashboard = () => {
 
       <div className="anuncio"> <h1>Esta pagina se trasladara a  <strong> <a href="http://www.gastock.es">www.gastock.es</a> 💪  </strong> <br />el link que usas actualmente sera deshabilitado pronto.</h1>
         <br />
-        <h3>No olvides de marcar  <a href="http://www.gastock.es">www.gastock.es</a> como favorito y anclarlo a la barra de marcadores ⬆️</h3>
+        <h3>Ahora puedes acceder desde tu movil📱o el ordenador 💻 a <a href="http://www.gastock.es">www.gastock.es</a> .</h3>
+        <br />
+
+        <h2>No olvides de marcar  <a href="http://www.gastock.es">www.gastock.es</a> como favorito y anclarlo a la barra de marcadores. ⬆️</h2>
       </div>
 
       {/* ===== Resumen Rápido - Dentro del dashboard pero pegado al navbar ===== */}
