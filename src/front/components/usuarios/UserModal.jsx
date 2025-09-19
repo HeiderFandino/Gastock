@@ -10,6 +10,7 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
     restaurante_id: "",
     status: "active"
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -41,9 +42,17 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onSave(formData);
+    } catch (error) {
+      console.error("Error guardando usuario", error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -76,6 +85,7 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
                     value={formData.nombre}
                     onChange={handleChange}
                     required
+                    disabled={saving}
                   />
                 </div>
 
@@ -89,6 +99,7 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    disabled={saving}
                   />
                 </div>
 
@@ -102,6 +113,7 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
                     value={formData.password}
                     onChange={handleChange}
                     required={!user}
+                    disabled={saving}
                   />
                   {user && (
                     <small className="form-text text-muted">
@@ -118,6 +130,7 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
                     value={formData.rol}
                     onChange={handleChange}
                     required
+                    disabled={saving}
                   >
                     <option value="encargado">👨‍💼 Encargado</option>
                     <option value="chef">👨‍🍳 Chef</option>
@@ -132,6 +145,7 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
                     value={formData.restaurante_id}
                     onChange={handleChange}
                     required
+                    disabled={saving}
                   >
                     <option value="">Selecciona restaurante...</option>
                     {Array.isArray(restaurants) && restaurants.map((r) => (
@@ -150,6 +164,7 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
                     value={formData.status}
                     onChange={handleChange}
                     required
+                    disabled={saving}
                   >
                     <option value="active">✅ Activo</option>
                     <option value="inactive">❌ Inactivo</option>
@@ -163,14 +178,26 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
                 type="button"
                 className="modal-btn-secondary"
                 onClick={onClose}
+                disabled={saving}
               >
                 ❌ Cancelar
               </button>
               <button
                 type="submit"
-                className="modal-btn-primary"
+                className={`modal-btn-primary ${saving ? "btn-loading" : ""}`}
+                disabled={saving}
+                aria-busy={saving}
               >
-                💾 {user ? "Actualizar" : "Crear"} Usuario
+                {saving ? (
+                  <>
+                    <span className="spinner-inline" aria-hidden="true" />
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <>
+                    💾 {user ? "Actualizar" : "Crear"} Usuario
+                  </>
+                )}
               </button>
             </div>
           </form>

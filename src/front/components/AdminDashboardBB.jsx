@@ -4,6 +4,7 @@ import adminService from "../services/adminService";
 import { QuickActionsAdmin } from "../components/QuickActionsAdmin";
 import { MonedaSimbolo } from "../services/MonedaSimbolo";
 import "../styles/AdminDashboardBB.css";
+import InlineLoader from "./InlineLoader";
 
 const AdminDashboardBB = () => {
   const navigate = useNavigate();
@@ -327,9 +328,9 @@ const AdminDashboardBB = () => {
 
       {/* Contenido */}
       <div className="gf-panel p-3 p-md-4 mb-4">
-        {cargando && <div className="w-100 text-center py-3">Cargando…</div>}
+        {cargando && <InlineLoader message="Actualizando datos" />}
 
-        <div className="rest-list">
+        <div className={`rest-list ${cargando ? "is-loading-blur" : ""}`}>
           {[...resumenes]
             .sort((a, b) => b.venta_total - a.venta_total)
             .map((r) => {

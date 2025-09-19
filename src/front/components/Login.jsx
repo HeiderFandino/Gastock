@@ -133,8 +133,20 @@ export const Login = () => {
           />
         </div>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? "Entrando..." : "Entrar"}
+        <button
+          type="submit"
+          className={`btn-primary ${loading ? "btn-loading" : ""}`}
+          disabled={loading}
+          aria-busy={loading}
+        >
+          {loading ? (
+            <>
+              <span className="spinner-inline" aria-hidden="true" />
+              <span>Entrando...</span>
+            </>
+          ) : (
+            "Entrar"
+          )}
         </button>
 
         <Link to="/forgot-password" className="forgot-password">

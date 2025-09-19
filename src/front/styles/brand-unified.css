@@ -1433,8 +1433,93 @@
   cursor: not-allowed;
 }
 
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(13, 42, 85, 0.35);
+  background: rgba(255, 255, 255, 0.75);
+  color: #0b1d3a;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(13, 42, 85, 0.08);
+  border-color: rgba(13, 42, 85, 0.55);
+  color: #091327;
+}
+
+.btn-ghost:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 /* ===== Background Styles ===== */
 .bg-gasto {
   background: var(--color-bg);
   min-height: 100vh;
+}
+
+/* === Inline loaders & button loading state === */
+.spinner-inline {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  animation: spinner-rotate 0.65s linear infinite;
+}
+
+.spinner-inline--dark {
+  border-color: rgba(11, 29, 58, 0.25);
+  border-top-color: #0b1d3a;
+}
+
+.spinner-inline--lg {
+  width: 22px;
+  height: 22px;
+  border-width: 3px;
+}
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btn-loading {
+  position: relative;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.btn-loading span + span {
+  margin-left: 0.6rem;
+}
+
+.inline-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #0b1d3a;
+  font-weight: 600;
+  padding: 1rem 0;
+}
+
+.inline-loader__text {
+  font-size: 0.95rem;
+}
+
+.is-loading-blur {
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }

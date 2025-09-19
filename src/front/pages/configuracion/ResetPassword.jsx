@@ -84,6 +84,7 @@ const ResetPassword = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength="6"
+              disabled={loading}
             />
           </div>
 
@@ -98,11 +99,24 @@ const ResetPassword = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength="6"
+              disabled={loading}
             />
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "Actualizando..." : "Actualizar contraseña"}
+          <button
+            type="submit"
+            className={`btn-primary ${loading ? "btn-loading" : ""}`}
+            disabled={loading}
+            aria-busy={loading}
+          >
+            {loading ? (
+              <>
+                <span className="spinner-inline" aria-hidden="true" />
+                <span>Actualizando...</span>
+              </>
+            ) : (
+              "Actualizar contraseña"
+            )}
           </button>
 
           <Link to="/" className="btn-ghost mt-2">

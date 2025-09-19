@@ -141,8 +141,20 @@ export const ProveedorForm = ({ proveedor = null, onSuccess, onCancel }) => {
             Cancelar
           </button>
         )}
-        <button type="submit" className="btn-gastock" disabled={loading}>
-          {loading ? "Guardando..." : "Guardar"}
+        <button
+          type="submit"
+          className={`btn-gastock ${loading ? "btn-loading" : ""}`}
+          disabled={loading}
+          aria-busy={loading}
+        >
+          {loading ? (
+            <>
+              <span className="spinner-inline" aria-hidden="true" />
+              <span>Guardando...</span>
+            </>
+          ) : (
+            "Guardar"
+          )}
         </button>
       </div>
     </form>

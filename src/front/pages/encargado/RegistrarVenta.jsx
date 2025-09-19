@@ -53,6 +53,9 @@ export const RegistrarVenta = () => {
     }
   };
 
+  const actionsClass = `d-flex gap-2 mt-4 ${estado.loading ? 'is-loading-blur' : ''}`;
+  const submitButtonClass = `btn btn-success d-inline-flex align-items-center ${estado.loading ? 'btn-loading' : ''}`;
+
   return (
     <div className="dashboard-container admin-bb">
       {/* ===== Header compacto v2 ===== */}
@@ -89,13 +92,20 @@ export const RegistrarVenta = () => {
                   value={form.fecha}
                   onChange={handleChange}
                   required
+                  disabled={estado.loading}
                 />
               </div>
 
               {/* Turno */}
               <div className="col-12 col-md-6">
                 <label className="form-label fw-bold">Turno</label>
-                <select name="turno" className="form-control" value={form.turno} onChange={handleChange}>
+                <select
+                  name="turno"
+                  className="form-control"
+                  value={form.turno}
+                  onChange={handleChange}
+                  disabled={estado.loading}
+                >
                   <option value="mañana">Mañana</option>
                   <option value="tarde">Tarde</option>
                   <option value="noche">Noche</option>
@@ -115,25 +125,36 @@ export const RegistrarVenta = () => {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
+                  disabled={estado.loading}
                 />
               </div>
             </div>
 
-            <div className="d-flex gap-2 mt-4">
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
+            <div className={actionsClass}>
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={() => navigate('/encargado/ventas')}
               >
                 Cancelar
               </button>
-              <button 
-                type="submit" 
-                className="btn btn-success" 
+              <button
+                type="submit"
+                className={submitButtonClass}
                 disabled={estado.loading}
+                aria-busy={estado.loading}
               >
-                <FiSave size={16} className="me-1" />
-                {estado.loading ? "Guardando..." : "Registrar Venta"}
+                {estado.loading ? (
+                  <>
+                    <span className="spinner-inline" aria-hidden="true" />
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <>
+                    <FiSave size={16} className="me-1" />
+                    <span>Registrar Venta</span>
+                  </>
+                )}
               </button>
             </div>
           </form>

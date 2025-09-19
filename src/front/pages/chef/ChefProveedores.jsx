@@ -3,6 +3,7 @@ import useGlobalReducer from "../../hooks/useGlobalReducer";
 import proveedorServices from "../../services/proveedorServices";
 import ProveedorModal from "../../components/shared/ProveedorModal";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import InlineLoader from "../../components/InlineLoader";
 
 export const ChefProveedores = () => {
   const { store } = useGlobalReducer();
@@ -102,12 +103,7 @@ export const ChefProveedores = () => {
       )}
 
       {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Cargando...</span>
-          </div>
-          <p className="mt-3 text-muted">Cargando proveedores...</p>
-        </div>
+        <InlineLoader message="Cargando proveedores..." />
       ) : proveedores.length === 0 ? (
         <div className="empty-state text-center py-5">
           <div className="empty-icon mb-3">🏢</div>

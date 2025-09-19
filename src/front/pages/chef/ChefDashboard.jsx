@@ -3,6 +3,7 @@ import GastosChef from "../../components/GastosChef";
 import { TortaCategorias } from "../../components/TortaCategorias";
 import chefServices from "../../services/chefServices";
 import { QuickActionsChef } from "../../components/QuickActionsChef";
+import InlineLoader from "../../components/InlineLoader";
 
 export const ChefDashboard = () => {
   const [datos, SetDatos] = useState([]);
@@ -53,12 +54,7 @@ export const ChefDashboard = () => {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Cargando...</span>
-          </div>
-          <p className="mt-3 text-muted">Cargando dashboard...</p>
-        </div>
+        <InlineLoader message="Cargando dashboard..." />
       </div>
     );
   }
