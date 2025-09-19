@@ -170,6 +170,7 @@ export const GastoForm = () => {
             className="gf-date-input"
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
+            disabled={loading}
           />
         </div>
 
@@ -201,6 +202,7 @@ export const GastoForm = () => {
                   placeholder="Selecciona un proveedor..."
                   isClearable
                   isSearchable
+                  isDisabled={loading}
                 />
               </div>
 
@@ -212,6 +214,7 @@ export const GastoForm = () => {
                   value={gasto.categoria}
                   onChange={(e) => handleInputChange(index, "categoria", e.target.value)}
                   placeholder="Ej: Alimentos, Bebidas..."
+                  disabled={loading}
                 />
               </div>
 
@@ -223,6 +226,7 @@ export const GastoForm = () => {
                   value={gasto.monto}
                   onChange={(e) => handleInputChange(index, "monto", e.target.value)}
                   placeholder="0.00 (permite cálculos)"
+                  disabled={loading}
                 />
               </div>
 
@@ -234,6 +238,7 @@ export const GastoForm = () => {
                   value={gasto.nota}
                   onChange={(e) => handleInputChange(index, "nota", e.target.value)}
                   placeholder="Opcional..."
+                  disabled={loading}
                 />
               </div>
 
@@ -244,6 +249,7 @@ export const GastoForm = () => {
                     type="button"
                     className="gf-remove-btn"
                     onClick={() => eliminarGasto(index)}
+                    disabled={loading}
                     aria-label="Eliminar gasto"
                     title="Eliminar este gasto"
                   >
@@ -255,12 +261,24 @@ export const GastoForm = () => {
           </div>
         ))}
 
-        <div className="d-flex gap-3 mt-4">
+        <div className={`d-flex gap-3 mt-4 ${loading ? "is-loading-blur" : ""}`}>
           <button className="btn-gastock-outline" onClick={agregarGasto} disabled={loading}>
             + Añadir otro gasto
           </button>
-          <button className="btn-gastock" onClick={registrarGastos} disabled={loading}>
-            {loading ? "Registrando..." : "Registrar Gastos"}
+          <button
+            className={`btn-gastock ${loading ? "btn-loading" : ""}`}
+            onClick={registrarGastos}
+            disabled={loading}
+            aria-busy={loading}
+          >
+            {loading ? (
+              <>
+                <span className="spinner-inline" aria-hidden="true" />
+                <span>Registrando...</span>
+              </>
+            ) : (
+              "Registrar Gastos"
+            )}
           </button>
         </div>
 

@@ -10,6 +10,7 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
     direccion: "",
     categoria: ""
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (proveedor && modo === "editar") {
@@ -33,6 +34,12 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
     }
   }, [proveedor, modo, show]);
 
+  useEffect(() => {
+    if (!show) {
+      setSaving(false);
+    }
+  }, [show]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -40,11 +47,16 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
+
     try {
+      setSaving(true);
       const dataToSend = modo === "editar" ? { ...proveedor, ...formData } : formData;
       await onSuccess(dataToSend);
     } catch (error) {
       console.error('Error al guardar proveedor:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -80,6 +92,7 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
                     value={formData.nombre}
                     onChange={handleChange}
                     required
+                    disabled={saving}
                   />
                 </div>
 
@@ -92,6 +105,7 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
                     placeholder="Nombre del contacto principal"
                     value={formData.contacto}
                     onChange={handleChange}
+                    disabled={saving}
                   />
                 </div>
 
@@ -104,6 +118,7 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
                     placeholder="Número de contacto"
                     value={formData.telefono}
                     onChange={handleChange}
+                    disabled={saving}
                   />
                 </div>
 
@@ -116,6 +131,7 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
                     placeholder="proveedor@email.com"
                     value={formData.email}
                     onChange={handleChange}
+                    disabled={saving}
                   />
                 </div>
 
@@ -126,6 +142,7 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
                     className="form-select"
                     value={formData.categoria}
                     onChange={handleChange}
+                    disabled={saving}
                   >
                     <option value="">Selecciona categoría...</option>
                     <option value="alimentos">🍞 Alimentos</option>
@@ -145,6 +162,7 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
                     placeholder="Dirección del proveedor"
                     value={formData.direccion}
                     onChange={handleChange}
+                    disabled={saving}
                   />
                 </div>
               </div>
@@ -155,14 +173,26 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
                 type="button"
                 className="modal-btn-secondary"
                 onClick={onHide}
+                disabled={saving}
               >
                 ❌ Cancelar
               </button>
               <button
                 type="submit"
-                className="modal-btn-primary"
+                className={`modal-btn-primary ${saving ? "btn-loading" : ""}`}
+                disabled={saving}
+                aria-busy={saving}
               >
-                💾 {modo === "editar" ? "Actualizar" : "Registrar"} Proveedor
+                {saving ? (
+                  <>
+                    <span className="spinner-inline" aria-hidden="true" />
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <>
+                    💾 {modo === "editar" ? "Actualizar" : "Registrar"} Proveedor
+                  </>
+                )}
               </button>
             </div>
           </form>

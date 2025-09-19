@@ -7,9 +7,11 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState(null);
   const [emailSent, setEmailSent] = useState(false);
+  const [sending, setSending] = useState(false);
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSending(true);
     try {
       const resp = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/forgot-password`, {
         method: "POST",
@@ -26,6 +28,8 @@ const ForgotPassword = () => {
     } catch (error) {
       console.error(error);
       setMessage("Error al enviar el correo.");
+    } finally {
+      setSending(false);
     }
   };
   return (
@@ -47,19 +51,26 @@ const ForgotPassword = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={sending}
             />
           </div>
-          <button type="submit" className="btn-primary">Enviar</button>
-
-          <Link
-            to="/"
-            className="btn-primary mt-2"
-            style={{
-              textDecoration: "none",
-              display: "inline-block",
-              textAlign: "center"
-            }}
+          <button
+            type="submit"
+            className={`btn-primary ${sending ? "btn-loading" : ""}`}
+            disabled={sending}
+            aria-busy={sending}
           >
+            {sending ? (
+              <>
+                <span className="spinner-inline" aria-hidden="true" />
+                <span>Enviando...</span>
+              </>
+            ) : (
+              "Enviar"
+            )}
+          </button>
+
+          <Link to="/" className="btn-ghost mt-2">
             Volver al inicio
           </Link>
         </form>
@@ -68,15 +79,7 @@ const ForgotPassword = () => {
       {emailSent && (
         <div className="text-center mt-3">
           <p className="text-muted mb-3">Revisa tu bandeja de entrada</p>
-          <Link
-            to="/"
-            className="btn-primary"
-            style={{
-              textDecoration: "none",
-              display: "inline-block",
-              textAlign: "center"
-            }}
-          >
+          <Link to="/" className="btn-ghost">
             Volver al inicio
           </Link>
         </div>

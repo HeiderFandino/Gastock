@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { PatchAnnouncement } from "../../components/PatchAnnouncement";
 import { FiTrendingUp, FiDollarSign, FiPercent, FiPlus } from "react-icons/fi";
 import { getProximoFestivo, esHoyFestivo, esMananaFestivo } from "../../utils/festivosBarcelona";
+import InlineLoader from "../../components/InlineLoader";
 
 export const EncargadoDashboard = () => {
   const { store } = useGlobalReducer();
@@ -22,6 +23,7 @@ export const EncargadoDashboard = () => {
   const [gastoDatos, setGastoDatos] = useState([]);
   const [resumenMensual, setResumenMensual] = useState(null);
   const [ventas, setVentas] = useState([]);
+  const [loading, setLoading] = useState(true);
   const user = store.user;
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mensaje, setMensaje] = useState("");
@@ -104,30 +106,56 @@ export const EncargadoDashboard = () => {
   useEffect(() => {
     if (!mes || !ano) return;
 
-    encargadoServices
-      .resumenGastoDiario(mes, ano)
-      .then((resumen) => {
-        const data = resumen.map((item) => ({
+    let isMounted = true;
+
+    const cargarDatos = async () => {
+      setLoading(true);
+
+      const [gastoDiario, resumenMensualResp, ventasResp] = await Promise.allSettled([
+        encargadoServices.resumenGastoDiario(mes, ano),
+        encargadoServices.resumenGastoMensual(mes, ano),
+        encargadoServices.resumenVentasDiarias(mes, ano)
+      ]);
+
+      if (!isMounted) return;
+
+      if (gastoDiario.status === "fulfilled" && Array.isArray(gastoDiario.value)) {
+        const data = gastoDiario.value.map((item) => ({
           dia: Number(item.dia),
           porcentaje: Number(item.porcentaje),
         }));
         setGastoDatos(data);
-      })
-      .catch(console.error);
+      } else if (gastoDiario.status === "rejected") {
+        console.error("Error al cargar gasto diario", gastoDiario.reason);
+        setGastoDatos([]);
+      }
 
-    encargadoServices
-      .resumenGastoMensual(mes, ano)
-      .then((resumen) => setResumenMensual(resumen))
-      .catch(console.error);
+      if (resumenMensualResp.status === "fulfilled") {
+        setResumenMensual(resumenMensualResp.value);
+      } else if (resumenMensualResp.status === "rejected") {
+        console.error("Error al cargar resumen mensual", resumenMensualResp.reason);
+        setResumenMensual(null);
+      }
 
-    encargadoServices
-      .resumenVentasDiarias(mes, ano)
-      .then((data) => setVentas(data))
-      .catch(console.error);
+      if (ventasResp.status === "fulfilled" && Array.isArray(ventasResp.value)) {
+        setVentas(ventasResp.value);
+      } else if (ventasResp.status === "rejected") {
+        console.error("Error al cargar ventas diarias", ventasResp.reason);
+        setVentas([]);
+      }
+
+      setLoading(false);
+    };
+
+    cargarDatos();
 
     const el = document.getElementsByClassName("custom-sidebar")[0];
     if (el) el.scrollTo(0, 0);
-  }, [fechaSeleccionada]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fechaSeleccionada, mes, ano]);
 
   // Cargar datos comparativos
   useEffect(() => {
@@ -171,7 +199,7 @@ export const EncargadoDashboard = () => {
 
   // Calcular mejor día del mes
   const mejorDiaData = useMemo(() => {
-    if (ventas.length === 0) return null;
+  if (ventas.length === 0) return null;
     const mejorDia = ventas.reduce((max, venta) =>
       venta.monto > max.monto ? venta : max
     );
@@ -262,6 +290,14 @@ export const EncargadoDashboard = () => {
 
     return null;
   }, []);
+
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <InlineLoader message="Cargando datos del encargado..." />
+      </div>
+    );
+  }
 
   let bgClass = "bg-success-subtle";
   let textClass = "text-success";
