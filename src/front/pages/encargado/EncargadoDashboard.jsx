@@ -199,7 +199,7 @@ export const EncargadoDashboard = () => {
 
   // Calcular mejor día del mes
   const mejorDiaData = useMemo(() => {
-  if (ventas.length === 0) return null;
+    if (ventas.length === 0) return null;
     const mejorDia = ventas.reduce((max, venta) =>
       venta.monto > max.monto ? venta : max
     );
@@ -316,6 +316,11 @@ export const EncargadoDashboard = () => {
     <div className="dashboard-container admin-bb dashboard-with-navbar-ticker">
       {(user?.rol === "encargado" || user?.rol === "chef") && <PatchAnnouncement />}
 
+      <div className="anuncio"> <h1>Esta pagina se trasladara a  <strong> <a href="http://www.gastock.es">www.gastock.es</a> 💪  </strong> <br />el link que usas actualmente sera deshabilitado pronto.</h1>
+        <br />
+        <h3>No olvides de marcar  <a href="http://www.gastock.es">www.gastock.es</a> como favorito y anclarlo a la barra de marcadores ⬆️</h3>
+      </div>
+
       {/* ===== Resumen Rápido - Dentro del dashboard pero pegado al navbar ===== */}
       <div className="resumen-rapido-card-pegado">
         <div className="resumen-rapido-content">
@@ -379,7 +384,7 @@ export const EncargadoDashboard = () => {
         </div>
       </div>
 
-        {/* ===== Header con estilo de card ===== */}
+      {/* ===== Header con estilo de card ===== */}
       <div className="ag-card header-card mb-3">
         <div className="ag-card-header">
           <div className="ag-icon">🏪</div>
