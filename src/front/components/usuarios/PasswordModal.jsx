@@ -18,7 +18,7 @@ const PasswordModal = ({ isOpen, onClose, onConfirm }) => {
 
   return (
     <div className="modal fade show brand-modal" style={{ display: 'block' }} tabIndex="-1">
-      <div className="modal-dialog modal-dialog-centered modal-sm">
+      <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
             <div className="modal-icon">🔐</div>

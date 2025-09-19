@@ -41,6 +41,8 @@ import ConfigChef from "./pages/configuracion/ConfigChef.jsx";
 import AdminRestaurante from "./pages/admin/AdminRestaurante.jsx";
 import { DetalleGastosMensual } from "./components/shared/DetalleGastosMensual.jsx";
 import { GastoForm } from "./components/GastoForm";
+import ForgotPage from "./pages/configuracion/ForgotPage.jsx";
+import ResetPage from "./pages/configuracion/ResetPage.jsx";
 
 
 
@@ -49,6 +51,8 @@ export const router = createBrowserRouter(
     <>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPage />} />
+      <Route path="/reset" element={<ResetPage />} />
 
 
 

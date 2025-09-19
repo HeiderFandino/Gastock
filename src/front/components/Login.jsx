@@ -80,8 +80,10 @@ export const Login = () => {
 
       navigate(destinoPorRol(data.user.rol), { replace: true });
     } catch (err) {
-      if (err.response?.data?.msg) {
-        setErrorMessage(err.response.data.msg);
+      if (err.payload?.msg) {
+        setErrorMessage(err.payload.msg);
+      } else if (err.message) {
+        setErrorMessage(err.message);
       } else {
         setErrorMessage("Error de conexión con el servidor");
       }

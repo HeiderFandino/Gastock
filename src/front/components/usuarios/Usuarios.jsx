@@ -92,7 +92,8 @@ const Users = () => {
       );
       const result = await res.json();
       if (!res.ok) {
-        alert(result.error || "Error al guardar usuario");
+        setMessage(result.error || "Error al guardar usuario");
+        setTimeout(() => setMessage(""), 6000);
         return;
       }
 
@@ -105,6 +106,8 @@ const Users = () => {
       setTimeout(() => setMessage(""), 4000);
     } catch (err) {
       console.error("Error al guardar usuario", err);
+      setMessage("Error de conexión al guardar usuario");
+      setTimeout(() => setMessage(""), 6000);
     }
   };
 
@@ -117,7 +120,8 @@ const Users = () => {
       });
       const result = await res.json();
       if (!res.ok) {
-        alert(result.error || "Error al eliminar usuario");
+        setMessage(result.error || "Error al eliminar usuario");
+        setTimeout(() => setMessage(""), 6000);
         return;
       }
 
@@ -158,7 +162,10 @@ const Users = () => {
       const result = await res.json();
 
       if (!res.ok) {
-        alert(result.error || "Error al actualizar estado");
+        setMessage(result.error || "Error al actualizar estado");
+        setTimeout(() => setMessage(""), 6000);
+        setShowPasswordModal(false);
+        setUserToToggle(null);
         return;
       }
 
@@ -171,7 +178,10 @@ const Users = () => {
       setUserToToggle(null);
     } catch (err) {
       console.error("Error al actualizar estado del usuario", err);
-      alert("Error en la solicitud");
+      setMessage("Error de conexión al actualizar estado");
+      setTimeout(() => setMessage(""), 6000);
+      setShowPasswordModal(false);
+      setUserToToggle(null);
     }
   };
 

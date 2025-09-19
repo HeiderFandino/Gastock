@@ -27,11 +27,11 @@ export const Home = () => {
       >
         <div className="auth-right-inner">
           <h1 className="hero-title">
-            Gestiona<br />
-            tus gastos
+            Tus gastos<br />
+            bajo control
           </h1>
           <p className="hero-subtitle">
-            Inicia sesión para llevar un control de tu inversión culinaria.
+            Accede y gestiona tus gastos fácilmente.
           </p>
         </div>
       </section>
