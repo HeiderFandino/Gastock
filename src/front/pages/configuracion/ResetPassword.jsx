@@ -105,18 +105,7 @@ const ResetPassword = () => {
             {loading ? "Actualizando..." : "Actualizar contraseña"}
           </button>
 
-          <Link
-            to="/"
-            className="btn-primary mt-2"
-            style={{
-              textDecoration: "none",
-              display: "inline-block",
-              textAlign: "center",
-              background: "transparent",
-              border: "1px solid #0b1d3a",
-              color: "#0b1d3a"
-            }}
-          >
+          <Link to="/" className="btn-ghost mt-2">
             Volver al inicio
           </Link>
         </form>
@@ -136,22 +125,7 @@ const ResetPassword = () => {
           <p className="text-muted mb-3">
             Ya puedes iniciar sesión con tu nueva contraseña
           </p>
-          <Link
-            to="/"
-            className="btn-primary"
-            style={{
-              textDecoration: "none",
-              display: "inline-block",
-              textAlign: "center",
-              width: "100%",
-              padding: "0.7rem 1rem",
-              borderRadius: "8px",
-              background: "linear-gradient(180deg, #0d2a55, #0b1d3a 70%)",
-              color: "white",
-              border: "none",
-              fontWeight: "600"
-            }}
-          >
+          <Link to="/" className="btn-primary btn-block">
             Volver al inicio
           </Link>
         </div>
@@ -159,15 +133,7 @@ const ResetPassword = () => {
 
       {!token && !success && (
         <div className="text-center mt-3">
-          <Link
-            to="/"
-            className="btn-primary"
-            style={{
-              textDecoration: "none",
-              display: "inline-block",
-              textAlign: "center"
-            }}
-          >
+          <Link to="/" className="btn-ghost">
             Volver al inicio
           </Link>
         </div>
