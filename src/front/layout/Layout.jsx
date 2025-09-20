@@ -6,7 +6,7 @@ import { Sidebar } from "../components/Sidebar";
 import userServices from "../services/userServices";
 
 export const Layout = () => {
-  const { store } = useGlobalReducer();
+  const { store, dispatch } = useGlobalReducer();
   const user = store.user;
   const role = user?.rol || "admin";
 

@@ -8,8 +8,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import adminService from "../../../services/adminService";
-import "../../../styles/EncargadoDashboard.css";
+import adminService from "../../services/adminService";
+import "../../styles/EncargadoDashboard.css";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 

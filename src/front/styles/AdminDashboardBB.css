@@ -285,7 +285,11 @@
 }
 
 .tendencia-box {
-  background: linear-gradient(135deg, rgba(106, 90, 205, 0.1), rgba(106, 90, 205, 0.05));
+  background: linear-gradient(
+    135deg,
+    rgba(106, 90, 205, 0.1),
+    rgba(106, 90, 205, 0.05)
+  );
   border-color: rgba(106, 90, 205, 0.3);
   padding: 0.4rem !important;
   min-height: auto;
@@ -326,7 +330,11 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.2rem 0.3rem;
-  background: linear-gradient(135deg, rgba(106, 90, 205, 0.2), rgba(106, 90, 205, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(106, 90, 205, 0.2),
+    rgba(106, 90, 205, 0.1)
+  );
   border-radius: 6px;
   border: 1px solid rgba(106, 90, 205, 0.3);
   box-shadow: 0 1px 3px rgba(106, 90, 205, 0.1);
@@ -547,8 +555,9 @@
 }
 
 .btn-ver-todo:hover {
-  background: var(--color-primary-dark);
+  background: #4484f2;
   transform: translateY(-1px);
+  color: #ffffff;
 }
 
 /* Desktop */

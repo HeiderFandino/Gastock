@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import userServices from "../services/userServices";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import "../styles/Login.css"; // 👈 nuevo import para estilos
+import "../styles/login.css";
 
 // ACL simple para validar si una ruta privada es accesible por rol
 const ACL = [

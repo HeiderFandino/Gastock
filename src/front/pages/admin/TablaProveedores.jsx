@@ -1,7 +1,7 @@
 // src/front/pages/admin/VistaGastos/TablaProveedores.jsx
 import React, { useEffect, useState } from "react";
-import adminService from "../../../services/adminService";
-import "../../../styles/EncargadoDashboard.css";
+import adminService from "../../services/adminService";
+import "../../styles/EncargadoDashboard.css";
 
 const nombresMes = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 

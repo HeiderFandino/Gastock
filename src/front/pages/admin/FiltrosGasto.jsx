@@ -1,6 +1,6 @@
 // src/front/pages/admin/VistaGastos/FiltrosGasto.jsx
 import React from "react";
-import "../../../styles/EncargadoDashboard.css";
+import "../../styles/EncargadoDashboard.css";
 
 const FiltrosGasto = () => {
   return (

@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ⬇️ Mantén tus componentes como ya los tienes
-import ResumenVentas from "./VistaVentas/ResumenVentas";
-import VentasPorRestauranteChart from "./VistaVentas/VentasPorRestauranteChart";
-import TablaTopRestaurantes from "./VistaVentas/TablaTopRestaurantes";
-import EvolucionVentasMensual from "./VistaVentas/EvolucionVentasMensual";
+import ResumenVentas from "./ResumenVentas";
+import VentasPorRestauranteChart from "./VentasPorRestauranteChart";
+import TablaTopRestaurantes from "./TablaTopRestaurantes";
+import EvolucionVentasMensual from "./EvolucionVentasMensual";
 // (Opcional) si tienes filtros para ventas
 // import FiltrosVentas from "./VistaVentas/FiltrosVentas";
 
