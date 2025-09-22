@@ -436,7 +436,7 @@
   align-items: center;
   gap: 1.5rem;
   white-space: nowrap;
-  animation: scroll-left 23s linear infinite;
+  animation: scroll-left 25s linear infinite;
   padding: 0 1rem;
 }
 
@@ -492,7 +492,7 @@
 /* Responsive para resumen rápido */
 @media (max-width: 767.98px) {
   .resumen-rapido-content {
-    animation: scroll-left 18s linear infinite;
+    animation: scroll-left 25s linear infinite;
   }
 
   @keyframes scroll-left {
@@ -515,7 +515,7 @@
 
 @media (max-width: 575.98px) {
   .resumen-rapido-content {
-    animation: scroll-left 15s linear infinite;
+    animation: scroll-left 25s linear infinite;
   }
 
   @keyframes scroll-left {
