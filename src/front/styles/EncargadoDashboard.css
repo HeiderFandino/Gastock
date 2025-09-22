@@ -436,7 +436,9 @@
   align-items: center;
   gap: 1.5rem;
   white-space: nowrap;
-  animation: scroll-left 25s linear infinite;
+
+  animation: scroll-left 30s linear infinite;
+
   padding: 0 1rem;
 }
 
@@ -541,3 +543,4 @@
     gap: 1rem;
   }
 }
+
