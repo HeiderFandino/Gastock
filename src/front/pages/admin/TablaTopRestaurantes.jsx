@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import adminService from "../../../services/adminService";
+import adminService from "../../services/adminService";
 import { useSearchParams } from "react-router-dom";
-import "../../../styles/EncargadoDashboard.css";
+import "../../styles/EncargadoDashboard.css";
 
 const TablaTopRestaurantes = ({ mes: mesProp, ano: anoProp }) => {
   const [searchParams] = useSearchParams();

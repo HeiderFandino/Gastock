@@ -22,7 +22,6 @@ import './styles/AdminRestaurantDetail.css';
 import './styles/AdminGastos.css';
 import './styles/AdminDashboardBB.css';
 import './styles/Ajustes.css';
-import './styles/Gastoform.css';
 import './styles/PasswordModal.css';
 import './styles/ProveedorForm.css';
 import './styles/ProveedorRestauranteDetail.css';
