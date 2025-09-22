@@ -436,7 +436,9 @@
   align-items: center;
   gap: 1.5rem;
   white-space: nowrap;
-  animation: scroll-left 25s linear infinite;
+
+  animation: scroll-left 30s linear infinite;
+
   padding: 0 1rem;
 }
 
@@ -542,6 +544,7 @@
   }
 }
 
+<<<<<<< HEAD
 /* ===== Pantallas muy grandes (más de 2000px) ===== */
 @media (min-width: 2000px) {
   .resumen-rapido-content {
@@ -557,3 +560,5 @@
     }
   }
 }
+=======
+>>>>>>> 5cbc23bde1538da2e899a82c5f86591fccedd731
