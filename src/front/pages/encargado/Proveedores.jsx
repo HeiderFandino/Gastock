@@ -130,9 +130,9 @@ export const Proveedores = () => {
                     <div className="text-muted small mb-1">
                       📋 {p.categoria || "Sin categoría"}
                     </div>
-                    {p.contacto && (
+                    {p.email_contacto && (
                       <div className="text-muted small mb-1">
-                        👤 {p.contacto}
+                        📧 {p.email_contacto}
                       </div>
                     )}
                     {p.telefono && (
@@ -169,7 +169,7 @@ export const Proveedores = () => {
                 <tr>
                   <th>🏢 Proveedor</th>
                   <th>📋 Categoría</th>
-                  <th>👤 Contacto</th>
+                  <th>📧 Email</th>
                   <th>📞 Teléfono</th>
                   <th className="text-end">Acciones</th>
                 </tr>
@@ -184,7 +184,7 @@ export const Proveedores = () => {
                       )}
                     </td>
                     <td>{p.categoria || "—"}</td>
-                    <td>{p.contacto || "—"}</td>
+                    <td>{p.email_contacto || "—"}</td>
                     <td>{p.telefono || "—"}</td>
                     <td className="text-end">
                       <button

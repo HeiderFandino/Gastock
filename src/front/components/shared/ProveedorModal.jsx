@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
+import proveedorServices from "../../services/proveedorServices";
 // Estilos ya incluidos en brand-unified.css
 
 const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) => {
   const [formData, setFormData] = useState({
     nombre: "",
-    contacto: "",
+    email_contacto: "",
     telefono: "",
-    email: "",
     direccion: "",
     categoria: ""
   });
@@ -16,18 +16,16 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
     if (proveedor && modo === "editar") {
       setFormData({
         nombre: proveedor.nombre || "",
-        contacto: proveedor.contacto || "",
+        email_contacto: proveedor.email_contacto || "",
         telefono: proveedor.telefono || "",
-        email: proveedor.email || "",
         direccion: proveedor.direccion || "",
         categoria: proveedor.categoria || ""
       });
     } else {
       setFormData({
         nombre: "",
-        contacto: "",
+        email_contacto: "",
         telefono: "",
-        email: "",
         direccion: "",
         categoria: ""
       });
@@ -52,9 +50,28 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
     try {
       setSaving(true);
       const dataToSend = modo === "editar" ? { ...proveedor, ...formData } : formData;
-      await onSuccess(dataToSend);
+
+      // Obtener el restaurante_id del usuario
+      const token = sessionStorage.getItem("token");
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      const restaurante_id = user?.restaurante_id;
+
+      if (!restaurante_id) {
+        throw new Error("No se encontró el ID del restaurante");
+      }
+
+      const payload = { ...dataToSend, restaurante_id };
+
+      if (modo === "editar") {
+        await proveedorServices.editarProveedor(proveedor.id, payload);
+      } else {
+        await proveedorServices.crearProveedor(payload);
+      }
+
+      await onSuccess();
     } catch (error) {
       console.error('Error al guardar proveedor:', error);
+      alert('Error al guardar el proveedor: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -80,8 +97,8 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div className="modal-body">
-              <div className="row g-3">
+            <div className="modal-body px-3 py-3">
+              <div className="row g-2">
                 <div className="col-12">
                   <label className="form-label">🏢 Nombre del proveedor</label>
                   <input
@@ -97,45 +114,19 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label">👤 Persona de contacto</label>
-                  <input
-                    type="text"
-                    name="contacto"
-                    className="form-control"
-                    placeholder="Nombre del contacto principal"
-                    value={formData.contacto}
-                    onChange={handleChange}
-                    disabled={saving}
-                  />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">📞 Teléfono</label>
-                  <input
-                    type="text"
-                    name="telefono"
-                    className="form-control"
-                    placeholder="Número de contacto"
-                    value={formData.telefono}
-                    onChange={handleChange}
-                    disabled={saving}
-                  />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">📧 Email</label>
+                  <label className="form-label">📧 Email de contacto</label>
                   <input
                     type="email"
-                    name="email"
+                    name="email_contacto"
                     className="form-control"
-                    placeholder="proveedor@email.com"
-                    value={formData.email}
+                    placeholder="contacto@proveedor.com"
+                    value={formData.email_contacto}
                     onChange={handleChange}
                     disabled={saving}
                   />
                 </div>
 
-                <div className="col-md-6">
+                <div className="col-12">
                   <label className="form-label">📋 Categoría</label>
                   <select
                     name="categoria"
@@ -153,7 +144,20 @@ const ProveedorModal = ({ show, onHide, onSuccess, proveedor, modo = "crear" }) 
                   </select>
                 </div>
 
-                <div className="col-md-6">
+                <div className="col-12">
+                  <label className="form-label">📞 Teléfono</label>
+                  <input
+                    type="text"
+                    name="telefono"
+                    className="form-control"
+                    placeholder="Número de contacto"
+                    value={formData.telefono}
+                    onChange={handleChange}
+                    disabled={saving}
+                  />
+                </div>
+
+                <div className="col-12">
                   <label className="form-label">📍 Dirección</label>
                   <input
                     type="text"
