@@ -492,15 +492,15 @@
 /* Responsive para resumen rápido */
 @media (max-width: 767.98px) {
   .resumen-rapido-content {
-    animation: scroll-left 25s linear infinite;
+    animation: scroll-left-mobile 15s linear infinite;
   }
 
-  @keyframes scroll-left {
+  @keyframes scroll-left-mobile {
     0% {
       transform: translateX(100%);
     }
     100% {
-      transform: translateX(-150%);
+      transform: translateX(-350%);
     }
   }
 
@@ -515,15 +515,15 @@
 
 @media (max-width: 575.98px) {
   .resumen-rapido-content {
-    animation: scroll-left 25s linear infinite;
+    animation: scroll-left-small 15s linear infinite;
   }
 
-  @keyframes scroll-left {
+  @keyframes scroll-left-small {
     0% {
       transform: translateX(100%);
     }
     100% {
-      transform: translateX(-150%);
+      transform: translateX(-350%);
     }
   }
 
