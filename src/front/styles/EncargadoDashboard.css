@@ -446,10 +446,10 @@
 
 @keyframes scroll-left {
   0% {
-    transform: translateX(0%);
+    transform: translateX(100%);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-150%);
   }
 }
 
@@ -495,6 +495,15 @@
     animation: scroll-left 18s linear infinite;
   }
 
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-150%);
+    }
+  }
+
   .resumen-rapido-metrics {
     gap: 1.5rem;
   }
@@ -509,14 +518,16 @@
     animation: scroll-left 15s linear infinite;
   }
 
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-150%);
+    }
+  }
+
   .resumen-rapido-metrics {
     gap: 1rem;
   }
-}
-.anuncio {
-  background: yellow;
-  padding: 1rem;
-  border: 1rem solid;
-  border-color: rgb(255, 0, 0);
-  margin: 1rem;
 }

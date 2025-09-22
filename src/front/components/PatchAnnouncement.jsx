@@ -3,231 +3,114 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
 export const PatchAnnouncement = () => {
-    const STORAGE_KEY = "patchViewed_v13"; // sube versión para que todos lo vean una vez
     const [show, setShow] = useState(false);
 
     useEffect(() => {
-        const hasViewed = localStorage.getItem(STORAGE_KEY);
-        if (!hasViewed) setShow(true);
+        const hasViewed = localStorage.getItem("patchViewed_v14");
+        if (!hasViewed) {
+            setShow(true);
+        }
     }, []);
 
     const handleClose = () => {
         setShow(false);
-        localStorage.setItem(STORAGE_KEY, "true");
+        localStorage.setItem("patchViewed_v14", "true");
     };
 
     return (
-        <Modal show={show} onHide={handleClose} centered backdrop="static">
+        <Modal show={show} onHide={handleClose} centered size="lg">
             <Modal.Header
                 closeButton
                 style={{
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    background: "linear-gradient(135deg, #4a90e2 0%, #357abd 100%)",
                     color: "white",
-                    border: "none",
+                    border: "none"
                 }}
             >
-                <Modal.Title
-                    className="d-flex align-items-center gap-2 w-100"
-                    style={{ fontSize: "1.3rem", fontWeight: "700" }}
-                >
-                    <div className="d-flex align-items-center gap-2">
-                        <i className="bi bi-tools" style={{ fontSize: "1.5rem" }} />
-                        <span>Estamos reestructurando la página</span>
-                    </div>
-                    <div
-                        className="ms-auto badge"
+                <Modal.Title style={{ fontSize: "1.2rem", fontWeight: "600" }}>
+                    <i className="bi bi-stars me-2" />
+                    Gastock actualizado
+                    <span
+                        className="ms-2 badge"
                         style={{
                             background: "rgba(255,255,255,0.2)",
-                            fontSize: "0.7rem",
-                            fontWeight: "500",
+                            fontSize: "0.7rem"
                         }}
                     >
-                        Aviso temporal
-                    </div>
+                        v14
+                    </span>
                 </Modal.Title>
             </Modal.Header>
 
             <Modal.Body
                 style={{
-                    background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-                    padding: "1.5rem",
+                    background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                    padding: "1.25rem"
                 }}
             >
-                <div className="text-center mb-3">
-                    <h5
-                        className="mb-2"
-                        style={{ color: "#4c5a7a", fontWeight: "600", fontSize: "1rem" }}
-                    >
-                        🔧 Mejoras en curso para darte una experiencia más rápida y clara.
-                    </h5>
-                    <p className="text-muted mb-0" style={{ fontSize: "0.85rem" }}>
-                        Si en algún momento esta página deja de cargar, ve a{" "}
+                <div className="mb-3">
+                    <h6 className="text-primary mb-3" style={{ fontWeight: "600" }}>
+                        🚀 Nuevas mejoras disponibles:
+                    </h6>
+
+                    <ul className="list-unstyled mb-0">
+                        <li className="mb-2 d-flex align-items-start">
+                            <i className="bi bi-check-circle-fill text-success me-2 mt-1" />
+                            <span style={{ fontSize: "0.9rem" }}>Sistema de cálculo mejorado para gastos</span>
+                        </li>
+                        <li className="mb-2 d-flex align-items-start">
+                            <i className="bi bi-check-circle-fill text-success me-2 mt-1" />
+                            <span style={{ fontSize: "0.9rem" }}>Interfaz más rápida y responsive</span>
+                        </li>
+                        <li className="mb-2 d-flex align-items-start">
+                            <i className="bi bi-check-circle-fill text-success me-2 mt-1" />
+                            <span style={{ fontSize: "0.9rem" }}>Corrección de errores menores</span>
+                        </li>
+                        <li className="mb-2 d-flex align-items-start">
+                            <i className="bi bi-check-circle-fill text-success me-2 mt-1" />
+                            <span style={{ fontSize: "0.9rem" }}>Optimización para móviles</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div
+                    className="text-center p-2 rounded"
+                    style={{ background: "rgba(74, 144, 226, 0.1)" }}
+                >
+                    <small className="text-muted">
+                        ¿Problemas? Visita{" "}
                         <a
                             href="https://www.gastock.es"
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ fontWeight: 600 }}
+                            style={{ color: "#4a90e2", fontWeight: "600" }}
                         >
                             www.gastock.es
                         </a>
-                    </p>
-                </div>
-
-                <div className="row g-3">
-                    <div className="col-12">
-                        <div
-                            className="p-3 rounded-3 border-0"
-                            style={{
-                                background: "rgba(255,255,255,0.8)",
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                            }}
-                        >
-                            <div className="d-flex align-items-start gap-3">
-                                <div
-                                    className="d-flex align-items-center justify-content-center rounded-circle"
-                                    style={{
-                                        width: "40px",
-                                        height: "40px",
-                                        background: "linear-gradient(135deg, #667eea, #764ba2)",
-                                        color: "white",
-                                        fontSize: "1.1rem",
-                                        flexShrink: 0,
-                                    }}
-                                >
-                                    <i className="bi bi-arrow-repeat" />
-                                </div>
-                                <div>
-                                    <h6 className="mb-1" style={{ color: "#4c5a7a", fontWeight: "600" }}>
-                                        Cambios en marcha
-                                    </h6>
-                                    <p className="mb-0 text-muted" style={{ fontSize: "0.9rem" }}>
-                                        Estamos reestructurando la web. Puede haber cortes puntuales o
-                                        comportamientos raros durante unas horas.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="col-12">
-                        <div
-                            className="p-3 rounded-3 border-0"
-                            style={{
-                                background: "rgba(255,255,255,0.8)",
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                            }}
-                        >
-                            <div className="d-flex align-items-start gap-3">
-                                <div
-                                    className="d-flex align-items-center justify-content-center rounded-circle"
-                                    style={{
-                                        width: "40px",
-                                        height: "40px",
-                                        background: "linear-gradient(135deg, #4facfe, #00f2fe)",
-                                        color: "white",
-                                        fontSize: "1.1rem",
-                                        flexShrink: 0,
-                                    }}
-                                >
-                                    <i className="bi bi-link-45deg" />
-                                </div>
-                                <div>
-                                    <h6 className="mb-1" style={{ color: "#4c5a7a", fontWeight: "600" }}>
-                                        Entra por nuestra URL oficial
-                                    </h6>
-                                    <p className="mb-1 text-muted" style={{ fontSize: "0.9rem" }}>
-                                        Si algo no funciona, usa:
-                                        {" "}
-                                        <a
-                                            href="https://www.gastock.es"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{ fontWeight: 600 }}
-                                        >
-                                            https://www.gastock.es
-                                        </a>
-                                        .
-                                    </p>
-                                    <small className="text-muted">
-                                        Consejo rápido: <strong>Ctrl/⌘ + D</strong> para guardarlo en
-                                        favoritos. También puedes arrastrar la URL a la barra de marcadores
-                                        para dejarlo anclado.
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="col-12">
-                        <div
-                            className="p-3 rounded-3 border-0"
-                            style={{
-                                background: "rgba(255,255,255,0.8)",
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                            }}
-                        >
-                            <div className="d-flex align-items-start gap-3">
-                                <div
-                                    className="d-flex align-items-center justify-content-center rounded-circle"
-                                    style={{
-                                        width: "40px",
-                                        height: "40px",
-                                        background: "linear-gradient(135deg, #f093fb, #f5576c)",
-                                        color: "white",
-                                        fontSize: "1.1rem",
-                                        flexShrink: 0,
-                                    }}
-                                >
-                                    <i className="bi bi-chat-dots" />
-                                </div>
-                                <div>
-                                    <h6 className="mb-1" style={{ color: "#4c5a7a", fontWeight: "600" }}>
-                                        ¿Algún problema o idea?
-                                    </h6>
-                                    <p className="mb-0 text-muted" style={{ fontSize: "0.9rem" }}>
-                                        Si ves errores o tienes sugerencias, avísanos. ¡Nos ayudas a mejorar!
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </small>
                 </div>
             </Modal.Body>
 
             <Modal.Footer
-                style={{ background: "#f8f9fa", border: "none", justifyContent: "center", gap: "0.75rem" }}
+                style={{
+                    background: "#f8f9fa",
+                    border: "none",
+                    justifyContent: "center",
+                    padding: "1rem"
+                }}
             >
-                <Button
-                    as="a"
-                    href="https://www.gastock.es"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                        background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                        border: "none",
-                        padding: "0.7rem 1.25rem",
-                        borderRadius: "25px",
-                        fontWeight: "600",
-                        fontSize: "0.95rem",
-                        boxShadow: "0 4px 15px rgba(79, 172, 254, 0.35)",
-                    }}
-                >
-                    Ir a www.gastock.es
-                </Button>
-
                 <Button
                     onClick={handleClose}
                     style={{
-                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        background: "linear-gradient(135deg, #4a90e2 0%, #357abd 100%)",
                         border: "none",
-                        padding: "0.75rem 1.5rem",
+                        padding: "0.6rem 2rem",
                         borderRadius: "25px",
                         fontWeight: "600",
-                        fontSize: "0.95rem",
-                        boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
+                        boxShadow: "0 3px 10px rgba(74, 144, 226, 0.3)"
                     }}
                 >
-                    Entendido
+                    ¡Perfecto!
                 </Button>
             </Modal.Footer>
         </Modal>
