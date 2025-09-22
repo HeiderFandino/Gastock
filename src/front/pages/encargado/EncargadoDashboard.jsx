@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+﻿import { useEffect, useState, useMemo } from "react";
 import GastosChef from "../../components/GastosChef";
 import { QuickActionsEncargado } from "../../components/QuickActionsEncargado";
 import "../../styles/EncargadoDashboard.css";
@@ -315,14 +315,6 @@ export const EncargadoDashboard = () => {
   return (
     <div className="dashboard-container admin-bb dashboard-with-navbar-ticker">
       {(user?.rol === "encargado" || user?.rol === "chef") && <PatchAnnouncement />}
-
-      <div className="anuncio"> <h1>Esta pagina se trasladara a  <strong> <a href="http://www.gastock.es">www.gastock.es</a> 💪  </strong> <br />el link que usas actualmente sera deshabilitado pronto.</h1>
-        <br />
-        <h3>Ahora puedes acceder desde tu movil📱o el ordenador 💻 a <a href="http://www.gastock.es">www.gastock.es</a> .</h3>
-        <br />
-
-        <h2>No olvides de marcar  <a href="http://www.gastock.es">www.gastock.es</a> como favorito y anclarlo a la barra de marcadores. ⬆️</h2>
-      </div>
 
       {/* ===== Resumen Rápido - Dentro del dashboard pero pegado al navbar ===== */}
       <div className="resumen-rapido-card-pegado">
