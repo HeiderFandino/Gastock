@@ -541,3 +541,19 @@
     gap: 1rem;
   }
 }
+
+/* ===== Pantallas muy grandes (más de 2000px) ===== */
+@media (min-width: 2000px) {
+  .resumen-rapido-content {
+    animation: scroll-left-large 40s linear infinite;
+  }
+
+  @keyframes scroll-left-large {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-200%);
+    }
+  }
+}

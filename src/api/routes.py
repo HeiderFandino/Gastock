@@ -854,6 +854,7 @@ def crear_proveedor():
     restaurante_id = data.get("restaurante_id")
     telefono = data.get("telefono")
     direccion = data.get("direccion")
+    email_contacto = data.get("email_contacto")
 
     if not nombre or not restaurante_id:
         return jsonify({"msg": "Faltan campos obligatorios"}), 400
@@ -865,6 +866,7 @@ def crear_proveedor():
             restaurante_id=restaurante_id,
             telefono=telefono,
             direccion=direccion,
+            email_contacto=email_contacto,
         )
         db.session.add(nuevo_proveedor)
         db.session.commit()
@@ -912,6 +914,7 @@ def editar_proveedor(id):
         "restaurante_id", proveedor.restaurante_id)
     proveedor.telefono = data.get("telefono", proveedor.telefono)
     proveedor.direccion = data.get("direccion", proveedor.direccion)
+    proveedor.email_contacto = data.get("email_contacto", proveedor.email_contacto)
 
     try:
         db.session.commit()
