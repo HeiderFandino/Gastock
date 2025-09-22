@@ -491,6 +491,11 @@
 
 /* Responsive para resumen rápido */
 @media (max-width: 767.98px) {
+  .resumen-rapido-card-pegado {
+    border: none !important;
+    box-shadow: none;
+  }
+
   .resumen-rapido-content {
     animation: scroll-left-mobile 15s linear infinite;
   }
@@ -514,6 +519,11 @@
 }
 
 @media (max-width: 575.98px) {
+  .resumen-rapido-card-pegado {
+    border: none !important;
+    box-shadow: none;
+  }
+
   .resumen-rapido-content {
     animation: scroll-left-small 15s linear infinite;
   }
