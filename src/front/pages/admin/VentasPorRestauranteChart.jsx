@@ -8,9 +8,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import adminService from "../../../services/adminService";
+import adminService from "../../services/adminService";
 import { useSearchParams } from "react-router-dom";
-import "../../../styles/EncargadoDashboard.css";
+import "../../styles/EncargadoDashboard.css";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 

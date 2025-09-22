@@ -1,7 +1,4 @@
 import React, { useEffect } from "react";
-import { DatosPersonales } from "./Datos/DatosPersonales.jsx";
-import { CambiarContrasena } from "./Datos/CambiarContrasena.jsx";
-import { MonedaPrincipal } from "./Datos/MonedaPrincipal.jsx";
 import Configuracion from "../configuracion/Configuracion";
 
 const ConfigEncargado = () => {

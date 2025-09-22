@@ -24,9 +24,7 @@ import AdminGastosDetalle from "./pages/admin/AdminGastosDetalle";
 
 import { EncargadoDashboard } from "./pages/encargado/EncargadoDashboard";
 import { RegistrarVenta } from "./pages/encargado/RegistrarVenta";
-import { ReporteVentas } from "./pages/encargado/ReporteVentas";
 import ConfigEncargado from "./pages/configuracion/ConfigEncargado.jsx";
-import { RegistrarGasto as RegistrarGastoEncargado } from "./pages/encargado/RegistrarGasto";
 import { Proveedores as ProveedoresEncargado } from "./pages/encargado/Proveedores";
 import EncargadoVentas from "./pages/encargado/EncargadoVentas";
 import { EncargadoGastos } from "./pages/encargado/EncargadoGastos";
@@ -36,7 +34,6 @@ import { ProveedorForm } from "./components/shared/ProveedorForm";
 
 import { ChefDashboard } from "./pages/chef/ChefDashboard";
 import { ChefProveedores } from "./pages/chef/ChefProveedores";
-import { Facturas } from "./pages/chef/Facturas";
 import ConfigChef from "./pages/configuracion/ConfigChef.jsx";
 import AdminRestaurante from "./pages/admin/AdminRestaurante.jsx";
 import { DetalleGastosMensual } from "./components/shared/DetalleGastosMensual.jsx";
@@ -90,7 +87,6 @@ export const router = createBrowserRouter(
 
           {/* Chef */}
           <Route path="chef/dashboard" element={<ChefDashboard />} />
-          <Route path="chef/facturas" element={<Facturas />} />
           <Route path="/chef/settings" element={<ConfigChef />} />
           <Route path="chef/gastos" element={<DetalleGastosMensual />} />
           <Route path="chef/gastos/registrar" element={<GastoForm />} />

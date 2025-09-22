@@ -446,10 +446,10 @@
 
 @keyframes scroll-left {
   0% {
-    transform: translateX(0%);
+    transform: translateX(100%);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-150%);
   }
 }
 
@@ -491,8 +491,22 @@
 
 /* Responsive para resumen rápido */
 @media (max-width: 767.98px) {
+  .resumen-rapido-card-pegado {
+    border: none !important;
+    box-shadow: none;
+  }
+
   .resumen-rapido-content {
-    animation: scroll-left 18s linear infinite;
+    animation: scroll-left-mobile 15s linear infinite;
+  }
+
+  @keyframes scroll-left-mobile {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-350%);
+    }
   }
 
   .resumen-rapido-metrics {
@@ -505,8 +519,22 @@
 }
 
 @media (max-width: 575.98px) {
+  .resumen-rapido-card-pegado {
+    border: none !important;
+    box-shadow: none;
+  }
+
   .resumen-rapido-content {
-    animation: scroll-left 15s linear infinite;
+    animation: scroll-left-small 15s linear infinite;
+  }
+
+  @keyframes scroll-left-small {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-350%);
+    }
   }
 
   .resumen-rapido-metrics {

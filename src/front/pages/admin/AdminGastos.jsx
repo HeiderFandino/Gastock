@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Tus componentes ya subidos
-import ResumenGastos from "./VistaGastos/ResumenGastos";
-import GastoPorRestauranteChart from "./VistaGastos/GastoPorRestauranteChart";
-import TablaProveedores from "./VistaGastos/TablaProveedores";
-import EvolucionGastoMensual from "./VistaGastos/EvolucionGastoMensual";
-import FiltrosGasto from "./VistaGastos/FiltrosGasto";
+import ResumenGastos from "./ResumenGastos";
+import GastoPorRestauranteChart from "./GastoPorRestauranteChart";
+import TablaProveedores from "./TablaProveedores";
+import EvolucionGastoMensual from "./EvolucionGastoMensual";
+import FiltrosGasto from "./FiltrosGasto";
 
 // Acciones rápidas (si ya las tienes)
 import { QuickActionsAdmin } from "../../components/QuickActionsAdmin";

@@ -151,7 +151,8 @@ const AdminRestaurantDetail = () => {
       <div className="resumen-rapido-card-pegado">
         <div className="resumen-rapido-content">
           <div className="resumen-rapido-title">
-
+            <span className="resumen-icon">🌐</span>
+            <span>www.gastock.es</span>
           </div>
 
           <div className="resumen-rapido-metrics">
