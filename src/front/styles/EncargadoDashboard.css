@@ -436,7 +436,7 @@
   align-items: center;
   gap: 1.5rem;
   white-space: nowrap;
-  animation: scroll-left 23s linear infinite;
+  animation: scroll-left 30s linear infinite;
   padding: 0 1rem;
 }
 
@@ -513,10 +513,4 @@
     gap: 1rem;
   }
 }
-.anuncio {
-  background: yellow;
-  padding: 1rem;
-  border: 1rem solid;
-  border-color: rgb(255, 0, 0);
-  margin: 1rem;
-}
+
