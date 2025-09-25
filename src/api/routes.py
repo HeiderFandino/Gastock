@@ -1,6 +1,7 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
+print("🔥 ROUTES.PY CARGADO - Servidor iniciado correctamente")  # Debug
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, Usuario, Venta, Gasto, FacturaAlbaran, Proveedor, MargenObjetivo, Restaurante, AuditLog
 from api.audit_service import AuditService
@@ -121,6 +122,7 @@ def get_usuarios():
 @api.route("/register", methods=["POST"])
 @jwt_required(optional=True)
 def register():
+    print("🚀 LLAMANDO register() para crear usuario")  # Debug
     try:
         data = request.json
 
@@ -240,8 +242,10 @@ def obtener_usuario(id):
 @api.route('/usuarios/<int:id>', methods=['PUT'])
 @jwt_required()
 def editar_usuario(id):
+    print(f"🚀 INICIANDO editar_usuario para ID: {id}")  # Debug
     try:
         data = request.json
+        print(f"🔍 Datos recibidos: {data}")  # Debug
         current_user_id = get_jwt_identity()
         current_user = db.session.get(Usuario, current_user_id)
 
@@ -285,6 +289,7 @@ def editar_usuario(id):
         user_to_update.status = data.get("status", user_to_update.status)
 
         # 🔍 Logging de auditoría detallado (ANTES del commit)
+        print("🎯 INICIANDO proceso de logging...")  # Debug
         try:
             restaurante = Restaurante.query.get(user_to_update.restaurante_id) if user_to_update.restaurante_id else None
             new_values = {
@@ -318,15 +323,18 @@ def editar_usuario(id):
                 description = f"Usuario '{user_to_update.nombre}' modificado (sin cambios detectados)"
 
             # Log ANTES del commit para asegurar que se ejecute
-            log_update(
-                current_user_id,
-                'usuarios',
-                user_to_update.id,
-                description
+            AuditService.log_update(
+                table_name='usuarios',
+                record_id=user_to_update.id,
+                old_values=old_values,
+                new_values=new_values,
+                description=description
             )
             print(f"🔍 Log de auditoría guardado: {description}")  # Debug
         except Exception as log_error:
             print(f"⚠️ Error en logging de actualización de usuario: {log_error}")
+            import traceback
+            print(f"💥 Traceback completo: {traceback.format_exc()}")
 
         db.session.commit()
         response_data = user_to_update.serialize()
@@ -1300,11 +1308,12 @@ def editar_proveedor(id):
                 description = f"Proveedor '{proveedor.nombre}' modificado (sin cambios detectados)"
 
             current_user_id = get_jwt_identity()
-            log_update(
-                current_user_id,
-                'proveedores',
-                proveedor.id,
-                description
+            AuditService.log_update(
+                table_name='proveedores',
+                record_id=proveedor.id,
+                old_values=old_values,
+                new_values=new_values,
+                description=description
             )
         except Exception as log_error:
             print(f"⚠️ Error en logging de actualización de proveedor: {log_error}")
