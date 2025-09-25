@@ -260,6 +260,7 @@ def editar_usuario(id):
             "restaurante_id": user_to_update.restaurante_id,
             "restaurante": user_to_update.restaurante.nombre if user_to_update.restaurante else None
         }
+        print(f"🔍 Valores anteriores: {old_values}")  # Debug
 
         user_to_update.nombre = data.get("nombre", user_to_update.nombre)
         user_to_update.email = data.get("email", user_to_update.email)
@@ -283,11 +284,7 @@ def editar_usuario(id):
 
         user_to_update.status = data.get("status", user_to_update.status)
 
-        db.session.commit()
-
-        response_data = user_to_update.serialize()
-
-        # 🔍 Logging de auditoría detallado
+        # 🔍 Logging de auditoría detallado (ANTES del commit)
         try:
             restaurante = Restaurante.query.get(user_to_update.restaurante_id) if user_to_update.restaurante_id else None
             new_values = {
@@ -298,6 +295,7 @@ def editar_usuario(id):
                 "restaurante_id": user_to_update.restaurante_id,
                 "restaurante": restaurante.nombre if restaurante else None
             }
+            print(f"🔍 Valores nuevos: {new_values}")  # Debug
 
             changes = []
             # Detectar cambios específicos
@@ -319,14 +317,19 @@ def editar_usuario(id):
             else:
                 description = f"Usuario '{user_to_update.nombre}' modificado (sin cambios detectados)"
 
+            # Log ANTES del commit para asegurar que se ejecute
             log_update(
                 current_user_id,
                 'usuarios',
                 user_to_update.id,
                 description
             )
+            print(f"🔍 Log de auditoría guardado: {description}")  # Debug
         except Exception as log_error:
             print(f"⚠️ Error en logging de actualización de usuario: {log_error}")
+
+        db.session.commit()
+        response_data = user_to_update.serialize()
 
         return jsonify(response_data), 200
 
