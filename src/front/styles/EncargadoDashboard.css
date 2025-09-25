@@ -544,7 +544,6 @@
   }
 }
 
-<<<<<<< HEAD
 /* ===== Pantallas muy grandes (más de 2000px) ===== */
 @media (min-width: 2000px) {
   .resumen-rapido-content {
@@ -560,5 +559,3 @@
     }
   }
 }
-=======
->>>>>>> 5cbc23bde1538da2e899a82c5f86591fccedd731

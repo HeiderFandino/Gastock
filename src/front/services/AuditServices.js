@@ -1,40 +1,51 @@
-import axios from "axios";
+const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/audit`;
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
+const redirectToLogin = () => {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    window.location.href = "/login";
+};
 
-class AuditServices {
-    constructor() {
-        this.api = axios.create({
-            baseURL: `${API_URL}/api/audit`,
-        });
+const authFetch = async (url, options = {}) => {
+    const token = sessionStorage.getItem("token");
+    const config = { ...options };
+    config.headers = { ...(options.headers || {}) };
 
-        // Interceptor para añadir el token automáticamente
-        this.api.interceptors.request.use(
-            (config) => {
-                const token = sessionStorage.getItem("token");
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
-                }
-                return config;
-            },
-            (error) => Promise.reject(error)
-        );
-
-        // Interceptor para manejar errores de respuesta
-        this.api.interceptors.response.use(
-            (response) => response,
-            (error) => {
-                if (error.response?.status === 401) {
-                    // Token expirado o inválido
-                    sessionStorage.removeItem("token");
-                    sessionStorage.removeItem("user");
-                    window.location.href = "/login";
-                }
-                return Promise.reject(error);
-            }
-        );
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
     }
 
+    const response = await fetch(url, config);
+
+    if (response.status === 401) {
+        redirectToLogin();
+        throw new Error("Sesión expirada");
+    }
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Error en la petición (${response.status})`);
+    }
+
+    if (response.status === 204) {
+        return null;
+    }
+
+    return response.json();
+};
+
+const buildQuery = (params = {}) => {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+            searchParams.append(key, value);
+        }
+    });
+    const queryString = searchParams.toString();
+    return queryString ? `?${queryString}` : "";
+};
+
+const AuditServices = {
     /**
      * Obtiene los logs de auditoría con filtros y paginación
      * @param {Object} params - Parámetros de consulta
@@ -50,13 +61,13 @@ class AuditServices {
      */
     async getLogs(params = {}) {
         try {
-            const response = await this.api.get('/logs', { params });
-            return response.data;
+            const query = buildQuery(params);
+            return await authFetch(`${API_BASE}/logs${query}`);
         } catch (error) {
-            console.error('Error getting audit logs:', error);
+            console.error("Error getting audit logs:", error);
             throw error;
         }
-    }
+    },
 
     /**
      * Obtiene estadísticas de los logs de auditoría
@@ -64,13 +75,12 @@ class AuditServices {
      */
     async getStats() {
         try {
-            const response = await this.api.get('/stats');
-            return response.data;
+            return await authFetch(`${API_BASE}/stats`);
         } catch (error) {
-            console.error('Error getting audit stats:', error);
+            console.error("Error getting audit stats:", error);
             throw error;
         }
-    }
+    },
 
     /**
      * Formatea un timestamp para mostrar en la interfaz
@@ -86,7 +96,7 @@ class AuditServices {
             minute: "2-digit",
             second: "2-digit"
         });
-    }
+    },
 
     /**
      * Formatea un timestamp para mostrar fecha corta
@@ -95,7 +105,7 @@ class AuditServices {
      */
     formatDate(timestamp) {
         return new Date(timestamp).toLocaleDateString("es-ES");
-    }
+    },
 
     /**
      * Obtiene el icono correspondiente a un tipo de acción
@@ -112,7 +122,7 @@ class AuditServices {
             VIEW: "👁️"
         };
         return icons[actionType] || "📝";
-    }
+    },
 
     /**
      * Obtiene la clase CSS para colorear el tipo de acción
@@ -129,7 +139,7 @@ class AuditServices {
             VIEW: "text-muted"
         };
         return colors[actionType] || "text-muted";
-    }
+    },
 
     /**
      * Traduce el nombre de una tabla al español
@@ -147,7 +157,7 @@ class AuditServices {
             margen_objetivo: "Margen Objetivo"
         };
         return translations[tableName] || tableName;
-    }
+    },
 
     /**
      * Traduce el tipo de acción al español
@@ -164,7 +174,7 @@ class AuditServices {
             VIEW: "Ver"
         };
         return translations[actionType] || actionType;
-    }
+    },
 
     /**
      * Genera una descripción legible de la acción
@@ -181,6 +191,6 @@ class AuditServices {
 
         return `${action} en ${table}${log.record_id ? ` (ID: ${log.record_id})` : ''}`;
     }
-}
+};
 
-export default new AuditServices();
+export default AuditServices;
