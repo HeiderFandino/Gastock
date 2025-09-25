@@ -2,11 +2,27 @@ import React, { useEffect, useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
+// ========================================
+// 🔧 CONFIGURACIÓN DE VERSIÓN
+// ========================================
+// Para crear un nuevo anuncio:
+// 1. Cambia CURRENT_VERSION por la nueva versión
+// 2. Actualiza PATCH_NOTES con las mejoras
+// 3. ¡Listo! Tus clientes verán el nuevo anuncio una vez
+// ========================================
+
+const CURRENT_VERSION = "v15";
+const PATCH_NOTES = [
+    "Error de fondo blado en el side bar corregido",
+    "Ahora vielve a salir el total de gastos en la vista de gastos diarios",
+    "Corrección de errores menores",
+];
+
 export const PatchAnnouncement = () => {
     const [show, setShow] = useState(false);
 
     useEffect(() => {
-        const hasViewed = localStorage.getItem("patchViewed_v14");
+        const hasViewed = localStorage.getItem(`patchViewed_${CURRENT_VERSION}`);
         if (!hasViewed) {
             setShow(true);
         }
@@ -14,7 +30,7 @@ export const PatchAnnouncement = () => {
 
     const handleClose = () => {
         setShow(false);
-        localStorage.setItem("patchViewed_v14", "true");
+        localStorage.setItem(`patchViewed_${CURRENT_VERSION}`, "true");
     };
 
     return (
@@ -37,7 +53,7 @@ export const PatchAnnouncement = () => {
                             fontSize: "0.7rem"
                         }}
                     >
-                        v14
+                        {CURRENT_VERSION}
                     </span>
                 </Modal.Title>
             </Modal.Header>
@@ -54,22 +70,12 @@ export const PatchAnnouncement = () => {
                     </h6>
 
                     <ul className="list-unstyled mb-0">
-                        <li className="mb-2 d-flex align-items-start">
-                            <i className="bi bi-check-circle-fill text-success me-2 mt-1" />
-                            <span style={{ fontSize: "0.9rem" }}>Sistema de cálculo mejorado para gastos</span>
-                        </li>
-                        <li className="mb-2 d-flex align-items-start">
-                            <i className="bi bi-check-circle-fill text-success me-2 mt-1" />
-                            <span style={{ fontSize: "0.9rem" }}>Interfaz más rápida y responsive</span>
-                        </li>
-                        <li className="mb-2 d-flex align-items-start">
-                            <i className="bi bi-check-circle-fill text-success me-2 mt-1" />
-                            <span style={{ fontSize: "0.9rem" }}>Corrección de errores menores</span>
-                        </li>
-                        <li className="mb-2 d-flex align-items-start">
-                            <i className="bi bi-check-circle-fill text-success me-2 mt-1" />
-                            <span style={{ fontSize: "0.9rem" }}>Optimización para móviles</span>
-                        </li>
+                        {PATCH_NOTES.map((note, index) => (
+                            <li key={index} className="mb-2 d-flex align-items-start">
+                                <i className="bi bi-check-circle-fill text-success me-2 mt-1" />
+                                <span style={{ fontSize: "0.9rem" }}>{note}</span>
+                            </li>
+                        ))}
                     </ul>
                 </div>
 
