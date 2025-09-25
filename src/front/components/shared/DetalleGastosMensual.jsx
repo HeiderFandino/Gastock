@@ -345,8 +345,12 @@ export const DetalleGastosMensual = () => {
               </div>
             ) : (
               <>
-                {/* ===== Resumen Compacto ===== */}
-
+                {/* ===== Total del mes ===== */}
+                <div className="d-flex justify-content-end mb-3">
+                  <div className="fw-bold text-info" style={{ fontSize: '1.1rem' }}>
+                    📊 Total del mes: {simbolo}{totalGastosMes.toFixed(2)}
+                  </div>
+                </div>
 
                 {/* ===== Lista mobile (cards) ===== */}
                 <ul className="list-unstyled d-sm-none">
@@ -552,7 +556,12 @@ export const DetalleGastosMensual = () => {
               </div>
             ) : (
               <>
-
+                {/* ===== Total del día ===== */}
+                <div className="d-flex justify-content-end mb-3">
+                  <div className="fw-bold text-success" style={{ fontSize: '1.1rem' }}>
+                    💰 Total del día: {simbolo}{totalGastosDia.toFixed(2)}
+                  </div>
+                </div>
 
                 {/* ===== Lista mobile (cards) ===== */}
                 <ul className="list-unstyled d-sm-none">

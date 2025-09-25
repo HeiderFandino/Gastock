@@ -7,7 +7,7 @@ body {
 .sidebar {
   width: 240px;
   min-width: 240px;
-  background: #fff;
+  background: var(--color-bg-card);
   transition: width 0.3s ease;
   overflow: hidden;
 }
@@ -33,16 +33,16 @@ body {
 /* Links del menú */
 .sidebar.menu .nav-link {
   /* Corregido: antes había background-color con un valor de borde */
-  border: 1px solid transparent; /* evita “saltos” en hover */
-  color: #000;
+  border: 1px solid transparent; /* evita "saltos" en hover */
+  color: var(--color-text);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 .sidebar.menu .nav-link:hover {
-  background-color: #ff5d1d;
-  color: #fff;
+  background-color: var(--color-bg-subtle);
+  color: var(--color-primary);
 }
 .sidebar.menu .nav-link:hover i {
-  color: #fff;
+  color: var(--color-primary);
 }
 
 /* Botón de colapso (desktop) */
@@ -118,8 +118,8 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #fff;
-  border-top: 1px solid #e5e5e5;
+  background: var(--color-bg-card);
+  border-top: 1px solid var(--color-border);
   padding: 6px 4px;
   z-index: 1030;
 }
@@ -130,7 +130,7 @@ body {
   gap: 2px;
   font-size: 11px;
   text-decoration: none;
-  color: #555;
+  color: var(--color-text-muted);
 }
 .bottom-nav .bn-item i {
   font-size: 18px;
@@ -138,19 +138,12 @@ body {
 }
 .bottom-nav .bn-item.color-orange-bold,
 .bottom-nav .bn-item:hover {
-  color: #ff7a00;
+  color: var(--color-primary);
   font-weight: 600;
 }
 /* ====== Gastock: activo/hover AZUL (no naranja) ====== */
 
-/* Hover de items en sidebar (desktop) */
-.sidebar.menu .nav-link:hover {
-  background: var(--brand-200);
-  color: var(--color-primary);
-}
-.sidebar.menu .nav-link:hover i {
-  color: var(--color-primary);
-}
+/* Nota: Los estilos de hover ya están definidos arriba, evitamos duplicación */
 
 /* Activo del sidebar: la clase que ya devuelve isActive() */
 .sidebar.menu .nav-item.color-orange-bold .nav-link {
