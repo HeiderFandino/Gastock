@@ -1,8 +1,10 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
+print("🔥 ROUTES.PY CARGADO - Servidor iniciado correctamente")  # Debug
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, Usuario, Venta, Gasto, FacturaAlbaran, Proveedor, MargenObjetivo, Restaurante
+from api.models import db, Usuario, Venta, Gasto, FacturaAlbaran, Proveedor, MargenObjetivo, Restaurante, AuditLog
+from api.audit_service import AuditService
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from sqlalchemy import select, func, extract, desc, text
@@ -120,6 +122,7 @@ def get_usuarios():
 @api.route("/register", methods=["POST"])
 @jwt_required(optional=True)
 def register():
+    print("🚀 LLAMANDO register() para crear usuario")  # Debug
     try:
         data = request.json
 
@@ -160,6 +163,25 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            restaurante = Restaurante.query.get(new_user.restaurante_id) if new_user.restaurante_id else None
+            AuditService.log_create(
+                table_name="usuarios",
+                record_id=new_user.id,
+                new_values={
+                    "nombre": new_user.nombre,
+                    "email": new_user.email,
+                    "rol": new_user.rol,
+                    "status": new_user.status,
+                    "restaurante_id": new_user.restaurante_id,
+                    "restaurante": restaurante.nombre if restaurante else None
+                },
+                description=f"Usuario creado: {new_user.nombre} ({new_user.email}) - Rol {new_user.rol}"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de creación de usuario: {log_error}")
 
         # 📬 Enviar correo con SendGrid
         from api.email_utils import send_email
@@ -220,8 +242,10 @@ def obtener_usuario(id):
 @api.route('/usuarios/<int:id>', methods=['PUT'])
 @jwt_required()
 def editar_usuario(id):
+    print(f"🚀 INICIANDO editar_usuario para ID: {id}")  # Debug
     try:
         data = request.json
+        print(f"🔍 Datos recibidos: {data}")  # Debug
         current_user_id = get_jwt_identity()
         current_user = db.session.get(Usuario, current_user_id)
 
@@ -231,6 +255,16 @@ def editar_usuario(id):
         user_to_update = db.session.get(Usuario, id)
         if not user_to_update:
             return jsonify({"error": "Usuario no encontrado"}), 404
+
+        old_values = {
+            "nombre": user_to_update.nombre,
+            "email": user_to_update.email,
+            "rol": user_to_update.rol,
+            "status": user_to_update.status,
+            "restaurante_id": user_to_update.restaurante_id,
+            "restaurante": user_to_update.restaurante.nombre if user_to_update.restaurante else None
+        }
+        print(f"🔍 Valores anteriores: {old_values}")  # Debug
 
         user_to_update.nombre = data.get("nombre", user_to_update.nombre)
         user_to_update.email = data.get("email", user_to_update.email)
@@ -254,8 +288,58 @@ def editar_usuario(id):
 
         user_to_update.status = data.get("status", user_to_update.status)
 
+        # 🔍 Logging de auditoría detallado (ANTES del commit)
+        print("🎯 INICIANDO proceso de logging...")  # Debug
+        try:
+            restaurante = Restaurante.query.get(user_to_update.restaurante_id) if user_to_update.restaurante_id else None
+            new_values = {
+                "nombre": user_to_update.nombre,
+                "email": user_to_update.email,
+                "rol": user_to_update.rol,
+                "status": user_to_update.status,
+                "restaurante_id": user_to_update.restaurante_id,
+                "restaurante": restaurante.nombre if restaurante else None
+            }
+            print(f"🔍 Valores nuevos: {new_values}")  # Debug
+
+            changes = []
+            # Detectar cambios específicos
+            if old_values["nombre"] != new_values["nombre"]:
+                changes.append(f"nombre: '{old_values['nombre']}' → '{new_values['nombre']}'")
+            if old_values["email"] != new_values["email"]:
+                changes.append(f"email: '{old_values['email']}' → '{new_values['email']}'")
+            if old_values["rol"] != new_values["rol"]:
+                changes.append(f"rol: '{old_values['rol']}' → '{new_values['rol']}'")
+            if old_values["status"] != new_values["status"]:
+                changes.append(f"status: '{old_values['status']}' → '{new_values['status']}'")
+            if old_values["restaurante"] != new_values["restaurante"]:
+                changes.append(f"restaurante: '{old_values['restaurante']}' → '{new_values['restaurante']}'")
+            if data.get("password"):
+                changes.append("contraseña actualizada")
+
+            if changes:
+                description = f"Usuario '{user_to_update.nombre}' actualizado: {', '.join(changes)}"
+            else:
+                description = f"Usuario '{user_to_update.nombre}' modificado (sin cambios detectados)"
+
+            # Log ANTES del commit para asegurar que se ejecute
+            AuditService.log_update(
+                table_name='usuarios',
+                record_id=user_to_update.id,
+                old_values=old_values,
+                new_values=new_values,
+                description=description
+            )
+            print(f"🔍 Log de auditoría guardado: {description}")  # Debug
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de actualización de usuario: {log_error}")
+            import traceback
+            print(f"💥 Traceback completo: {traceback.format_exc()}")
+
         db.session.commit()
-        return jsonify(user_to_update.serialize()), 200
+        response_data = user_to_update.serialize()
+
+        return jsonify(response_data), 200
 
     except Exception as e:
         db.session.rollback()
@@ -277,6 +361,15 @@ def eliminar_usuario(id):
         if not user_to_delete:
             return jsonify({"error": "Usuario no encontrado"}), 404
 
+        old_values = {
+            "nombre": user_to_delete.nombre,
+            "email": user_to_delete.email,
+            "rol": user_to_delete.rol,
+            "status": user_to_delete.status,
+            "restaurante_id": user_to_delete.restaurante_id,
+            "restaurante": user_to_delete.restaurante.nombre if user_to_delete.restaurante else None
+        }
+
         if user_to_delete.id == current_user_id:
             return jsonify({"error": "No puedes eliminar tu propia cuenta de administrador"}), 400
 
@@ -287,6 +380,18 @@ def eliminar_usuario(id):
 
         db.session.delete(user_to_delete)
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            AuditService.log_delete(
+                table_name="usuarios",
+                record_id=id,
+                old_values=old_values,
+                description=f"Usuario eliminado: {old_values.get('nombre')} ({old_values.get('email')})"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de eliminación de usuario: {log_error}")
+
         return jsonify({"msg": "Usuario eliminado correctamente"}), 200
     except Exception as e:
         db.session.rollback()
@@ -326,15 +431,37 @@ def login():
         user = db.session.execute(stm).scalar()
 
         if not user:
+            # 🔍 Logging de intento de login con email inexistente
+            try:
+                AuditService.log_action(
+                    action_type="LOGIN_FAILED",
+                    table_name="usuarios",
+                    description=f"Intento de login fallido - email no encontrado: {data['email']}"
+                )
+            except Exception as log_error:
+                print(f"⚠️ Error en logging de login fallido (email inexistente): {log_error}")
+
             return jsonify({"error": "Email no encontrado"}), 404
 
         if user.status != "active":
             return jsonify({"success": False, "msg": "Usuario inactivo, por favor contacte con el administrador."}), 403
 
         if not check_password_hash(user.password, data["password"]):
+            # 🔍 Logging de login fallido
+            try:
+                AuditService.log_login(user.id, success=False)
+            except Exception as log_error:
+                print(f"⚠️ Error en logging de login fallido: {log_error}")
+
             return jsonify({"success": False, "msg": "Email o contraseña incorrectos"}), 401
 
         token = create_access_token(identity=str(user.id))
+
+        # 🔍 Logging de login exitoso
+        try:
+            AuditService.log_login(user.id, success=True)
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de login exitoso: {log_error}")
 
         data = user.serialize()
 
@@ -387,6 +514,25 @@ def crear_venta():
             restaurante_id=restaurante_id
         )
         db.session.add(nueva_venta)
+        db.session.flush()  # Para obtener el ID
+
+        # 🔍 Logging de auditoría
+        try:
+            restaurante = Restaurante.query.get(restaurante_id)
+            AuditService.log_create(
+                table_name="ventas",
+                record_id=nueva_venta.id,
+                new_values={
+                    "monto": float(monto),
+                    "fecha": fecha,
+                    "turno": turno,
+                    "restaurante": restaurante.nombre if restaurante else "Desconocido"
+                },
+                description=f"Venta creada: {restaurante.nombre if restaurante else 'Sin restaurante'} - €{monto} ({turno})"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de venta: {log_error}")
+
         db.session.commit()
 
         # 📨 Notificación protegida
@@ -448,13 +594,59 @@ def editar_venta(id):
     if not data:
         return jsonify({"msg": "Datos no recibidos"}), 400
 
+    # 🔍 Guardar valores anteriores para el log
+    old_values = {
+        "monto": float(venta.monto) if venta.monto else 0,
+        "fecha": venta.fecha.isoformat() if venta.fecha else None,
+        "turno": venta.turno,
+        "restaurante_id": venta.restaurante_id
+    }
+
     venta.fecha = data.get("fecha", venta.fecha)
     venta.monto = data.get("monto", venta.monto)
     venta.turno = data.get("turno", venta.turno)
     venta.restaurante_id = data.get("restaurante_id", venta.restaurante_id)
 
+    # 🔍 Valores nuevos para el log
+    new_values = {
+        "monto": float(data.get("monto", venta.monto)) if data.get("monto") else float(venta.monto) if venta.monto else 0,
+        "fecha": data.get("fecha", venta.fecha.isoformat() if venta.fecha else None),
+        "turno": data.get("turno", venta.turno),
+        "restaurante_id": data.get("restaurante_id", venta.restaurante_id)
+    }
+
     try:
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            restaurante = Restaurante.query.get(venta.restaurante_id)
+            changes = []
+
+            # Detectar cambios específicos
+            if old_values["monto"] != new_values["monto"]:
+                changes.append(f"monto: €{old_values['monto']} → €{new_values['monto']}")
+            if old_values["turno"] != new_values["turno"]:
+                changes.append(f"turno: {old_values['turno']} → {new_values['turno']}")
+            if old_values["fecha"] != new_values["fecha"]:
+                changes.append(f"fecha: {old_values['fecha']} → {new_values['fecha']}")
+            if old_values["restaurante_id"] != new_values["restaurante_id"]:
+                old_rest = Restaurante.query.get(old_values["restaurante_id"])
+                new_rest = Restaurante.query.get(new_values["restaurante_id"])
+                changes.append(f"restaurante: {old_rest.nombre if old_rest else 'N/A'} → {new_rest.nombre if new_rest else 'N/A'}")
+
+            changes_str = ", ".join(changes) if changes else "sin cambios detectados"
+
+            AuditService.log_update(
+                table_name="ventas",
+                record_id=venta.id,
+                old_values=old_values,
+                new_values=new_values,
+                description=f"Venta editada: {restaurante.nombre if restaurante else 'Sin restaurante'} - {changes_str}"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de edición de venta: {log_error}")
+
         return jsonify({"msg": "Venta actualizada"}), 200
     except Exception as e:
         db.session.rollback()
@@ -469,9 +661,33 @@ def eliminar_venta(id):
     if venta is None:
         return jsonify({"msg": "Venta no encontrada"}), 404
 
+    # 🔍 Guardar datos para el log antes de eliminar
+    try:
+        restaurante = Restaurante.query.get(venta.restaurante_id)
+        old_values = {
+            "monto": float(venta.monto) if venta.monto else 0,
+            "fecha": venta.fecha.isoformat() if venta.fecha else None,
+            "turno": venta.turno,
+            "restaurante": restaurante.nombre if restaurante else "Desconocido"
+        }
+    except Exception as e:
+        old_values = {"error": f"No se pudieron obtener los datos: {str(e)}"}
+
     try:
         db.session.delete(venta)
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            AuditService.log_delete(
+                table_name="ventas",
+                record_id=id,
+                old_values=old_values,
+                description=f"Venta eliminada: {old_values.get('restaurante', 'Sin restaurante')} - €{old_values.get('monto', 0)} ({old_values.get('turno', 'Sin turno')})"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de eliminación de venta: {log_error}")
+
         return jsonify({"msg": "Venta eliminada correctamente"}), 200
     except Exception as e:
         db.session.rollback()
@@ -510,6 +726,9 @@ def crear_gasto():
 
     if isinstance(data, list):
         try:
+            total_gastos = 0
+            gastos_creados = []
+
             for g in data:
                 if not g.get("fecha") or not g.get("monto") or not g.get("proveedor_id") or not g.get("usuario_id") or not g.get("restaurante_id"):
                     return jsonify({"msg": "Faltan campos obligatorios en uno de los gastos"}), 400
@@ -525,6 +744,8 @@ def crear_gasto():
                     archivo_adjunto=g.get("archivo_adjunto")
                 )
                 db.session.add(nuevo_gasto)
+                total_gastos += float(g["monto"])
+                gastos_creados.append(nuevo_gasto)
 
                 # 📨 Notificación individual
                 try:
@@ -547,6 +768,22 @@ def crear_gasto():
                         error_envio))
 
             db.session.commit()
+
+            # 🔍 Logging de auditoría para el lote completo
+            try:
+                AuditService.log_create(
+                    table_name="gastos",
+                    record_id=None,  # No hay un ID específico para el lote
+                    new_values={
+                        "cantidad_gastos": len(gastos_creados),
+                        "total_monto": total_gastos,
+                        "fecha_registro": gastos_creados[0].fecha.isoformat() if gastos_creados else None
+                    },
+                    description=f"Registro de gastos: {len(gastos_creados)} gasto(s) por un total de €{total_gastos:.2f}"
+                )
+            except Exception as log_error:
+                print(f"⚠️ Error en logging de lote de gastos: {log_error}")
+
             return jsonify({"msg": "Gastos registrados correctamente"}), 201
 
         except Exception as e:
@@ -647,8 +884,29 @@ def editar_gasto(id):
 
     print("🛠️ Recibiendo para editar gasto:", data)
 
-    gasto.fecha = data.get("fecha", gasto.fecha)
-    gasto.monto = data.get("monto", gasto.monto)
+    # 🔍 Guardar valores anteriores para el log
+    old_values = {
+        "monto": float(gasto.monto) if gasto.monto else 0,
+        "categoria": gasto.categoria,
+        "proveedor_id": gasto.proveedor_id,
+        "fecha": gasto.fecha.isoformat() if gasto.fecha else None,
+        "nota": gasto.nota
+    }
+
+    fecha_nueva = data.get("fecha")
+    if fecha_nueva is not None:
+        try:
+            gasto.fecha = datetime.fromisoformat(fecha_nueva).date()
+        except ValueError:
+            return jsonify({"msg": "Formato de fecha inválido"}), 400
+
+    monto_nuevo = data.get("monto")
+    if monto_nuevo is not None:
+        try:
+            gasto.monto = float(monto_nuevo)
+        except (TypeError, ValueError):
+            return jsonify({"msg": "Monto inválido"}), 400
+
     gasto.categoria = data.get("categoria", gasto.categoria)
     gasto.proveedor_id = data.get("proveedor_id", gasto.proveedor_id)
     gasto.usuario_id = data.get("usuario_id", gasto.usuario_id)
@@ -656,8 +914,45 @@ def editar_gasto(id):
     gasto.nota = data.get("nota", gasto.nota)
     gasto.archivo_adjunto = data.get("archivo_adjunto", gasto.archivo_adjunto)
 
+    # 🔍 Valores nuevos para el log
+    new_values = {
+        "monto": float(gasto.monto) if gasto.monto else 0,
+        "categoria": gasto.categoria,
+        "proveedor_id": gasto.proveedor_id,
+        "fecha": gasto.fecha.isoformat() if gasto.fecha else None,
+        "nota": gasto.nota
+    }
+
     try:
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            proveedor = Proveedor.query.get(gasto.proveedor_id)
+            changes = []
+
+            # Detectar cambios específicos
+            if old_values["monto"] != new_values["monto"]:
+                changes.append(f"monto: €{old_values['monto']} → €{new_values['monto']}")
+            if old_values["categoria"] != new_values["categoria"]:
+                changes.append(f"categoría: {old_values['categoria']} → {new_values['categoria']}")
+            if old_values["proveedor_id"] != new_values["proveedor_id"]:
+                old_prov = Proveedor.query.get(old_values["proveedor_id"])
+                new_prov = Proveedor.query.get(new_values["proveedor_id"])
+                changes.append(f"proveedor: {old_prov.nombre if old_prov else 'N/A'} → {new_prov.nombre if new_prov else 'N/A'}")
+
+            changes_str = ", ".join(changes) if changes else "sin cambios detectados"
+
+            AuditService.log_update(
+                table_name="gastos",
+                record_id=gasto.id,
+                old_values=old_values,
+                new_values=new_values,
+                description=f"Gasto editado: {proveedor.nombre if proveedor else 'Sin proveedor'} - {changes_str}"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de edición de gasto: {log_error}")
+
         print("✅ Gasto actualizado correctamente.")
         return jsonify({"msg": "Gasto actualizado"}), 200
     except Exception as e:
@@ -672,9 +967,35 @@ def eliminar_gasto(id):
     gasto = Gasto.query.get(id)
     if not gasto:
         return jsonify({"msg": "Gasto no encontrado"}), 404
+
+    # 🔍 Guardar datos para el log antes de eliminar
+    try:
+        proveedor = Proveedor.query.get(gasto.proveedor_id)
+        old_values = {
+            "monto": float(gasto.monto) if gasto.monto else 0,
+            "categoria": gasto.categoria,
+            "proveedor": proveedor.nombre if proveedor else "Desconocido",
+            "fecha": gasto.fecha.isoformat() if gasto.fecha else None,
+            "nota": gasto.nota
+        }
+    except Exception as e:
+        old_values = {"error": f"No se pudieron obtener los datos: {str(e)}"}
+
     try:
         db.session.delete(gasto)
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            AuditService.log_delete(
+                table_name="gastos",
+                record_id=id,
+                old_values=old_values,
+                description=f"Gasto eliminado: {old_values.get('proveedor', 'Sin proveedor')} - €{old_values.get('monto', 0)} ({old_values.get('categoria', 'Sin categoría')})"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de eliminación de gasto: {log_error}")
+
         return jsonify({"msg": "Gasto eliminado correctamente"}), 200
     except Exception as e:
         db.session.rollback()
@@ -870,6 +1191,27 @@ def crear_proveedor():
         )
         db.session.add(nuevo_proveedor)
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            restaurante = Restaurante.query.get(nuevo_proveedor.restaurante_id) if nuevo_proveedor.restaurante_id else None
+            AuditService.log_create(
+                table_name="proveedores",
+                record_id=nuevo_proveedor.id,
+                new_values={
+                    "nombre": nuevo_proveedor.nombre,
+                    "categoria": nuevo_proveedor.categoria,
+                    "restaurante_id": nuevo_proveedor.restaurante_id,
+                    "restaurante": restaurante.nombre if restaurante else None,
+                    "telefono": nuevo_proveedor.telefono,
+                    "direccion": nuevo_proveedor.direccion,
+                    "email_contacto": nuevo_proveedor.email_contacto
+                },
+                description=f"Proveedor creado: {nuevo_proveedor.nombre}"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de creación de proveedor: {log_error}")
+
         return jsonify({"msg": "Proveedor creado correctamente"}), 201
     except Exception as e:
         db.session.rollback()
@@ -908,6 +1250,15 @@ def editar_proveedor(id):
     if not data:
         return jsonify({"msg": "Datos no recibidos"}), 400
 
+    old_values = {
+        "nombre": proveedor.nombre,
+        "categoria": proveedor.categoria,
+        "restaurante_id": proveedor.restaurante_id,
+        "telefono": proveedor.telefono,
+        "direccion": proveedor.direccion,
+        "email_contacto": proveedor.email_contacto
+    }
+
     proveedor.nombre = data.get("nombre", proveedor.nombre)
     proveedor.categoria = data.get("categoria", proveedor.categoria)
     proveedor.restaurante_id = data.get(
@@ -918,6 +1269,55 @@ def editar_proveedor(id):
 
     try:
         db.session.commit()
+
+        # 🔍 Logging de auditoría detallado
+        try:
+            restaurante = Restaurante.query.get(proveedor.restaurante_id) if proveedor.restaurante_id else None
+            old_restaurante = Restaurante.query.get(old_values["restaurante_id"]) if old_values["restaurante_id"] else None
+
+            new_values = {
+                "nombre": proveedor.nombre,
+                "categoria": proveedor.categoria,
+                "restaurante_id": proveedor.restaurante_id,
+                "restaurante": restaurante.nombre if restaurante else None,
+                "telefono": proveedor.telefono,
+                "direccion": proveedor.direccion,
+                "email_contacto": proveedor.email_contacto
+            }
+
+            old_values["restaurante"] = old_restaurante.nombre if old_restaurante else None
+
+            changes = []
+            # Detectar cambios específicos
+            if old_values["nombre"] != new_values["nombre"]:
+                changes.append(f"nombre: '{old_values['nombre']}' → '{new_values['nombre']}'")
+            if old_values["categoria"] != new_values["categoria"]:
+                changes.append(f"categoría: '{old_values['categoria']}' → '{new_values['categoria']}'")
+            if old_values["restaurante"] != new_values["restaurante"]:
+                changes.append(f"restaurante: '{old_values['restaurante']}' → '{new_values['restaurante']}'")
+            if old_values["telefono"] != new_values["telefono"]:
+                changes.append(f"teléfono: '{old_values['telefono']}' → '{new_values['telefono']}'")
+            if old_values["direccion"] != new_values["direccion"]:
+                changes.append(f"dirección: '{old_values['direccion']}' → '{new_values['direccion']}'")
+            if old_values["email_contacto"] != new_values["email_contacto"]:
+                changes.append(f"email: '{old_values['email_contacto']}' → '{new_values['email_contacto']}'")
+
+            if changes:
+                description = f"Proveedor '{proveedor.nombre}' actualizado: {', '.join(changes)}"
+            else:
+                description = f"Proveedor '{proveedor.nombre}' modificado (sin cambios detectados)"
+
+            current_user_id = get_jwt_identity()
+            AuditService.log_update(
+                table_name='proveedores',
+                record_id=proveedor.id,
+                old_values=old_values,
+                new_values=new_values,
+                description=description
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de actualización de proveedor: {log_error}")
+
         return jsonify({"msg": "Proveedor actualizado"}), 200
     except Exception as e:
         db.session.rollback()
@@ -932,9 +1332,30 @@ def eliminar_proveedor(id):
     if proveedor is None:
         return jsonify({"msg": "Proveedor no encontrado"}), 404
 
+    old_values = {
+        "nombre": proveedor.nombre,
+        "categoria": proveedor.categoria,
+        "restaurante_id": proveedor.restaurante_id,
+        "telefono": proveedor.telefono,
+        "direccion": proveedor.direccion,
+        "email_contacto": proveedor.email_contacto
+    }
+
     try:
         db.session.delete(proveedor)
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            AuditService.log_delete(
+                table_name="proveedores",
+                record_id=id,
+                old_values=old_values,
+                description=f"Proveedor eliminado: {old_values.get('nombre')}"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de eliminación de proveedor: {log_error}")
+
         return jsonify({"msg": "Proveedor eliminado correctamente"}), 200
     except Exception as e:
         db.session.rollback()
@@ -1096,6 +1517,23 @@ def crear_restaurante():
         )
         db.session.add(nuevo)
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            AuditService.log_create(
+                table_name="restaurantes",
+                record_id=nuevo.id,
+                new_values={
+                    "nombre": nuevo.nombre,
+                    "direccion": nuevo.direccion,
+                    "telefono": nuevo.telefono,
+                    "email_contacto": nuevo.email_contacto
+                },
+                description=f"Restaurante creado: {nuevo.nombre}"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de creación de restaurante: {log_error}")
+
         return jsonify({
             "msg": "Restaurante creado correctamente",
             "nuevo": nuevo.serialize()
@@ -1135,13 +1573,40 @@ def editar_restaurante(id):
     if not data:
         return jsonify({"msg": "Datos no recibidos"}), 400
 
+    old_values = {
+        "nombre": restaurante.nombre,
+        "direccion": restaurante.direccion,
+        "email_contacto": restaurante.email_contacto,
+        "telefono": restaurante.telefono
+    }
+
     restaurante.nombre = data.get("nombre", restaurante.nombre)
     restaurante.direccion = data.get("direccion", restaurante.direccion)
     restaurante.email_contacto = data.get(
         "email_contacto", restaurante.email_contacto)
+    restaurante.telefono = data.get("telefono", restaurante.telefono)
 
     try:
         db.session.commit()
+
+        # 🔍 Logging de auditoría
+        try:
+            new_values = {
+                "nombre": restaurante.nombre,
+                "direccion": restaurante.direccion,
+                "email_contacto": restaurante.email_contacto,
+                "telefono": restaurante.telefono
+            }
+            AuditService.log_update(
+                table_name="restaurantes",
+                record_id=restaurante.id,
+                old_values=old_values,
+                new_values=new_values,
+                description=f"Restaurante actualizado: {restaurante.nombre}"
+            )
+        except Exception as log_error:
+            print(f"⚠️ Error en logging de actualización de restaurante: {log_error}")
+
         return jsonify({"msg": "Restaurante actualizado"}), 200
     except Exception as e:
         db.session.rollback()
@@ -1182,6 +1647,13 @@ def eliminar_restaurante(id):
         if not restaurante:
             return jsonify({"error": "Restaurante no encontrado"}), 404
 
+        old_values = {
+            "nombre": restaurante.nombre,
+            "direccion": restaurante.direccion,
+            "email_contacto": restaurante.email_contacto,
+            "telefono": restaurante.telefono
+        }
+
         # Conteos (evita 500 accediendo a relaciones lazy)
         ventas = Venta.query.filter_by(restaurante_id=id).count()
         gastos = Gasto.query.filter_by(restaurante_id=id).count()
@@ -1201,6 +1673,18 @@ def eliminar_restaurante(id):
         try:
             db.session.delete(restaurante)
             db.session.commit()
+
+            # 🔍 Logging de auditoría
+            try:
+                AuditService.log_delete(
+                    table_name="restaurantes",
+                    record_id=id,
+                    old_values=old_values,
+                    description=f"Restaurante eliminado: {old_values.get('nombre')}"
+                )
+            except Exception as log_error:
+                print(f"⚠️ Error en logging de eliminación de restaurante: {log_error}")
+
             return jsonify({"msg": "Restaurante eliminado correctamente"}), 200
         except IntegrityError as e:
             db.session.rollback()
@@ -2209,3 +2693,109 @@ def change_password():
     except Exception as e:
         print("Error changing password:", str(e))
         return jsonify({"error": "Error al cambiar contraseña"}), 500
+
+
+# ===== RUTAS DE AUDITORÍA =====
+
+@api.route('/audit/logs', methods=['GET'])
+@jwt_required()
+def get_audit_logs():
+    """Obtiene los logs de auditoría con filtros y paginación (solo para admins)"""
+    try:
+        from api.audit_service import AuditService
+
+        user_id = int(get_jwt_identity())
+        current_user = Usuario.query.get(user_id)
+
+        # Solo admins pueden ver los logs
+        if not current_user or current_user.rol != 'admin':
+            return jsonify({"msg": "Acceso denegado. Solo administradores."}), 403
+
+        # Obtener parámetros de consulta
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+
+        # Construir filtros
+        filters = {}
+        if request.args.get('user_id'):
+            filters['user_id'] = int(request.args.get('user_id'))
+        if request.args.get('action_type'):
+            filters['action_type'] = request.args.get('action_type')
+        if request.args.get('table_name'):
+            filters['table_name'] = request.args.get('table_name')
+        if request.args.get('restaurante_id'):
+            filters['restaurante_id'] = int(request.args.get('restaurante_id'))
+        if request.args.get('date_from'):
+            from datetime import datetime
+            filters['date_from'] = datetime.fromisoformat(request.args.get('date_from'))
+        if request.args.get('date_to'):
+            from datetime import datetime
+            filters['date_to'] = datetime.fromisoformat(request.args.get('date_to'))
+
+        # Obtener logs
+        result = AuditService.get_logs(page=page, per_page=per_page, filters=filters)
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        print(f"Error getting audit logs: {str(e)}")
+        return jsonify({"msg": "Error interno", "error": str(e)}), 500
+
+
+@api.route('/audit/stats', methods=['GET'])
+@jwt_required()
+def get_audit_stats():
+    """Obtiene estadísticas de los logs de auditoría (solo para admins)"""
+    try:
+        user_id = int(get_jwt_identity())
+        current_user = Usuario.query.get(user_id)
+
+        # Solo admins pueden ver las estadísticas
+        if not current_user or current_user.rol != 'admin':
+            return jsonify({"msg": "Acceso denegado. Solo administradores."}), 403
+
+        from sqlalchemy import func
+        from datetime import datetime, timedelta
+
+        # Estadísticas de los últimos 30 días
+        fecha_inicio = datetime.utcnow() - timedelta(days=30)
+
+        # Total de acciones por tipo
+        actions_by_type = db.session.query(
+            AuditLog.action_type,
+            func.count(AuditLog.id).label('count')
+        ).filter(
+            AuditLog.timestamp >= fecha_inicio
+        ).group_by(AuditLog.action_type).all()
+
+        # Usuarios más activos
+        most_active_users = db.session.query(
+            Usuario.nombre,
+            Usuario.email,
+            func.count(AuditLog.id).label('count')
+        ).join(AuditLog).filter(
+            AuditLog.timestamp >= fecha_inicio
+        ).group_by(
+            Usuario.id, Usuario.nombre, Usuario.email
+        ).order_by(
+            func.count(AuditLog.id).desc()
+        ).limit(10).all()
+
+        # Acciones por tabla
+        actions_by_table = db.session.query(
+            AuditLog.table_name,
+            func.count(AuditLog.id).label('count')
+        ).filter(
+            AuditLog.timestamp >= fecha_inicio
+        ).group_by(AuditLog.table_name).all()
+
+        return jsonify({
+            "period": "Últimos 30 días",
+            "actions_by_type": [{"type": r.action_type, "count": r.count} for r in actions_by_type],
+            "most_active_users": [{"name": r.nombre, "email": r.email, "count": r.count} for r in most_active_users],
+            "actions_by_table": [{"table": r.table_name, "count": r.count} for r in actions_by_table]
+        }), 200
+
+    except Exception as e:
+        print(f"Error getting audit stats: {str(e)}")
+        return jsonify({"msg": "Error interno", "error": str(e)}), 500

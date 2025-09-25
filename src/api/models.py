@@ -167,3 +167,39 @@ class MargenObjetivo(db.Model):
             "porcentaje_min": self.porcentaje_min,
             "porcentaje_max": self.porcentaje_max,
         }
+
+
+class AuditLog(db.Model):
+    __tablename__ = 'audit_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    action_type = db.Column(db.String(20), nullable=False)  # CREATE, UPDATE, DELETE, LOGIN, LOGOUT
+    table_name = db.Column(db.String(50), nullable=False)   # gastos, ventas, usuarios, etc.
+    record_id = db.Column(db.Integer, nullable=True)        # ID del registro afectado
+    old_values = db.Column(db.Text, nullable=True)          # JSON con valores anteriores
+    new_values = db.Column(db.Text, nullable=True)          # JSON con valores nuevos
+    ip_address = db.Column(db.String(45), nullable=True)    # IPv4 o IPv6
+    user_agent = db.Column(db.Text, nullable=True)          # Info del navegador
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
+    description = db.Column(db.String(500), nullable=True)  # Descripción legible de la acción
+    restaurante_id = db.Column(db.Integer, db.ForeignKey('restaurantes.id'), nullable=True)
+
+    usuario = db.relationship('Usuario', backref='audit_logs')
+    restaurante = db.relationship('Restaurante', backref='audit_logs')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "usuario_id": self.usuario_id,
+            "usuario_nombre": self.usuario.nombre if self.usuario else None,
+            "action_type": self.action_type,
+            "table_name": self.table_name,
+            "record_id": self.record_id,
+            "old_values": self.old_values,
+            "new_values": self.new_values,
+            "ip_address": self.ip_address,
+            "user_agent": self.user_agent,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "description": self.description,
+            "restaurante_id": self.restaurante_id,
+        }
