@@ -129,9 +129,9 @@ export const Sidebar = () => {
                 </li>
 
                 <li className="nav-item">
-                  <Link 
-                    className="nav-link d-flex align-items-center" 
-                    to="/admin/usuarios" 
+                  <Link
+                    className="nav-link d-flex align-items-center"
+                    to="/admin/usuarios"
                     title="Usuarios"
                     style={getNavLinkStyle(isActive(["/admin/usuarios"]))}
                     {...getNavLinkHoverProps(isActive(["/admin/usuarios"]))}
@@ -142,9 +142,22 @@ export const Sidebar = () => {
                 </li>
 
                 <li className="nav-item">
-                  <Link 
-                    className="nav-link d-flex align-items-center" 
-                    to="/admin/settings" 
+                  <Link
+                    className="nav-link d-flex align-items-center"
+                    to="/admin/actividad"
+                    title="Actividad"
+                    style={getNavLinkStyle(isActive(["/admin/actividad"]))}
+                    {...getNavLinkHoverProps(isActive(["/admin/actividad"]))}
+                  >
+                    <i className="bi bi-activity me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Actividad</span>}
+                  </Link>
+                </li>
+
+                <li className="nav-item">
+                  <Link
+                    className="nav-link d-flex align-items-center"
+                    to="/admin/settings"
                     title="Configuración"
                     style={getNavLinkStyle(isActive(["/admin/settings"]))}
                     {...getNavLinkHoverProps(isActive(["/admin/settings"]))}

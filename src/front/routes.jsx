@@ -14,6 +14,7 @@ import AdminVentas from "./pages/admin/AdminVentas";
 import AdminGastos from "./pages/admin/AdminGastos";
 import { UsuariosDashboard } from "./pages/admin/UsuariosDashboard";
 import { CrearUsuario } from "./pages/admin/CrearUsuario";
+import AdminActividad from "./pages/admin/AdminActividad";
 import { ConfigAdmin } from "./pages/configuracion/ConfigAdmin.jsx";
 
 
@@ -67,6 +68,7 @@ export const router = createBrowserRouter(
           <Route path="admin/gastos-detalle" element={<AdminGastosDetalle />} />
           <Route path="admin/usuarios" element={<UsuariosDashboard />} />
           <Route path="admin/crear-usuario" element={<CrearUsuario />} />
+          <Route path="admin/actividad" element={<AdminActividad />} />
           <Route path="admin/settings" element={<ConfigAdmin />} />
 
 
