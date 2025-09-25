@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
-import axios from "axios";
+import AuditServices from "../../services/AuditServices";
 import { FiActivity, FiUser, FiCalendar, FiFilter, FiRefreshCw } from "react-icons/fi";
 
 const AdminActividad = () => {
@@ -36,19 +36,8 @@ const AdminActividad = () => {
   const loadLogs = async () => {
     try {
       setLoading(true);
-      const token = sessionStorage.getItem("token");
-
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
-
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/audit/logs?${params}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setLogs(response.data.logs || []);
+      const response = await AuditServices.getLogs(filters);
+      setLogs(response.logs || []);
     } catch (err) {
       console.error("Error loading logs:", err);
       setError("Error al cargar la actividad");
@@ -60,12 +49,8 @@ const AdminActividad = () => {
   // Cargar estadísticas
   const loadStats = async () => {
     try {
-      const token = sessionStorage.getItem("token");
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/audit/stats`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setStats(response.data);
+      const response = await AuditServices.getStats();
+      setStats(response);
     } catch (err) {
       console.error("Error loading stats:", err);
     }
