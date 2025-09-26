@@ -44,16 +44,16 @@ export const Sidebar = () => {
   });
 
   const getNavLinkHoverProps = (active = false) => ({
-    onMouseEnter: (e) => {
+    onMouseEnter: ({ currentTarget }) => {
       if (!active) {
-        e.target.style.background = 'var(--color-bg-subtle)';
-        e.target.style.transform = 'translateX(4px)';
+        currentTarget.style.background = 'var(--color-bg-subtle)';
+        currentTarget.style.transform = 'translateX(4px)';
       }
     },
-    onMouseLeave: (e) => {
+    onMouseLeave: ({ currentTarget }) => {
       if (!active) {
-        e.target.style.background = 'transparent';
-        e.target.style.transform = 'translateX(0)';
+        currentTarget.style.background = 'transparent';
+        currentTarget.style.transform = 'translateX(0)';
       }
     }
   });
