@@ -93,7 +93,6 @@ const AdminActividad = () => {
       CREATE: "🆕",
       UPDATE: "✏️",
       DELETE: "🗑️",
-      LOGIN: "🔐",
       LOGOUT: "🚪"
     };
     return icons[actionType] || "📝";
@@ -104,7 +103,6 @@ const AdminActividad = () => {
       CREATE: "text-success",
       UPDATE: "text-info",
       DELETE: "text-danger",
-      LOGIN: "text-primary",
       LOGOUT: "text-secondary"
     };
     return colors[actionType] || "text-muted";
@@ -161,7 +159,7 @@ const AdminActividad = () => {
             <div className="col-12 col-md-4">
               <div className="card-brand p-3">
                 <h6 className="fw-bold text-primary mb-2">Acciones por Tipo</h6>
-                {stats.actions_by_type?.slice(0, 3).map((item, index) => (
+                {stats.actions_by_type?.filter(item => item.type !== 'LOGIN').slice(0, 3).map((item, index) => (
                   <div key={index} className="d-flex justify-content-between small mb-1">
                     <span>{getActionIcon(item.type)} {item.type}</span>
                     <span className="fw-medium">{item.count}</span>
@@ -218,7 +216,6 @@ const AdminActividad = () => {
                 <option value="CREATE">🆕 Crear</option>
                 <option value="UPDATE">✏️ Actualizar</option>
                 <option value="DELETE">🗑️ Eliminar</option>
-                <option value="LOGIN">🔐 Login</option>
                 <option value="LOGOUT">🚪 Logout</option>
               </select>
             </div>
@@ -262,7 +259,7 @@ const AdminActividad = () => {
           <div className="p-3 border-bottom">
             <h6 className="fw-bold mb-0">
               <FiCalendar className="me-2" />
-              Registro de Actividad ({logs.length} entradas)
+              Registro de Actividad ({logs.filter(log => log.action_type !== 'LOGIN').length} entradas)
             </h6>
           </div>
 
@@ -284,7 +281,7 @@ const AdminActividad = () => {
             </div>
           ) : (
             <div className="list-group list-group-flush">
-              {logs.map((log, index) => (
+              {logs.filter(log => log.action_type !== 'LOGIN').map((log, index) => (
                 <div key={log.id} className="list-group-item border-0">
                   <div className="d-flex align-items-start">
                     <div className="me-3 mt-1">

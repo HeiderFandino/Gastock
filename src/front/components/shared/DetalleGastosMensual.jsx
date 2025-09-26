@@ -172,6 +172,17 @@ export const DetalleGastosMensual = () => {
     [monthlyData.totales]
   );
 
+  // Calcular totales por día
+  const totalesPorDia = useMemo(() => {
+    const totales = {};
+    monthlyData.dias.forEach(dia => {
+      totales[dia] = monthlyData.proveedores.reduce((sum, prov) => {
+        return sum + (parseFloat(monthlyData.datos[prov]?.[dia]) || 0);
+      }, 0);
+    });
+    return totales;
+  }, [monthlyData.datos, monthlyData.dias, monthlyData.proveedores]);
+
   return (
     <div className="dashboard-container admin-bb">
       {/* Header simplificado */}
@@ -370,37 +381,104 @@ export const DetalleGastosMensual = () => {
                   ))}
                 </ul>
 
-                {/* ===== Tabla desktop ===== */}
-                <div className="table-responsive d-none d-sm-block">
-                  <table className="table users-table mt-2 mb-0">
-                    <thead>
-                      <tr>
-                        <th rowSpan="2">Proveedor</th>
-                        <th colSpan={monthlyData.dias.length} className="text-center">Día del mes</th>
-                        <th rowSpan="2">Total</th>
-                      </tr>
+                {/* ===== Tabla desktop con doble scroll ===== */}
+                <div className="d-none d-sm-block">
+                  {/* Scroll superior */}
+                  <div
+                    className="scroll-bar-top"
+                    style={{
+                      overflowX: 'auto',
+                      overflowY: 'hidden',
+                      marginBottom: '10px'
+                    }}
+                    onScroll={(e) => {
+                      const bottomScroll = document.querySelector('.scroll-bar-bottom');
+                      if (bottomScroll) bottomScroll.scrollLeft = e.target.scrollLeft;
+                    }}
+                  >
+                    <div style={{ height: '1px', width: 'max-content' }}>
+                      <div style={{ width: `${monthlyData.dias.length * 80 + 200}px`, height: '1px' }}></div>
+                    </div>
+                  </div>
+
+                  <div
+                    className="table-responsive scroll-bar-bottom"
+                    onScroll={(e) => {
+                      const topScroll = document.querySelector('.scroll-bar-top');
+                      if (topScroll) topScroll.scrollLeft = e.target.scrollLeft;
+                    }}
+                  >
+                    <table className="table users-table mt-2 mb-0">
+                      <thead>
+                        <tr>
+                          <th rowSpan="2">Proveedor</th>
+                          <th rowSpan="2">Total</th>
+                          <th colSpan={monthlyData.dias.length} className="text-center">
+                            <div>Día del mes</div>
+                            <small style={{
+                              fontSize: '0.75rem',
+                              color: 'var(--color-text-secondary)',
+                              fontWeight: '400'
+                            }}>
+                              (Total diario debajo de cada día)
+                            </small>
+                          </th>
+                        </tr>
                       <tr>
                         {monthlyData.dias.map((d) => (
-                          <th key={d} title={`Día ${d}`} className="text-center">{d}</th>
+                          <th key={d} title={`Día ${d}`} className="text-center">
+                            <div style={{ marginBottom: '4px', fontSize: '0.95rem' }}>{d}</div>
+                            <div className="d-block">
+                              <span style={{
+                                background: 'color-mix(in srgb, var(--color-primary) 10%, white)',
+                                color: 'var(--color-primary)',
+                                fontSize: '0.7rem',
+                                fontWeight: '700',
+                                padding: '3px 6px',
+                                borderRadius: '6px',
+                                boxShadow: '0 1px 3px rgba(59, 130, 246, 0.2)',
+                                border: '1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)',
+                                display: 'inline-block'
+                              }}>
+                                {simbolo}{totalesPorDia[d]?.toFixed(2) || "0.00"}
+                              </span>
+                            </div>
+                          </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {monthlyData.proveedores.map((prov) => (
                         <tr key={prov}>
-                          <td className="fw-bold">{prov}</td>
+                          <td className="fw-bold" style={{ padding: '12px' }}>
+                            {prov}
+                          </td>
+                          <td style={{ padding: '8px', textAlign: 'center' }}>
+                            <span className="badge" style={{
+                              background: 'color-mix(in srgb, var(--color-primary) 10%, white)',
+                              color: 'var(--color-primary)',
+                              fontSize: '0.8rem',
+                              fontWeight: '700',
+                              padding: '6px 10px',
+                              borderRadius: '10px',
+                              boxShadow: '0 2px 6px rgba(59, 130, 246, 0.2)',
+                              border: '1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)',
+                              minWidth: '80px',
+                              textAlign: 'center'
+                            }}>
+                              {simbolo}{monthlyData.totales[prov]?.toFixed(2) || "0.00"}
+                            </span>
+                          </td>
                           {monthlyData.dias.map((d) => (
-                            <td key={d} className="text-end">
+                            <td key={d} className="text-end" style={{ padding: '8px' }}>
                               {monthlyData.datos[prov]?.[d]?.toFixed(2) || "-"}
                             </td>
                           ))}
-                          <td className="text-end fw-bold text-warning">
-                            {simbolo}{monthlyData.totales[prov]?.toFixed(2) || "0.00"}
-                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </>
             )}
