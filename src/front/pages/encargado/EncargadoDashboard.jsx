@@ -46,20 +46,6 @@ export const EncargadoDashboard = () => {
 
   const [ano, mes] = fechaSeleccionada.split("-").map(Number);
 
-  // Verificar si estamos después del día 10 del mes actual
-  const mostrarPorcentajeGasto = useMemo(() => {
-    const diaActual = new Date().getDate();
-    const mesActual = new Date().getMonth() + 1;
-    const anoActual = new Date().getFullYear();
-
-    // Si estamos viendo el mes actual, solo mostrar % de gasto después del día 10
-    if (ano === anoActual && mes === mesActual) {
-      return diaActual >= 10;
-    }
-
-    // Si es un mes pasado, siempre mostrar
-    return true;
-  }, [ano, mes]);
   const diasDelMes = new Date(ano, mes, 0).getDate();
 
   const nombreMes = useMemo(() => {
@@ -507,39 +493,35 @@ export const EncargadoDashboard = () => {
                 </div>
               </div>
             </div>
-            {mostrarPorcentajeGasto && (
-              <div className="col-6">
-                <div className="ag-card h-100">
-                  <div className="p-2 text-center">
-                    <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
-                      {icono}
-                    </div>
-                    <div className={`fw-bold ${textClass}`} style={{ fontSize: '0.9rem' }}>
-                      {porcentaje.toFixed(1)}%
-                    </div>
-                    <div className="text-muted" style={{ fontSize: '0.7rem' }}>% Gastos</div>
+            <div className="col-6">
+              <div className="ag-card h-100">
+                <div className="p-2 text-center">
+                  <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
+                    {icono}
                   </div>
+                  <div className={`fw-bold ${textClass}`} style={{ fontSize: '0.9rem' }}>
+                    {porcentaje.toFixed(1)}%
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>% Gastos</div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           <div className="row align-items-center">
             <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch d-none d-md-flex">
               <ResumenCard icon="💸" color="info" label="Gastos actuales" value={gasto} simbolo={simbolo} />
 
-              {mostrarPorcentajeGasto && (
-                <div className="card-brand p-3 text-center w-100">
-                  <div
-                    className={`icono-circular rounded-circle d-inline-flex align-items-center justify-content-center mb-2 ${textClass}`}
-                    aria-hidden="true"
-                  >
-                    {icono}
-                  </div>
-                  <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
-                  <div className={`fs-4 fw-bold ${textClass}`}>{porcentaje.toFixed(2)} %</div>
+              <div className="card-brand p-3 text-center w-100">
+                <div
+                  className={`icono-circular rounded-circle d-inline-flex align-items-center justify-content-center mb-2 ${textClass}`}
+                  aria-hidden="true"
+                >
+                  {icono}
                 </div>
-              )}
+                <h6 className={`fw-bold ${textClass}`}>% Gastos</h6>
+                <div className={`fs-4 fw-bold ${textClass}`}>{porcentaje.toFixed(2)} %</div>
+              </div>
             </div>
 
             <div className="col-12 col-md-9 mt-3 mt-md-0">
