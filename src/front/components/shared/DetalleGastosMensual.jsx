@@ -4,7 +4,6 @@ import gastoServices from "../../services/GastoServices";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
 import { MonedaSimbolo } from "../../services/MonedaSimbolo";
 import GastoModal from "../GastoModal";
-import CompactMonthFilter from "./CompactMonthFilter";
 import "../../styles/Encargado.css";
 import "../../styles/EncargadoGastos.mobile.css";
 // Estilos ya incluidos en brand-unified.css
@@ -20,6 +19,19 @@ export const DetalleGastosMensual = () => {
   const hoy = new Date();
   const [mes, setMes] = useState(hoy.getMonth() + 1);
   const [ano, setAno] = useState(hoy.getFullYear());
+  const pad = (n) => String(n).padStart(2, "0");
+  const computeRange = (year, month) => {
+    const lastDay = new Date(year, month, 0).getDate(); // month es 1-12; usamos JS month zero-based en el Date ctor
+    return {
+      start: `${year}-${pad(month)}-01`,
+      end: `${year}-${pad(month)}-${pad(lastDay)}`,
+    };
+  };
+
+  const initialRange = computeRange(ano, mes);
+  const [rangeStart, setRangeStart] = useState(initialRange.start);
+  const [rangeEnd, setRangeEnd] = useState(initialRange.end);
+  const [monthlyProveedorFilter, setMonthlyProveedorFilter] = useState("");
 
   const [monthlyData, setMonthlyData] = useState({
     datos: {},
@@ -106,10 +118,10 @@ export const DetalleGastosMensual = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [monthlyData.dias, monthlyData.proveedores]);
 
-  const handleMesChange = (e) => {
-    const [year, month] = e.target.value.split("-");
-    setAno(parseInt(year, 10));
-    setMes(parseInt(month, 10));
+  const updateRangeDefaults = (year, month) => {
+    const range = computeRange(year, month);
+    setRangeStart(range.start);
+    setRangeEnd(range.end);
   };
 
   const handleDateChange = (e) => setSelectedDate(e.target.value);
@@ -185,22 +197,6 @@ export const DetalleGastosMensual = () => {
     [displayedDaily]
   );
 
-  const totalGastosMes = useMemo(
-    () => Object.values(monthlyData.totales || {}).reduce((s, v) => s + (parseFloat(v) || 0), 0),
-    [monthlyData.totales]
-  );
-
-  // Calcular totales por día
-  const totalesPorDia = useMemo(() => {
-    const totales = {};
-    monthlyData.dias.forEach(dia => {
-      totales[dia] = monthlyData.proveedores.reduce((sum, prov) => {
-        return sum + (parseFloat(monthlyData.datos[prov]?.[dia]) || 0);
-      }, 0);
-    });
-    return totales;
-  }, [monthlyData.datos, monthlyData.dias, monthlyData.proveedores]);
-
   const handleArrowClick = (direction) => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollBy({ left: direction * 220, behavior: "smooth" });
@@ -221,6 +217,51 @@ export const DetalleGastosMensual = () => {
     const delta = e.clientX - dragStartX;
     scrollRef.current.scrollLeft = scrollStart - delta;
   };
+
+  useEffect(() => {
+    updateRangeDefaults(ano, mes);
+  }, [ano, mes]);
+
+  const filteredMonthlyDias = useMemo(() => {
+    if (!rangeStart || !rangeEnd) return monthlyData.dias;
+    const startDate = new Date(rangeStart);
+    const endDate = new Date(rangeEnd);
+    return monthlyData.dias.filter((d) => {
+      const current = new Date(ano, mes - 1, d);
+      return current >= startDate && current <= endDate;
+    });
+  }, [monthlyData.dias, rangeStart, rangeEnd, ano, mes]);
+
+  const filteredProveedoresMensual = useMemo(() => {
+    if (!monthlyProveedorFilter) return monthlyData.proveedores;
+    return monthlyData.proveedores.filter((p) => String(p) === String(monthlyProveedorFilter));
+  }, [monthlyData.proveedores, monthlyProveedorFilter]);
+
+  const filteredTotales = useMemo(() => {
+    const totales = {};
+    filteredProveedoresMensual.forEach((prov) => {
+      totales[prov] = filteredMonthlyDias.reduce(
+        (sum, dia) => sum + (parseFloat(monthlyData.datos[prov]?.[dia]) || 0),
+        0
+      );
+    });
+    return totales;
+  }, [filteredProveedoresMensual, filteredMonthlyDias, monthlyData.datos]);
+
+  const totalGastosMesFiltrado = useMemo(
+    () => Object.values(filteredTotales || {}).reduce((s, v) => s + (parseFloat(v) || 0), 0),
+    [filteredTotales]
+  );
+
+  const totalesPorDia = useMemo(() => {
+    const totales = {};
+    filteredMonthlyDias.forEach((dia) => {
+      totales[dia] = filteredProveedoresMensual.reduce((sum, prov) => {
+        return sum + (parseFloat(monthlyData.datos[prov]?.[dia]) || 0);
+      }, 0);
+    });
+    return totales;
+  }, [monthlyData.datos, filteredMonthlyDias, filteredProveedoresMensual]);
 
   return (
     <div className="dashboard-container admin-bb">
@@ -339,6 +380,7 @@ export const DetalleGastosMensual = () => {
                   const newYear = mes === 1 ? ano - 1 : ano;
                   setMes(newMonth);
                   setAno(newYear);
+                  updateRangeDefaults(newYear, newMonth);
                 }}
               >
                 ◀
@@ -382,13 +424,72 @@ export const DetalleGastosMensual = () => {
                   const newYear = mes === 12 ? ano + 1 : ano;
                   setMes(newMonth);
                   setAno(newYear);
+                  updateRangeDefaults(newYear, newMonth);
                 }}
               >
                 ▶
               </button>
             </div>
 
-            {monthlyData.proveedores.length === 0 ? (
+            {/* ===== Filtros: proveedor + rango ===== */}
+            <div className="row g-3 mb-3">
+              <div className="col-12 col-md-4">
+                <label className="form-label fw-medium">🏢 Proveedor:</label>
+                <select
+                  className="form-select"
+                  value={monthlyProveedorFilter}
+                  onChange={(e) => setMonthlyProveedorFilter(e.target.value)}
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    background: 'var(--color-bg-card)',
+                    color: 'var(--color-text)',
+                    padding: '10px 14px'
+                  }}
+                >
+                  <option value="">Todos</option>
+                  {monthlyData.proveedores.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-6 col-md-4">
+                <label className="form-label fw-medium">Desde:</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={rangeStart}
+                  onChange={(e) => setRangeStart(e.target.value)}
+                  placeholder={computeRange(ano, mes).start}
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    background: 'var(--color-bg-card)',
+                    color: 'var(--color-text)',
+                    padding: '10px 14px'
+                  }}
+                />
+              </div>
+              <div className="col-6 col-md-4">
+                <label className="form-label fw-medium">Hasta:</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={rangeEnd}
+                  onChange={(e) => setRangeEnd(e.target.value)}
+                  placeholder={computeRange(ano, mes).end}
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    background: 'var(--color-bg-card)',
+                    color: 'var(--color-text)',
+                    padding: '10px 14px'
+                  }}
+                />
+              </div>
+            </div>
+
+            {filteredProveedoresMensual.length === 0 ? (
               <div className="text-center py-4">
                 <div className="ag-icon mx-auto mb-2" style={{ width: 48, height: 48, fontSize: '1.5rem' }}>📊</div>
                 <p className="text-muted">No hay gastos registrados para este período.</p>
@@ -398,13 +499,13 @@ export const DetalleGastosMensual = () => {
                 {/* ===== Total del mes ===== */}
                 <div className="d-flex justify-content-end mb-3">
                   <div className="fw-bold text-info" style={{ fontSize: '1.1rem' }}>
-                    📊 Total del mes: {simbolo}{totalGastosMes.toFixed(2)}
+                    📊 Total del mes: {simbolo}{totalGastosMesFiltrado.toFixed(2)}
                   </div>
                 </div>
 
                 {/* ===== Lista mobile (cards) ===== */}
                 <ul className="list-unstyled d-sm-none">
-                  {monthlyData.proveedores.map((prov) => (
+                  {filteredProveedoresMensual.map((prov) => (
                     <li key={prov} className="ag-card p-3 ">
                       <div className="d-flex justify-content-between align-items-center">
                         <div className="flex-grow-1">
@@ -412,7 +513,7 @@ export const DetalleGastosMensual = () => {
                         </div>
                         <div className="text-end">
                           <div className="fw-bold text-warning" style={{ fontSize: "1.1rem" }}>
-                            {simbolo}{(monthlyData.totales[prov] || 0).toFixed(2)}
+                            {simbolo}{(filteredTotales[prov] || 0).toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -456,7 +557,7 @@ export const DetalleGastosMensual = () => {
                         </tr>
                       </thead>
                       <tbody >
-                        {monthlyData.proveedores.map((prov) => (
+                        {filteredProveedoresMensual.map((prov) => (
                           <tr key={`left-${prov}`}>
                             <td className="fw-bold table-split-provider" style={{ padding: '12px', marginBottom: "20px" }} >
                               {prov}
@@ -474,7 +575,7 @@ export const DetalleGastosMensual = () => {
                                 minWidth: 'px',
                                 textAlign: 'center'
                               }}>
-                                {simbolo}{monthlyData.totales[prov]?.toFixed(2) || "0.00"}
+                                {simbolo}{filteredTotales[prov]?.toFixed(2) || "0.00"}
                               </span>
                             </td>
                           </tr>
@@ -527,7 +628,7 @@ export const DetalleGastosMensual = () => {
                           </th>
                         </tr>
                         <tr>
-                          {monthlyData.dias.map((d) => (
+                          {filteredMonthlyDias.map((d) => (
                             <th key={d} title={`Día ${d}`} className="text-center">
                               <div style={{ marginBottom: '4px', fontSize: '0.95rem' }}>{d}</div>
                               <div className="d-block">
@@ -550,9 +651,9 @@ export const DetalleGastosMensual = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {monthlyData.proveedores.map((prov) => (
+                        {filteredProveedoresMensual.map((prov) => (
                           <tr key={prov}>
-                            {monthlyData.dias.map((d) => (
+                            {filteredMonthlyDias.map((d) => (
                               <td key={d} className="text-end" style={{ padding: '8px' }}>
                                 {monthlyData.datos[prov]?.[d]?.toFixed(2) || "-"}
                               </td>

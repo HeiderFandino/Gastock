@@ -27,6 +27,14 @@ export const QuickActionsAdmin = () => {
       bgToken: "var(--tint-success-12)",
       fgToken: "var(--color-success)",
     },
+    {
+      icon: "⚡",
+      title: "Actividad",
+      subtitle: "Auditoría y cambios",
+      link: "/admin/actividad",
+      bgToken: "var(--tint-info-12)",
+      fgToken: "var(--color-info)",
+    },
   ];
 
   return (
