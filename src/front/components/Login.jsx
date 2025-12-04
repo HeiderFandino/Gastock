@@ -55,8 +55,13 @@ export const Login = () => {
     setLoading(true);
     setErrorMessage("");
 
+    const payload = {
+      ...FormData,
+      email: (FormData.email || "").trim().toLowerCase(),
+    };
+
     try {
-      const data = await userServices.login(FormData);
+      const data = await userServices.login(payload);
 
       if (!data?.access_token || !data?.user) {
         setErrorMessage("Usuario o contraseña incorrectos");
@@ -67,7 +72,7 @@ export const Login = () => {
       sessionStorage.setItem("user", JSON.stringify(data.user));
 
       if (data.user?.rol === "admin") {
-        localStorage.setItem("adminEmail", data.user.email);
+        localStorage.setItem("adminEmail", (data.user.email || "").toLowerCase());
       }
 
       dispatch({ type: "get_user_info", payload: data.user });
@@ -98,7 +103,7 @@ export const Login = () => {
 
       {errorMessage && <div className="login-error">{errorMessage}</div>}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} autoComplete="on">
         <div className="form-group">
           <label htmlFor="email" className="form-label">
             Correo electrónico
@@ -112,7 +117,7 @@ export const Login = () => {
             value={FormData.email}
             onChange={handleChange}
             required
-            autoComplete="username"
+            autoComplete="email"
           />
         </div>
 

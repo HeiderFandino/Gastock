@@ -11,10 +11,10 @@ import Button from "react-bootstrap/Button";
 // 3. ¡Listo! Tus clientes verán el nuevo anuncio una vez
 // ========================================
 
-const CURRENT_VERSION = "v15";
+const CURRENT_VERSION = "v16";
 const PATCH_NOTES = [
-    "Error de fondo blado en el side bar corregido",
-    "Ahora vielve a salir el total de gastos en la vista de gastos diarios",
+    "Desplazamiento lateral en los la vista mensual de gasto MEJORADO",
+    "al momento de iniciar sesion ya no es sensible a las MAYUSCULAS",
     "Corrección de errores menores",
 ];
 
