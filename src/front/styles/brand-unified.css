@@ -1523,3 +1523,13 @@
   pointer-events: none;
   transition: opacity 0.2s ease;
 }
+
+/* Oculta scrollbars en contenedores horizontales y mantiene desplazamiento con rueda/touch */
+.horizontal-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+  display: none;
+}

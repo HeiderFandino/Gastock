@@ -219,3 +219,192 @@
     display: none;
   }
 }
+
+/* ===== Scroll horizontal limpio en tabla mensual ===== */
+.horizontal-scroll-area {
+  position: relative;
+  --sticky-provider-width: 220px;
+  --sticky-total-width: 140px;
+  --split-left-width: calc(
+    var(--sticky-provider-width) + var(--sticky-total-width)
+  );
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-fade-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-bg-card) 70%, transparent);
+  color: var(--color-text);
+  display: grid;
+  place-items: center;
+  opacity: 0.45;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  pointer-events: auto;
+}
+
+.scroll-fade-arrow:hover {
+  opacity: 0.9;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.scroll-fade-arrow.left {
+  left: calc(var(--split-left-width) + 8px);
+}
+
+.scroll-fade-arrow.right {
+  right: 8px;
+}
+
+@media (max-width: 767.98px) {
+  .scroll-fade-arrow {
+    display: none;
+  }
+}
+
+/* Columnas fijas en tabla mensual */
+/* Nuevo layout split: izquierda fija, derecha scrolleable */
+.table-split-wrapper {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+}
+
+.table-split-left {
+  flex: 0 0 var(--split-left-width);
+  max-width: var(--split-left-width);
+  border: 1px solid var(--color-border);
+  border-right: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-radius: 12px 0 0 12px;
+  overflow: hidden;
+  background: var(--color-bg-card, #fff);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.06);
+  padding: 0;
+}
+
+.table-split-right {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+  overflow-x: auto;
+  background: var(--color-bg-card, #fff);
+  padding: 0;
+}
+
+.table-split-left table,
+.table-split-right table {
+  margin-bottom: 0;
+  margin: 0;
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border-radius: 0;
+}
+
+.table-split-provider {
+  width: var(--sticky-provider-width);
+  min-width: var(--sticky-provider-width);
+  background: var(--color-bg-card, #fff);
+}
+
+.table-split-total {
+  width: var(--sticky-total-width);
+  min-width: var(--sticky-total-width);
+  background: var(--color-bg-card, #fff);
+}
+
+.table-split-placeholder th {
+  border: none;
+  height: 82px !important;
+  padding: 0;
+  background: transparent !important;
+}
+
+.table-split-left thead th {
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0 !important;
+}
+
+.table-split-left tbody td {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-card, #fff);
+  border-radius: 0 !important;
+}
+
+.table-split-right thead th {
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0 !important;
+}
+
+.table-split-right tbody td {
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0 !important;
+}
+
+.table-split-left thead tr:first-child th,
+.table-split-right thead tr:first-child th {
+  padding: 12px 14px;
+  height: 56px;
+  vertical-align: middle;
+}
+
+.table-split-left thead tr:nth-child(2) th,
+.table-split-right thead tr:nth-child(2) th {
+  padding: 10px 12px;
+  height: 48px;
+  vertical-align: middle;
+}
+
+.table-split-left tbody tr,
+.table-split-right tbody tr {
+  height: 58px;
+}
+
+.table-split-left td,
+.table-split-right td {
+  padding: 12px 14px !important;
+  vertical-align: middle;
+}
+
+.table-split-right .table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.horizontal-scroll-area .table.users-table th,
+.horizontal-scroll-area .table.users-table td {
+  white-space: nowrap;
+  border-radius: 0 !important;
+}
+
+/* Unificar barra azul del header */
+.table-split-left thead tr:first-child th,
+.table-split-right thead tr:first-child th {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: color-mix(in srgb, var(--color-primary) 80%, #0b3f88);
+}
+
+.table-split-left thead tr:first-child th:first-child {
+  border-top-left-radius: 0;
+}
+
+.table-split-right thead tr:first-child th:last-child {
+  border-top-right-radius: 0;
+}

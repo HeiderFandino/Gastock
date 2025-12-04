@@ -1,29 +1,35 @@
-
-
-
-import random
 import os
+import random
 import sys
 import unicodedata
 from calendar import monthrange
 from datetime import date, timedelta
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-
-from api.models import Proveedor, Gasto, Usuario, Restaurante, Venta
-from app import app, db
-from werkzeug.security import generate_password_hash
 from dotenv import load_dotenv
+from sqlalchemy import text
+from werkzeug.security import generate_password_hash
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
+
+from api.models import AuditLog, Gasto, Proveedor, Restaurante, Usuario, Venta  # noqa: E402
+from app import app, db  # noqa: E402
 
 load_dotenv()
 
-def limpiar_email(texto):
-    texto = unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode('utf-8')
-    return texto.lower().replace(' ', '').replace('&', '')
+
+def limpiar_email(texto: str) -> str:
+    texto = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("utf-8")
+    return texto.lower().replace(" ", "").replace("&", "")
+
 
 with app.app_context():
-    print("🧹 Borrando TODOS los datos...")
+    print("Borrando TODOS los datos...")
 
+    db.session.execute(text("TRUNCATE audit_logs CASCADE"))
+    db.session.execute(text("TRUNCATE token_blocklist CASCADE"))
+    db.session.commit()
+
+    AuditLog.query.delete()
     Venta.query.delete()
     Gasto.query.delete()
     Proveedor.query.delete()
@@ -31,12 +37,19 @@ with app.app_context():
     Restaurante.query.delete()
     db.session.commit()
 
-    print("🔄 Inicializando seed...")
+    print("Inicializando seed...")
 
     nombres_restaurantes = [
-        "La Marea", "Tango Grill", "Internacional Bar", "Mar & Terra",
-        "Sabor Criollo", "Pasta & Vino", "Fusión Oriental", "El Rincón Vegano",
-        "Tapas Urbanas", "Bistró Mediterráneo"
+        "La Marea",
+        "Tango Grill",
+        "Internacional Bar",
+        "Mar & Terra",
+        "Sabor Criollo",
+        "Pasta & Vino",
+        "Fusion Oriental",
+        "El Rincon Vegano",
+        "Tapas Urbanas",
+        "Bistro Mediterraneo",
     ]
 
     estados_gasto = ["dentro"] * 3 + ["limite"] * 3 + ["fuera"] * 4
@@ -49,18 +62,18 @@ with app.app_context():
             nombre=nombre,
             direccion=f"Calle {random.randint(1, 200)}, Ciudad",
             telefono=f"6{random.randint(10000000, 99999999)}",
-            email_contacto=f"contacto.{clean_name}@ohmychef.com"
+            email_contacto=f"contacto.{clean_name}@ohmychef.com",
         )
         db.session.add(restaurante)
         restaurante.estado_gasto = estados_gasto[i]
         restaurantes.append(restaurante)
     db.session.commit()
 
-    print("🏗️ Restaurantes creados.")
+    print("Restaurantes creados.")
 
-    apellidos = ["Gómez", "Pérez", "Rodríguez", "Fernández", "López", "Martínez"]
-    nombres_chef = ["Laura", "Carlos", "Sofía", "Pedro", "Ana", "Miguel", "Lucía", "David", "Elena", "Javier"]
-    nombres_encargado = ["Andrés", "Patricia", "Raúl", "Beatriz", "Tomás", "Irene", "Diego", "Clara", "Rubén", "Nuria"]
+    apellidos = ["Gomez", "Perez", "Rodriguez", "Fernandez", "Lopez", "Martinez"]
+    nombres_chef = ["Laura", "Carlos", "Sofia", "Pedro", "Ana", "Miguel", "Lucia", "David", "Elena", "Javier"]
+    nombres_encargado = ["Andres", "Patricia", "Raul", "Beatriz", "Tomas", "Irene", "Diego", "Clara", "Ruben", "Nuria"]
 
     for i, restaurante in enumerate(restaurantes):
         clean_name = limpiar_email(restaurante.nombre)
@@ -78,7 +91,7 @@ with app.app_context():
             rol="encargado",
             status="active",
             restaurante_id=restaurante.id,
-            password=generate_password_hash("123456")
+            password=generate_password_hash("123456"),
         )
         chef = Usuario(
             nombre=f"{nombres_chef[i]} {random.choice(apellidos)}",
@@ -86,7 +99,7 @@ with app.app_context():
             rol="chef",
             status="active",
             restaurante_id=restaurante.id,
-            password=generate_password_hash("123456")
+            password=generate_password_hash("123456"),
         )
         db.session.add(encargado)
         db.session.add(chef)
@@ -97,23 +110,23 @@ with app.app_context():
         rol="admin",
         status="active",
         restaurante_id=None,
-        password=generate_password_hash("123456")
+        password=generate_password_hash("123456"),
     )
     db.session.add(admin)
     db.session.commit()
 
-    print("👤 Admin y usuarios creados.")
+    print("Admin y usuarios creados.")
 
-    print("➕ Creando proveedores...")
+    print("Creando proveedores...")
 
     proveedores_reales = [
-        {"nombre": "Gas y Energía", "categoria": "otros"},
+        {"nombre": "Gas y Energia", "categoria": "otros"},
         {"nombre": "Distribuidora Coca-Cola", "categoria": "bebidas"},
         {"nombre": "Bebidas Alianza", "categoria": "bebidas"},
         {"nombre": "Limpieza Total", "categoria": "limpieza"},
-        {"nombre": "Soluciones Higiénicas", "categoria": "limpieza"},
+        {"nombre": "Soluciones Higienicas", "categoria": "limpieza"},
         {"nombre": "Embalajes Ruiz", "categoria": "otros"},
-        {"nombre": "Lácteos del Sur", "categoria": "alimentos"},
+        {"nombre": "Lacteos del Sur", "categoria": "alimentos"},
         {"nombre": "Aguas Claras", "categoria": "bebidas"},
         {"nombre": "Verduras Frescas", "categoria": "alimentos"},
         {"nombre": "Higiene Express", "categoria": "limpieza"},
@@ -129,10 +142,10 @@ with app.app_context():
             prov = Proveedor(
                 nombre=p["nombre"],
                 categoria=p["categoria"],
-                direccion=f"Calle Proveedor, Ciudad",
+                direccion="Calle Proveedor, Ciudad",
                 telefono=f"6{random.randint(10000000, 99999999)}",
                 email_contacto=email,
-                restaurante_id=restaurante.id
+                restaurante_id=restaurante.id,
             )
             db.session.add(prov)
             lista.append(prov)
@@ -140,7 +153,7 @@ with app.app_context():
 
     db.session.commit()
 
-    print("💰 Generando gastos y ventas desde enero...")
+    print("Generando gastos y ventas desde enero...")
 
     fecha_inicio = date(2025, 1, 1)
     hoy = date.today()
@@ -149,14 +162,14 @@ with app.app_context():
     dias = (fecha_fin - fecha_inicio).days
 
     for restaurante in restaurantes:
-        chef = Usuario.query.filter_by(rol='chef', restaurante_id=restaurante.id).first()
+        chef = Usuario.query.filter_by(rol="chef", restaurante_id=restaurante.id).first()
         proveedores = proveedores_por_restaurante[restaurante.id]
 
         for i in range(dias):
             fecha = fecha_inicio + timedelta(days=i)
 
             gastos_del_dia = []
-            for _ in range(3):  # ← SOLO 3 gastos diarios
+            for _ in range(3):  # Solo 3 gastos diarios
                 proveedor = random.choice(proveedores)
 
                 if restaurante.estado_gasto == "dentro":
@@ -173,7 +186,7 @@ with app.app_context():
                     proveedor_id=proveedor.id,
                     usuario_id=chef.id,
                     restaurante_id=restaurante.id,
-                    nota=f"Gasto de {proveedor.nombre}"
+                    nota=f"Gasto de {proveedor.nombre}",
                 )
                 db.session.add(gasto)
                 gastos_del_dia.append(monto)
@@ -193,9 +206,9 @@ with app.app_context():
                 fecha=fecha,
                 turno="tarde",
                 monto=total_venta_dia,
-                restaurante_id=restaurante.id
+                restaurante_id=restaurante.id,
             )
             db.session.add(venta)
 
     db.session.commit()
-    print("✅ Base de datos reiniciada con éxito.")
+    print("Base de datos reiniciada con exito.")

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import gastoServices from "../../services/GastoServices";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
@@ -8,7 +8,7 @@ import CompactMonthFilter from "./CompactMonthFilter";
 import "../../styles/Encargado.css";
 import "../../styles/EncargadoGastos.mobile.css";
 // Estilos ya incluidos en brand-unified.css
-import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiEdit2, FiTrash2 } from "react-icons/fi";
 
 export const DetalleGastosMensual = () => {
   const simbolo = MonedaSimbolo();
@@ -37,6 +37,11 @@ export const DetalleGastosMensual = () => {
   const [tipoMensaje, setTipoMensaje] = useState("info");
   const [gastoEditar, setGastoEditar] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [scrollStart, setScrollStart] = useState(0);
+  const [showArrows, setShowArrows] = useState(false);
+  const scrollRef = useRef(null);
 
   // ---------- Helpers ----------
   const rid = Number(user?.restaurante_id);
@@ -87,6 +92,19 @@ export const DetalleGastosMensual = () => {
     const el = document.getElementsByClassName("custom-sidebar")[0];
     if (el) el.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const handleResize = () => {
+      setShowArrows(el.scrollWidth > el.clientWidth + 8);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [monthlyData.dias, monthlyData.proveedores]);
 
   const handleMesChange = (e) => {
     const [year, month] = e.target.value.split("-");
@@ -182,6 +200,27 @@ export const DetalleGastosMensual = () => {
     });
     return totales;
   }, [monthlyData.datos, monthlyData.dias, monthlyData.proveedores]);
+
+  const handleArrowClick = (direction) => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollBy({ left: direction * 220, behavior: "smooth" });
+  };
+
+  const handleMouseDown = (e) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setDragStartX(e.clientX);
+    setScrollStart(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const delta = e.clientX - dragStartX;
+    scrollRef.current.scrollLeft = scrollStart - delta;
+  };
 
   return (
     <div className="dashboard-container admin-bb">
@@ -366,7 +405,7 @@ export const DetalleGastosMensual = () => {
                 {/* ===== Lista mobile (cards) ===== */}
                 <ul className="list-unstyled d-sm-none">
                   {monthlyData.proveedores.map((prov) => (
-                    <li key={prov} className="ag-card p-3 mb-2">
+                    <li key={prov} className="ag-card p-3 ">
                       <div className="d-flex justify-content-between align-items-center">
                         <div className="flex-grow-1">
                           <div className="fw-bold" style={{ fontSize: "1.05rem" }}>{prov}</div>
@@ -381,38 +420,101 @@ export const DetalleGastosMensual = () => {
                   ))}
                 </ul>
 
-                {/* ===== Tabla desktop con doble scroll ===== */}
-                <div className="d-none d-sm-block">
-                  {/* Scroll superior */}
-                  <div
-                    className="scroll-bar-top"
-                    style={{
-                      overflowX: 'auto',
-                      overflowY: 'hidden',
-                      marginBottom: '10px'
-                    }}
-                    onScroll={(e) => {
-                      const bottomScroll = document.querySelector('.scroll-bar-bottom');
-                      if (bottomScroll) bottomScroll.scrollLeft = e.target.scrollLeft;
-                    }}
-                  >
-                    <div style={{ height: '1px', width: 'max-content' }}>
-                      <div style={{ width: `${monthlyData.dias.length * 80 + 200}px`, height: '1px' }}></div>
-                    </div>
+                {/* ===== Tabla desktop separada en dos bloques (fijo + scroll) ===== */}
+                <div className="d-none d-sm-flex position-relative horizontal-scroll-area table-split-wrapper">
+                  {showArrows && (
+                    <>
+                      <button
+                        type="button"
+                        className="scroll-fade-arrow left"
+                        aria-label="Desplazar a la izquierda"
+                        onClick={() => handleArrowClick(-1)}
+                      >
+                        <FiChevronLeft size={18} />
+                      </button>
+                      <button
+                        type="button"
+                        className="scroll-fade-arrow right"
+                        aria-label="Desplazar a la derecha"
+                        onClick={() => handleArrowClick(1)}
+                      >
+                        <FiChevronRight size={18} />
+                      </button>
+                    </>
+                  )}
+
+                  <div className="table-split-left">
+                    <table className="table users-table  table-split-sticky  mt-2">
+                      <thead>
+                        <tr >
+                          <th className="table-split-provider"></th>
+                          <th className="table-split-total"></th>
+                        </tr>
+                        <tr className="table-split-placeholder ">
+                          <th className="table-split-provider">Proveedor</th>
+                          <th className="table-split-total">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody >
+                        {monthlyData.proveedores.map((prov) => (
+                          <tr key={`left-${prov}`}>
+                            <td className="fw-bold table-split-provider" style={{ padding: '12px', marginBottom: "20px" }} >
+                              {prov}
+                            </td>
+                            <td className="table-split-total" >
+                              <span className="badge" style={{
+                                background: 'color-mix(in srgb, var(--color-primary) 10%, white)',
+                                color: 'var(--color-primary)',
+                                fontSize: '0.8rem',
+                                fontWeight: '700',
+                                padding: '6px 10px',
+                                borderRadius: '10px',
+                                boxShadow: '0 2px 6px rgba(59, 130, 246, 0.2)',
+                                border: '1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)',
+                                minWidth: 'px',
+                                textAlign: 'center'
+                              }}>
+                                {simbolo}{monthlyData.totales[prov]?.toFixed(2) || "0.00"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
 
                   <div
-                    className="table-responsive scroll-bar-bottom"
-                    onScroll={(e) => {
-                      const topScroll = document.querySelector('.scroll-bar-top');
-                      if (topScroll) topScroll.scrollLeft = e.target.scrollLeft;
+                    ref={scrollRef}
+                    className="table-split-right hide-scrollbar"
+                    style={{
+                      overflowX: "auto",
+                      overflowY: "hidden",
+                      cursor: isDragging ? "grabbing" : "grab",
+                      paddingBottom: "6px"
+                    }}
+                    onMouseDown={handleMouseDown}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onMouseMove={handleMouseMove}
+                    onWheel={(e) => {
+                      if (!scrollRef.current) return;
+                      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                        e.preventDefault();
+                        scrollRef.current.scrollLeft += e.deltaY;
+                      }
                     }}
                   >
-                    <table className="table users-table mt-2 mb-0">
+                    <table
+                      className="table users-table mt-2 "
+                      style={{
+                        width: "max-content",
+                        minWidth: "100%",
+                        borderCollapse: "separate",
+                        borderSpacing: 0
+                      }}
+                    >
                       <thead>
                         <tr>
-                          <th rowSpan="2">Proveedor</th>
-                          <th rowSpan="2">Total</th>
                           <th colSpan={monthlyData.dias.length} className="text-center">
                             <div>Día del mes</div>
                             <small style={{
@@ -424,60 +526,41 @@ export const DetalleGastosMensual = () => {
                             </small>
                           </th>
                         </tr>
-                      <tr>
-                        {monthlyData.dias.map((d) => (
-                          <th key={d} title={`Día ${d}`} className="text-center">
-                            <div style={{ marginBottom: '4px', fontSize: '0.95rem' }}>{d}</div>
-                            <div className="d-block">
-                              <span style={{
-                                background: 'color-mix(in srgb, var(--color-primary) 10%, white)',
-                                color: 'var(--color-primary)',
-                                fontSize: '0.7rem',
-                                fontWeight: '700',
-                                padding: '3px 6px',
-                                borderRadius: '6px',
-                                boxShadow: '0 1px 3px rgba(59, 130, 246, 0.2)',
-                                border: '1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)',
-                                display: 'inline-block'
-                              }}>
-                                {simbolo}{totalesPorDia[d]?.toFixed(2) || "0.00"}
-                              </span>
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {monthlyData.proveedores.map((prov) => (
-                        <tr key={prov}>
-                          <td className="fw-bold" style={{ padding: '12px' }}>
-                            {prov}
-                          </td>
-                          <td style={{ padding: '8px', textAlign: 'center' }}>
-                            <span className="badge" style={{
-                              background: 'color-mix(in srgb, var(--color-primary) 10%, white)',
-                              color: 'var(--color-primary)',
-                              fontSize: '0.8rem',
-                              fontWeight: '700',
-                              padding: '6px 10px',
-                              borderRadius: '10px',
-                              boxShadow: '0 2px 6px rgba(59, 130, 246, 0.2)',
-                              border: '1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)',
-                              minWidth: '80px',
-                              textAlign: 'center'
-                            }}>
-                              {simbolo}{monthlyData.totales[prov]?.toFixed(2) || "0.00"}
-                            </span>
-                          </td>
+                        <tr>
                           {monthlyData.dias.map((d) => (
-                            <td key={d} className="text-end" style={{ padding: '8px' }}>
-                              {monthlyData.datos[prov]?.[d]?.toFixed(2) || "-"}
-                            </td>
+                            <th key={d} title={`Día ${d}`} className="text-center">
+                              <div style={{ marginBottom: '4px', fontSize: '0.95rem' }}>{d}</div>
+                              <div className="d-block">
+                                <span style={{
+                                  background: 'color-mix(in srgb, var(--color-primary) 10%, white)',
+                                  color: 'var(--color-primary)',
+                                  fontSize: '0.7rem',
+                                  fontWeight: '700',
+                                  padding: '3px 6px',
+                                  borderRadius: '6px',
+                                  boxShadow: '0 1px 3px rgba(59, 130, 246, 0.2)',
+                                  border: '1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)',
+                                  display: 'inline-block'
+                                }}>
+                                  {simbolo}{totalesPorDia[d]?.toFixed(2) || "0.00"}
+                                </span>
+                              </div>
+                            </th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {monthlyData.proveedores.map((prov) => (
+                          <tr key={prov}>
+                            {monthlyData.dias.map((d) => (
+                              <td key={d} className="text-end" style={{ padding: '8px' }}>
+                                {monthlyData.datos[prov]?.[d]?.toFixed(2) || "-"}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </>
@@ -683,7 +766,7 @@ export const DetalleGastosMensual = () => {
 
                 {/* ===== Tabla desktop ===== */}
                 <div className="table-responsive d-none d-sm-block">
-                  <table className="table users-table mt-2 mb-0">
+                  <table className="table users-table   ">
                     <thead>
                       <tr>
                         <th>Proveedor</th>
@@ -769,14 +852,16 @@ export const DetalleGastosMensual = () => {
       </div>
 
       {/* Modal edición */}
-      {modalVisible && (
-        <GastoModal
-          gasto={gastoEditar}
-          proveedores={proveedoresList}
-          onSave={guardarEdicion}
-          onClose={() => setModalVisible(false)}
-        />
-      )}
-    </div>
+      {
+        modalVisible && (
+          <GastoModal
+            gasto={gastoEditar}
+            proveedores={proveedoresList}
+            onSave={guardarEdicion}
+            onClose={() => setModalVisible(false)}
+          />
+        )
+      }
+    </div >
   );
 };

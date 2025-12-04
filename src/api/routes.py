@@ -1,7 +1,8 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-print("🔥 ROUTES.PY CARGADO - Servidor iniciado correctamente")  # Debug
+# Debug message without emoji to avoid encoding issues on Windows consoles
+print("ROUTES.PY CARGADO - Servidor iniciado correctamente")
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, Usuario, Venta, Gasto, FacturaAlbaran, Proveedor, MargenObjetivo, Restaurante, AuditLog
 from api.audit_service import AuditService
