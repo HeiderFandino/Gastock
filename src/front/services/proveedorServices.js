@@ -3,13 +3,14 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 proveedorServices.getProveedores = async (restaurante_id) => {
   const token = sessionStorage.getItem("token");
-  const resp = await fetch(`${backendUrl}/api/proveedores`, {
+  const resp = await fetch(`${backendUrl}/api/proveedores?restaurante_id=${restaurante_id}`, {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!resp.ok) throw new Error("Error al obtener proveedores");
   const data = await resp.json();
-  return data.filter((p) => p.restaurante_id === restaurante_id);
+  // Aseguramos array limpio
+  return Array.isArray(data) ? data : [];
 };
 
 proveedorServices.crearProveedor = async (formData) => {

@@ -117,11 +117,14 @@ body {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: env(safe-area-inset-bottom, 0);
+  width: 100vw; /* asegura que no se recorte al hacer zoom/pinch */
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 4px);
   background: var(--color-bg-card);
   border-top: 1px solid var(--color-border);
   padding: 6px 4px;
   z-index: 1030;
+  transform: translateZ(0); /* crea capa propia y evita que "salte" con zoom */
 }
 .bottom-nav .bn-item {
   display: flex;

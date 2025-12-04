@@ -289,7 +289,8 @@
   flex: 0 0 var(--split-left-width);
   max-width: var(--split-left-width);
   border: 1px solid var(--color-border);
-  border-right: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-right: 1px solid
+    color-mix(in srgb, var(--color-border) 70%, transparent);
   border-radius: 12px 0 0 12px;
   overflow: hidden;
   background: var(--color-bg-card, #fff);
@@ -331,7 +332,7 @@
 
 .table-split-placeholder th {
   border: none;
-  height: 82px !important;
+  height: 81px !important;
   padding: 0;
   background: transparent !important;
 }
@@ -360,7 +361,7 @@
 .table-split-left thead tr:first-child th,
 .table-split-right thead tr:first-child th {
   padding: 12px 14px;
-  height: 56px;
+  height: 55px;
   vertical-align: middle;
 }
 

@@ -1156,7 +1156,8 @@ def get_proveedores():
             "categoria": p.categoria,
             "restaurante_id": p.restaurante_id,
             "telefono": p.telefono,
-            "direccion": p.direccion
+            "direccion": p.direccion,
+            "email_contacto": p.email_contacto
         }
         for p in proveedores
     ]
@@ -1233,7 +1234,8 @@ def obtener_proveedor(id):
         "categoria": proveedor.categoria,
         "restaurante_id": proveedor.restaurante_id,
         "telefono": proveedor.telefono,
-        "direccion": proveedor.direccion
+        "direccion": proveedor.direccion,
+        "email_contacto": proveedor.email_contacto
     }
 
     return jsonify(resultado), 200

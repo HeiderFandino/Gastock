@@ -358,6 +358,11 @@ export const Sidebar = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/admin/actividad" className={`bn-item ${isActive(["/admin/actividad"])}`}>
+                  <i className="bi bi-activity"></i><span>Actividad</span>
+                </Link>
+              </li>
+              <li>
                 <Link to="/admin/usuarios" className={`bn-item ${isActive(["/admin/usuarios"])}`}>
                   <i className="bi bi-people"></i><span>Users</span>
                 </Link>
