@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import gastoServices from "../../services/GastoServices";
 import useGlobalReducer from "../../hooks/useGlobalReducer";
@@ -54,6 +54,8 @@ export const DetalleGastosMensual = () => {
   const [scrollStart, setScrollStart] = useState(0);
   const [showArrows, setShowArrows] = useState(false);
   const scrollRef = useRef(null);
+  const leftTableRef = useRef(null);
+  const rightTableRef = useRef(null);
 
   // ---------- Helpers ----------
   const rid = Number(user?.restaurante_id);
@@ -222,13 +224,21 @@ export const DetalleGastosMensual = () => {
     updateRangeDefaults(ano, mes);
   }, [ano, mes]);
 
+  const buildDateKey = (value) => {
+    if (!value) return null;
+    const [y, m, d] = value.split("-").map(Number);
+    if ([y, m, d].some(Number.isNaN)) return null;
+    return y * 10000 + m * 100 + d;
+  };
+
   const filteredMonthlyDias = useMemo(() => {
-    if (!rangeStart || !rangeEnd) return monthlyData.dias;
-    const startDate = new Date(rangeStart);
-    const endDate = new Date(rangeEnd);
+    const startKey = buildDateKey(rangeStart);
+    const endKey = buildDateKey(rangeEnd);
+    if (!startKey || !endKey) return monthlyData.dias;
+
     return monthlyData.dias.filter((d) => {
-      const current = new Date(ano, mes - 1, d);
-      return current >= startDate && current <= endDate;
+      const currentKey = buildDateKey(`${ano}-${pad(mes)}-${pad(d)}`);
+      return currentKey >= startKey && currentKey <= endKey;
     });
   }, [monthlyData.dias, rangeStart, rangeEnd, ano, mes]);
 
@@ -262,6 +272,33 @@ export const DetalleGastosMensual = () => {
     });
     return totales;
   }, [monthlyData.datos, filteredMonthlyDias, filteredProveedoresMensual]);
+
+  // Mantiene alineadas las filas de ambas tablas (izquierda/derecha) incluso al hacer zoom
+  useLayoutEffect(() => {
+    const syncRowHeights = () => {
+      const leftRows = leftTableRef.current?.querySelectorAll("tbody tr");
+      const rightRows = rightTableRef.current?.querySelectorAll("tbody tr");
+      if (!leftRows || !rightRows) return;
+
+      const count = Math.min(leftRows.length, rightRows.length);
+
+      // Resetea para recalcular
+      [...leftRows, ...rightRows].forEach((row) => (row.style.height = ""));
+
+      for (let i = 0; i < count; i += 1) {
+        const height = Math.max(leftRows[i].offsetHeight, rightRows[i].offsetHeight);
+        leftRows[i].style.height = `${height}px`;
+        rightRows[i].style.height = `${height}px`;
+      }
+    };
+
+    const raf = requestAnimationFrame(syncRowHeights);
+    window.addEventListener("resize", syncRowHeights);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", syncRowHeights);
+    };
+  }, [filteredProveedoresMensual, filteredMonthlyDias]);
 
   return (
     <div className="dashboard-container admin-bb">
@@ -545,7 +582,7 @@ export const DetalleGastosMensual = () => {
                   )}
 
                   <div className="table-split-left">
-                    <table className="table users-table  table-split-sticky  mt-2">
+                    <table ref={leftTableRef} className="table users-table  table-split-sticky  mt-2">
                       <thead>
                         <tr >
                           <th className="table-split-provider"></th>
@@ -606,6 +643,7 @@ export const DetalleGastosMensual = () => {
                     }}
                   >
                     <table
+                      ref={rightTableRef}
                       className="table users-table mt-2 "
                       style={{
                         width: "max-content",
@@ -629,8 +667,13 @@ export const DetalleGastosMensual = () => {
                         </tr>
                         <tr>
                           {filteredMonthlyDias.map((d) => (
-                            <th key={d} title={`Día ${d}`} className="text-center">
-                              <div style={{ marginBottom: '4px', fontSize: '0.95rem' }}>{d}</div>
+                            <th
+                              key={d}
+                              title={`Día ${d}`}
+                              className="text-center"
+                              style={{ color: 'var(--color-text)', fontWeight: 500 }}
+                            >
+                              <div style={{ marginBottom: '4px', fontSize: '0.95rem', fontWeight: 500 }}>{d}</div>
                               <div className="d-block">
                                 <span style={{
                                   background: 'color-mix(in srgb, var(--color-primary) 10%, white)',
@@ -654,7 +697,11 @@ export const DetalleGastosMensual = () => {
                         {filteredProveedoresMensual.map((prov) => (
                           <tr key={prov}>
                             {filteredMonthlyDias.map((d) => (
-                              <td key={d} className="text-end" style={{ padding: '8px' }}>
+                              <td
+                                key={d}
+                                className="text-center"
+                                style={{ padding: '8px', color: 'var(--color-text)', fontWeight: 500 }}
+                              >
                                 {monthlyData.datos[prov]?.[d]?.toFixed(2) || "-"}
                               </td>
                             ))}
