@@ -388,12 +388,6 @@
   border-spacing: 0;
 }
 
-.horizontal-scroll-area .table.users-table th,
-.horizontal-scroll-area .table.users-table td {
-  white-space: nowrap;
-  border-radius: 0 !important;
-}
-
 /* Unificar barra azul del header */
 .table-split-left thead tr:first-child th,
 .table-split-right thead tr:first-child th {
