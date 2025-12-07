@@ -74,7 +74,37 @@ export const Sidebar = () => {
           }}
         >
           <ul className="nav flex-column" style={{ gap: '4px' }}>
-            {rol === "admin" && (
+            {rol === "super_admin" && (
+              <>
+                <li className="nav-item">
+                  <Link
+                    className="nav-link d-flex align-items-center"
+                    to="/admin/usuarios"
+                    title="Usuarios"
+                    style={getNavLinkStyle(isActive(["/admin/usuarios"]))}
+                    {...getNavLinkHoverProps(isActive(["/admin/usuarios"]))}
+                  >
+                    <i className="bi bi-people me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Usuarios</span>}
+                  </Link>
+                </li>
+
+                <li className="nav-item">
+                  <Link
+                    className="nav-link d-flex align-items-center"
+                    to="/admin/settings"
+                    title="Configuración"
+                    style={getNavLinkStyle(isActive(["/admin/settings"]))}
+                    {...getNavLinkHoverProps(isActive(["/admin/settings"]))}
+                  >
+                    <i className="bi bi-gear me-2" style={{ fontSize: '1.1rem' }}></i>
+                    {!menuall && <span className="fw-medium">Configuración</span>}
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {rol !== "super_admin" && (rol === "admin" || rol === "director") && (
               <>
                 <li className="nav-item">
                   <Link 
@@ -334,14 +364,29 @@ export const Sidebar = () => {
         }}
       >
         <ul className="d-flex justify-content-around m-0 p-0 list-unstyled">
-          {rol === "admin" && (
+          {rol === "super_admin" && (
+            <>
+              <li>
+                <Link to="/admin/usuarios" className={`bn-item ${isActive(["/admin/usuarios"])}`}>
+                  <i className="bi bi-people"></i><span>Users</span>
+                </Link>
+              </li>
+              <li>
+                <Link to="/admin/settings" className={`bn-item ${isActive(["/admin/settings"])}`}>
+                  <i className="bi bi-gear"></i><span>Config</span>
+                </Link>
+              </li>
+            </>
+          )}
+
+          {(rol === "admin" || rol === "director") && (
             <>
               <li>
                 <Link to="/admin/dashboard" className={`bn-item ${isActive(["/admin/dashboard"])}`}>
                   <i className="bi bi-house"></i><span>Inicio</span>
                 </Link>
               </li>
-              {/* 🔹 Restaurantes (faltaba) */}
+              {/* Restaurantes */}
               <li>
                 <Link to="/admin/restaurantes/expense" className={`bn-item ${isActive(["/admin/restaurantes/expense", "/admin/restaurantes/restaurant"])}`}>
                   <i className="bi bi-shop"></i><span>Rest.</span>
@@ -392,7 +437,7 @@ export const Sidebar = () => {
                   <i className="bi bi-cash-stack"></i><span>Gastos</span>
                 </Link>
               </li>
-              {/* 🔹 Proveedores (faltaba) */}
+              {/* Proveedores */}
               <li>
                 <Link to="/encargado/proveedores" className={`bn-item ${isActive(["/encargado/proveedores"])}`}>
                   <i className="bi bi-truck"></i><span>Prov.</span>

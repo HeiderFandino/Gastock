@@ -4,6 +4,7 @@ import restauranteService from "../../services/restauranteServices";
 import RestauranteModal from "../../components/RestauranteModal";
 import PasswordModal from "../../components/usuarios/PasswordModal";
 import ErrorModal from "./ErrorModal";
+import useGlobalReducer from "../../hooks/useGlobalReducer";
 import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +14,8 @@ import "../../styles/UserModal.css";
 
 const AdminRestaurante = () => {
   const navigate = useNavigate();
+  const { store } = useGlobalReducer();
+  const currentRole = store?.user?.rol || null;
   const [restaurantes, setRestaurantes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -98,6 +101,16 @@ const AdminRestaurante = () => {
     }
   };
 
+  const handleAddClick = () => {
+    if (currentRole === "director") {
+      setErrorModalMessage("Solo los admins pueden crear restaurantes.");
+      setShowErrorModal(true);
+      return;
+    }
+    setModalOpen(true);
+    setCurrentRestaurante(null);
+  };
+
   return (
     <div className="dashboard-container">
       {/* ===== Header compacto v2 ===== */}
@@ -120,7 +133,7 @@ const AdminRestaurante = () => {
           />
           <button
             className="ag-monthbtn"
-            onClick={() => { setModalOpen(true); setCurrentRestaurante(null); }}
+            onClick={handleAddClick}
           >
             <FiPlus className="me-2" /> Añadir Restaurante
           </button>
@@ -226,7 +239,7 @@ const AdminRestaurante = () => {
       {!modalOpen && (
         <button
           className="fab-rest"
-          onClick={() => { setModalOpen(true); setCurrentRestaurante(null); }}
+          onClick={handleAddClick}
           aria-label="Añadir restaurante"
           title="Añadir restaurante"
         >

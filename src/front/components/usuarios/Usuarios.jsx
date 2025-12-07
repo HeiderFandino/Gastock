@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useGlobalReducer from "../../hooks/useGlobalReducer";
 import UserModal from "../../components/usuarios/UserModal.jsx";
 import PasswordModal from "../../components/usuarios/PasswordModal.jsx";
 import { FiPlus, FiUser, FiTrash2, FiEdit2 } from "react-icons/fi";
 import "../../styles/Usuarios.css";
 const Users = () => {
   const navigate = useNavigate();
+  const { store } = useGlobalReducer();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("All Roles");
@@ -46,6 +48,8 @@ const Users = () => {
     if (el) el.scrollTo(0, 0);
   }, []);
 
+  const currentRole = store?.user?.rol || null;
+
   const filteredUsers = users.filter((user) => {
     const nombre = (user.nombre || "").toLowerCase();
     const email = (user.email || "").toLowerCase();
@@ -63,6 +67,17 @@ const Users = () => {
       selectedStatus === "All Status" ||
       status === selectedStatus.toLowerCase();
 
+    // Filtro por jerarquía de roles en frontend (además de la del backend)
+    if (currentRole === "super_admin" && !["admin", "super_admin"].includes(user.rol)) {
+      return false;
+    }
+    if (currentRole === "admin" && !["director", "encargado", "chef"].includes(user.rol)) {
+      return false;
+    }
+    if (currentRole === "director" && !["encargado", "chef"].includes(user.rol)) {
+      return false;
+    }
+
     return searchMatch && roleMatch && statusMatch;
   });
 
@@ -74,6 +89,7 @@ const Users = () => {
       rol: userData.rol,
       status: userData.status,
       restaurante_id: userData.restaurante_id,
+      empresa_nombre: userData.empresa_nombre,
     };
 
     try {
@@ -134,8 +150,52 @@ const Users = () => {
   };
 
   const handleToggleClick = (user) => {
-    setUserToToggle(user);
-    setShowPasswordModal(true);
+    // Para el super_admin no pedimos contraseña, solo cambiamos estado
+    if (currentRole === "super_admin") {
+      toggleStatusWithoutPassword(user);
+    } else {
+      setUserToToggle(user);
+      setShowPasswordModal(true);
+    }
+  };
+
+  const toggleStatusWithoutPassword = async (user) => {
+    const newStatus = user.status === "active" ? "inactive" : "active";
+
+    try {
+      const res = await fetch(`${backend}/api/usuarios/${user.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: user.nombre,
+          email: user.email,
+          rol: user.rol,
+          restaurante_id: user.restaurante_id,
+          status: newStatus,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setMessage(result.error || "Error al actualizar estado");
+        setTimeout(() => setMessage(""), 6000);
+        return;
+      }
+
+      await loadData();
+      setMessage(
+        `Usuario "${user.nombre}" actualizado a "${newStatus}".`
+      );
+      setTimeout(() => setMessage(""), 4000);
+    } catch (err) {
+      console.error("Error al actualizar estado del usuario", err);
+      setMessage("Error de conexión al actualizar estado");
+      setTimeout(() => setMessage(""), 6000);
+    }
   };
 
   const handlePasswordConfirm = async (adminPassword) => {
@@ -171,7 +231,7 @@ const Users = () => {
 
       await loadData();
       setMessage(
-        `🔁 Usuario "${userToToggle.nombre}" actualizado a "${newStatus}".`
+        `Usuario "${userToToggle.nombre}" actualizado a "${newStatus}".`
       );
       setTimeout(() => setMessage(""), 4000);
       setShowPasswordModal(false);
@@ -194,6 +254,15 @@ const Users = () => {
     setCurrentUser(user);
     setIsModalOpen(true);
   };
+
+  const getDisplayOrg = (user) => {
+    if (currentRole === "super_admin") {
+      return user.empresa_nombre || "-";
+    }
+    return restaurants.find((r) => r.id === user.restaurante_id)?.nombre || "-";
+  };
+
+  const orgHeaderLabel = currentRole === "super_admin" ? "Empresa" : "Restaurante";
 
   return (
     <div className="dashboard-container users-container">
@@ -223,6 +292,8 @@ const Users = () => {
               style={{ maxWidth: 200 }}
             >
               <option value="All Roles">Todos los Roles</option>
+              <option value="admin">Admin</option>
+              <option value="director">Director</option>
               <option value="encargado">Encargado</option>
               <option value="chef">Chef</option>
             </select>
@@ -261,6 +332,8 @@ const Users = () => {
                 className="form-select"
               >
                 <option value="All Roles">Roles</option>
+                <option value="admin">Admin</option>
+                <option value="director">Director</option>
                 <option value="encargado">Encargado</option>
                 <option value="chef">Chef</option>
               </select>
@@ -305,40 +378,45 @@ const Users = () => {
                     </div>
                     <div className="d-flex align-items-center gap-2 mt-1">
                       <span className={`badge-role badge-${user.rol}`}>{user.rol}</span>
-                      <span className="dot-sep">•</span>
+                      <span className="dot-sep">.</span>
                       <span className="text-muted" style={{ fontSize: ".9rem" }}>
-                        {restaurants.find((r) => r.id === user.restaurante_id)?.nombre || "-"}
+                        {getDisplayOrg(user)}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="text-end">
-                  <button
-                    className={`badge border-0 text-white px-2 py-1 rounded-pill ${user.status === "active" ? "bg-success" : "bg-secondary"}`}
-                    onClick={() => handleToggleClick(user)}
-                    title="Cambiar estado del usuario"
-                  >
-                    {user.status === "active" ? "Activo" : "Inactivo"}
-                  </button>
+                  {user.rol !== "super_admin" && (
+                    <button
+                      className={`badge border-0 text-white px-2 py-1 rounded-pill ${user.status === "active" ? "bg-success" : "bg-secondary"}`}
+                      onClick={() => handleToggleClick(user)}
+                      title="Cambiar estado del usuario"
+                    >
+                      {user.status === "active" ? "Activo" : "Inactivo"}
+                    </button>
+                  )}
                   <div className="d-flex justify-content-end gap-2 mt-2">
-                    <button
-                      className="action-icon-button edit-button"
-                      onClick={() => handleEditUser(user)}
-                      title="Editar"
-                      aria-label="Editar"
-                    >
-                      {/* icono lápiz inline (ligero) */}
-<FiEdit2 size={18} aria-hidden="true" focusable="false" />
-                    </button>
-                    <button
-                      className="action-icon-button delete-button"
-                      onClick={() => handleDeleteUser(user.id)}
-                      title="Eliminar"
-                      aria-label="Eliminar"
-                    >
-<FiTrash2 size={18} aria-hidden="true" focusable="false" />
-                    </button>
+                    {user.rol !== "super_admin" && (
+                      <>
+                        <button
+                          className="action-icon-button edit-button"
+                          onClick={() => handleEditUser(user)}
+                          title="Editar"
+                          aria-label="Editar"
+                        >
+                          <FiEdit2 size={18} aria-hidden="true" focusable="false" />
+                        </button>
+                        <button
+                          className="action-icon-button delete-button"
+                          onClick={() => handleDeleteUser(user.id)}
+                          title="Eliminar"
+                          aria-label="Eliminar"
+                        >
+                          <FiTrash2 size={18} aria-hidden="true" focusable="false" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -355,7 +433,7 @@ const Users = () => {
               <th>User</th>
               <th>Role</th>
               <th>Status</th>
-              <th>Restaurant</th>
+              <th>{orgHeaderLabel}</th>
               <th className="text-end">Acciones</th>
             </tr>
           </thead>
@@ -384,30 +462,36 @@ const Users = () => {
                     <span className={`badge-role badge-${user.rol}`}>{user.rol}</span>
                   </td>
                   <td>
-                    <button
-                      className={`badge border-0 text-white px-2 py-1 rounded-pill ${user.status === "active" ? "bg-success" : "bg-secondary"}`}
-                      onClick={() => handleToggleClick(user)}
-                      title="Cambiar estado del usuario"
-                    >
-                      {user.status === "active" ? "Activo" : "Inactivo"}
-                    </button>
+                    {user.rol !== "super_admin" && (
+                      <button
+                        className={`badge border-0 text-white px-2 py-1 rounded-pill ${user.status === "active" ? "bg-success" : "bg-secondary"}`}
+                        onClick={() => handleToggleClick(user)}
+                        title="Cambiar estado del usuario"
+                      >
+                        {user.status === "active" ? "Activo" : "Inactivo"}
+                      </button>
+                    )}
                   </td>
-                  <td>{restaurants.find((r) => r.id === user.restaurante_id)?.nombre || "-"}</td>
+                  <td>{getDisplayOrg(user)}</td>
                   <td className="actions-cell text-end">
-                    <button
-                      className="action-icon-button edit-button me-2"
-                      onClick={() => handleEditUser(user)}
-                      title="Editar"
-                    >
-<FiEdit2 size={18} aria-hidden="true" focusable="false" />
-                    </button>
-                    <button
-                      className="action-icon-button delete-button"
-                      onClick={() => handleDeleteUser(user.id)}
-                      title="Eliminar"
-                    >
-<FiTrash2 size={18} aria-hidden="true" focusable="false" />
-                    </button>
+                    {user.rol !== "super_admin" && (
+                      <>
+                        <button
+                          className="action-icon-button edit-button me-2"
+                          onClick={() => handleEditUser(user)}
+                          title="Editar"
+                        >
+                          <FiEdit2 size={18} aria-hidden="true" focusable="false" />
+                        </button>
+                        <button
+                          className="action-icon-button delete-button"
+                          onClick={() => handleDeleteUser(user.id)}
+                          title="Eliminar"
+                        >
+                          <FiTrash2 size={18} aria-hidden="true" focusable="false" />
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))
@@ -435,7 +519,7 @@ const Users = () => {
           onSave={handleSaveUser}
           onClose={() => setIsModalOpen(false)}
           restaurants={restaurants}
-          hideAdminOption={true}
+          currentRole={currentRole}
         />
       )}
 

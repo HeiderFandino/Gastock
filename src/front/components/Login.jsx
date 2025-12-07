@@ -6,9 +6,13 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import "../styles/login.css";
 
 // ACL simple para validar si una ruta privada es accesible por rol
+// Ojo: super_admin solo debe usar /admin/usuarios y /admin/settings
 const ACL = [
+  { prefix: "/super-admin", roles: ["super_admin"] },
   { prefix: "/chef/gastos", roles: ["chef"] },
-  { prefix: "/admin", roles: ["admin"] },
+  { prefix: "/admin/usuarios", roles: ["admin", "super_admin", "director"] },
+  { prefix: "/admin/settings", roles: ["admin", "super_admin", "director"] },
+  { prefix: "/admin", roles: ["admin", "director"] },
   { prefix: "/encargado", roles: ["encargado"] },
   { prefix: "/chef", roles: ["chef"] },
   { prefix: "/ventas", roles: ["encargado"] },
@@ -24,7 +28,9 @@ function isAllowed(path, rol) {
 }
 
 function destinoPorRol(rol) {
+  if (rol === "super_admin") return "/admin/usuarios";
   if (rol === "admin") return "/admin/dashboard";
+  if (rol === "director") return "/admin/dashboard";
   if (rol === "encargado") return "/encargado/dashboard";
   if (rol === "chef") return "/chef/dashboard";
   return "/";

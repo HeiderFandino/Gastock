@@ -14,6 +14,7 @@ import { PatchAnnouncement } from "../../components/PatchAnnouncement";
 import { FiTrendingUp, FiDollarSign, FiPercent, FiPlus } from "react-icons/fi";
 import { getProximoFestivo, esHoyFestivo, esMananaFestivo } from "../../utils/festivosBarcelona";
 import InlineLoader from "../../components/InlineLoader";
+import restauranteService from "../../services/restauranteServices";
 
 export const EncargadoDashboard = () => {
   const { store } = useGlobalReducer();
@@ -56,6 +57,9 @@ export const EncargadoDashboard = () => {
   // Estados para datos comparativos
   const [ventasMesAnterior, setVentasMesAnterior] = useState([]);
   const [ventasAnoAnterior, setVentasAnoAnterior] = useState([]);
+  const [margenMin, setMargenMin] = useState(33);
+  const [margenMax, setMargenMax] = useState(36);
+  const restauranteId = user?.restaurante_id || null;
 
   // Calcular fechas para comparación
   const fechaMesAnterior = useMemo(() => {
@@ -97,10 +101,11 @@ export const EncargadoDashboard = () => {
     const cargarDatos = async () => {
       setLoading(true);
 
-      const [gastoDiario, resumenMensualResp, ventasResp] = await Promise.allSettled([
+      const [gastoDiario, resumenMensualResp, ventasResp, restaurantesResp] = await Promise.allSettled([
         encargadoServices.resumenGastoDiario(mes, ano),
         encargadoServices.resumenGastoMensual(mes, ano),
-        encargadoServices.resumenVentasDiarias(mes, ano)
+        encargadoServices.resumenVentasDiarias(mes, ano),
+        restauranteService.getRestaurantes(sessionStorage.getItem("token"))
       ]);
 
       if (!isMounted) return;
@@ -128,6 +133,20 @@ export const EncargadoDashboard = () => {
       } else if (ventasResp.status === "rejected") {
         console.error("Error al cargar ventas diarias", ventasResp.reason);
         setVentas([]);
+      }
+
+      if (restaurantesResp.status === "fulfilled" && Array.isArray(restaurantesResp.value)) {
+        const r = restauranteId
+          ? restaurantesResp.value.find((rr) => rr.id === restauranteId)
+          : restaurantesResp.value[0];
+        if (r) {
+          if (r.porcentaje_min !== undefined && r.porcentaje_min !== null) {
+            setMargenMin(Number(r.porcentaje_min));
+          }
+          if (r.porcentaje_max !== undefined && r.porcentaje_max !== null) {
+            setMargenMax(Number(r.porcentaje_max));
+          }
+        }
       }
 
       setLoading(false);
@@ -285,18 +304,23 @@ export const EncargadoDashboard = () => {
     );
   }
 
-  let bgClass = "bg-success-subtle";
-  let textClass = "text-success";
-  let icono = "✅";
-  if (porcentaje > 36) {
-    bgClass = "bg-danger-subtle";
-    textClass = "text-danger";
-    icono = "🚨";
-  } else if (porcentaje > 33) {
-    bgClass = "bg-warning-subtle";
-    textClass = "text-warning";
-    icono = "⚠️";
-  }
+  const getEstadoMargen = (pct) => {
+    let bgClass = "status-green";
+    let textClass = "text-success";
+    let icono = "✅";
+    if (pct >= margenMax) {
+      bgClass = "status-red";
+      textClass = "text-danger";
+      icono = "🚨";
+    } else if (pct > margenMin) {
+      bgClass = "status-yellow";
+      textClass = "text-warning";
+      icono = "⚠️";
+    }
+    return { bgClass, textClass, icono };
+  };
+
+  const { bgClass, textClass, icono } = getEstadoMargen(porcentaje);
 
   return (
     <div className="dashboard-container admin-bb dashboard-with-navbar-ticker">
@@ -378,6 +402,7 @@ export const EncargadoDashboard = () => {
         </div>
 
         <div className="p-3">
+
           {/* Controles Mes */}
           <div className="month-controls">
             <button className="month-btn" onClick={retrocederMes} aria-label="Mes anterior">←</button>
@@ -398,6 +423,9 @@ export const EncargadoDashboard = () => {
         </div>
       </div>
 
+      <div>
+        <h1 id="alerta">AQUI VA EL MENSJE </h1>
+      </div>
 
 
       {/* ===== VENTAS ===== */}
@@ -494,7 +522,7 @@ export const EncargadoDashboard = () => {
               </div>
             </div>
             <div className="col-6">
-              <div className="ag-card h-100">
+              <div className={`ag-card h-100 status-card ${bgClass}`}>
                 <div className="p-2 text-center">
                   <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
                     {icono}
@@ -512,7 +540,7 @@ export const EncargadoDashboard = () => {
             <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch d-none d-md-flex">
               <ResumenCard icon="💸" color="info" label="Gastos actuales" value={gasto} simbolo={simbolo} />
 
-              <div className="card-brand p-3 text-center w-100">
+              <div className={`card-brand p-3 text-center w-100 status-card ${bgClass}`}>
                 <div
                   className={`icono-circular rounded-circle d-inline-flex align-items-center justify-content-center mb-2 ${textClass}`}
                   aria-hidden="true"

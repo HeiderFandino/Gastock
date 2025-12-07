@@ -7,6 +7,8 @@ const RestauranteModal = ({ restaurante, onSave, onClose }) => {
         direccion: "",
         telefono: "",
         email_contacto: "",
+        porcentaje_min: "",
+        porcentaje_max: ""
     });
 
     useEffect(() => {
@@ -16,6 +18,8 @@ const RestauranteModal = ({ restaurante, onSave, onClose }) => {
                 direccion: restaurante.direccion || "",
                 telefono: restaurante.telefono || "",
                 email_contacto: restaurante.email_contacto || "",
+                porcentaje_min: restaurante.porcentaje_min ?? "",
+                porcentaje_max: restaurante.porcentaje_max ?? ""
             });
         } else {
             setFormData({
@@ -23,6 +27,8 @@ const RestauranteModal = ({ restaurante, onSave, onClose }) => {
                 direccion: "",
                 telefono: "",
                 email_contacto: "",
+                porcentaje_min: "",
+                porcentaje_max: ""
             });
         }
     }, [restaurante]);
@@ -34,6 +40,20 @@ const RestauranteModal = ({ restaurante, onSave, onClose }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const min = parseFloat(formData.porcentaje_min);
+        const max = parseFloat(formData.porcentaje_max);
+        if (isNaN(min) || isNaN(max)) {
+            alert("Los porcentajes deben ser numéricos.");
+            return;
+        }
+        if (min < 0 || max < 0 || min > 100 || max > 100) {
+            alert("Los porcentajes deben estar entre 0 y 100.");
+            return;
+        }
+        if (min > max) {
+            alert("El margen mínimo no puede ser mayor que el máximo.");
+            return;
+        }
         onSave(formData);
     };
 
@@ -103,6 +123,37 @@ const RestauranteModal = ({ restaurante, onSave, onClose }) => {
                                         placeholder="contacto@restaurante.com"
                                         value={formData.email_contacto}
                                         onChange={handleChange}
+                                    />
+                                </div>
+
+                                <div className="col-md-6">
+                                    <label className="form-label">📈 Margen mínimo (%)</label>
+                                    <input
+                                        type="number"
+                                        name="porcentaje_min"
+                                        className="form-control"
+                                        placeholder="Ej: 30"
+                                        value={formData.porcentaje_min}
+                                        onChange={handleChange}
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        required
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label">📉 Margen máximo (%)</label>
+                                    <input
+                                        type="number"
+                                        name="porcentaje_max"
+                                        className="form-control"
+                                        placeholder="Ej: 40"
+                                        value={formData.porcentaje_max}
+                                        onChange={handleChange}
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        required
                                     />
                                 </div>
                             </div>

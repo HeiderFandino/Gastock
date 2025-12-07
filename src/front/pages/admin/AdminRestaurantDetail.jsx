@@ -31,6 +31,8 @@ const AdminRestaurantDetail = () => {
   const [gastoDatos, setGastoDatos] = useState([]);
   const [restaurante, setRestaurante] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [margenMin, setMargenMin] = useState(33);
+  const [margenMax, setMargenMax] = useState(36);
 
   // Fija --navbar-h según el header real (sticky exacto)
   useEffect(() => {
@@ -103,6 +105,14 @@ const AdminRestaurantDetail = () => {
 
         const seleccionado = (allRestaurantes || []).find((r) => r.id === rid) || null;
         setRestaurante(seleccionado);
+        if (seleccionado) {
+          if (seleccionado.porcentaje_min !== undefined && seleccionado.porcentaje_min !== null) {
+            setMargenMin(Number(seleccionado.porcentaje_min));
+          }
+          if (seleccionado.porcentaje_max !== undefined && seleccionado.porcentaje_max !== null) {
+            setMargenMax(Number(seleccionado.porcentaje_max));
+          }
+        }
 
         setResumen(resumenPct || null);
 
@@ -135,10 +145,22 @@ const AdminRestaurantDetail = () => {
   const porcentaje = Number(resumen?.porcentaje ?? resumen?.porcentaje_gasto ?? 0);
   const gastoTotal = Number(resumen?.gastos ?? resumen?.total_gastos ?? 0);
 
-  let textClass = "text-success";
-  let icono = "✅";
-  if (porcentaje > 36) { textClass = "text-danger"; icono = "🚨"; }
-  else if (porcentaje > 33) { textClass = "text-warning"; icono = "⚠️"; }
+  const getMargenState = (pct) => {
+    let bgClass = "bg-success-subtle";
+    let textClass = "text-success";
+    let icono = "✅";
+    if (pct >= margenMax) {
+      bgClass = "bg-danger-subtle";
+      textClass = "text-danger";
+      icono = "🚨";
+    } else if (pct > margenMin) {
+      bgClass = "bg-warning-subtle";
+      textClass = "text-warning";
+      icono = "⚠️";
+    }
+    return { bgClass, textClass, icono };
+  };
+  const { bgClass, textClass, icono } = getMargenState(porcentaje);
 
   const nombreMes = useMemo(() => {
     const [a, m] = fechaSeleccionada.split("-").map(Number);
@@ -338,7 +360,7 @@ const AdminRestaurantDetail = () => {
               </div>
             </div>
             <div className="col-6">
-              <div className="ag-card h-100">
+              <div className={`ag-card h-100 status-card ${bgClass}`}>
                 <div className="p-2 text-center">
                   <div className="ag-icon mx-auto mb-1" style={{ background: 'var(--tint-warning-12)', color: 'var(--color-warning)', width: 40, height: 40, fontSize: '1rem' }}>
                     {icono}
@@ -356,7 +378,7 @@ const AdminRestaurantDetail = () => {
             <div className="col-12 col-md-3 d-flex flex-column gap-3 align-items-stretch d-none d-md-flex">
               <ResumenCard icon="💸" color="info" label="Gastos actuales" value={gastoTotal} simbolo={simbolo} />
 
-              <div className="card-brand p-3 text-center w-100">
+              <div className={`card-brand p-3 text-center w-100 status-card ${bgClass}`}>
                 <div
                   className={`icono-circular rounded-circle d-inline-flex align-items-center justify-content-center mb-2 ${textClass}`}
                   aria-hidden="true"

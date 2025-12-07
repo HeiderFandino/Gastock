@@ -4,11 +4,17 @@ import { TortaCategorias } from "../../components/TortaCategorias";
 import chefServices from "../../services/chefServices";
 import { QuickActionsChef } from "../../components/QuickActionsChef";
 import InlineLoader from "../../components/InlineLoader";
+import restauranteService from "../../services/restauranteServices";
+import useGlobalReducer from "../../hooks/useGlobalReducer";
 
 export const ChefDashboard = () => {
+  const { store } = useGlobalReducer();
   const [datos, SetDatos] = useState([]);
   const [resumenMensual, setResumenMensual] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [margenMin, setMargenMin] = useState(33);
+  const [margenMax, setMargenMax] = useState(36);
+  const restauranteId = store?.user?.restaurante_id || null;
 
   useEffect(() => {
     const fecha = new Date();
@@ -17,15 +23,30 @@ export const ChefDashboard = () => {
 
     Promise.all([
       chefServices.resumenDiarioGastos(mes, ano),
-      chefServices.resumenGastoMensual(mes, ano)
+      chefServices.resumenGastoMensual(mes, ano),
+      restauranteService.getRestaurantes(sessionStorage.getItem("token"))
     ])
-      .then(([resumenDiario, resumenMensual]) => {
+      .then(([resumenDiario, resumenMensual, restaurantes]) => {
         const data = resumenDiario.map((item) => ({
           name: `${item.dia}`,
           porcentaje: item.porcentaje,
         }));
         SetDatos(data);
         setResumenMensual(resumenMensual);
+
+        if (Array.isArray(restaurantes)) {
+          const r = restauranteId
+            ? restaurantes.find((rr) => rr.id === restauranteId)
+            : restaurantes[0];
+          if (r) {
+            if (r.porcentaje_min !== undefined && r.porcentaje_min !== null) {
+              setMargenMin(Number(r.porcentaje_min));
+            }
+            if (r.porcentaje_max !== undefined && r.porcentaje_max !== null) {
+              setMargenMax(Number(r.porcentaje_max));
+            }
+          }
+        }
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
@@ -41,11 +62,11 @@ export const ChefDashboard = () => {
   let textClass = "text-success";
   let icono = "✅";
 
-  if (porcentaje > 36) {
+  if (porcentaje >= margenMax) {
     bgClass = "bg-danger-subtle";
     textClass = "text-danger";
     icono = "🚨";
-  } else if (porcentaje > 33) {
+  } else if (porcentaje > margenMin) {
     bgClass = "bg-warning-subtle";
     textClass = "text-warning";
     icono = "⚠️";
@@ -81,9 +102,9 @@ export const ChefDashboard = () => {
         </div>
 
         <div className="col-6 col-md-3">
-          <div className="ag-card p-2 p-md-3 text-center">
+          <div className={`ag-card p-2 p-md-3 text-center status-card ${bgClass}`} style={{ borderRadius: 16 }}>
             <div className="ag-icon mb-1 mb-md-2" style={{fontSize: '1.2rem'}}>{icono}</div>
-            <h6 className="ag-card-title mb-1" style={{fontSize: '0.8rem'}}>%</h6>
+            <h6 className="ag-card-title mb-1" style={{fontSize: '0.8rem'}}>Margen</h6>
             <div className={`ag-card-value ${textClass}`} style={{fontSize: '1rem'}}>{porcentaje}%</div>
           </div>
         </div>

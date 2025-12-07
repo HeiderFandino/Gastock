@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 // Estilos ya incluidos en brand-unified.css
 
-const UserModal = ({ user, onSave, onClose, restaurants }) => {
+const UserModal = ({ user, onSave, onClose, restaurants, currentRole }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
     password: "",
     rol: "chef",
     restaurante_id: "",
-    status: "active"
+    status: "active",
+    empresa_nombre: ""
   });
   const [saving, setSaving] = useState(false);
 
@@ -20,19 +21,27 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
         password: "",
         rol: user.rol || "chef",
         restaurante_id: user.restaurante_id || "",
-        status: user.status || "active"
+        status: user.status || "active",
+        empresa_nombre: user.empresa_nombre || ""
       });
     } else {
+      // Rol por defecto según quién crea
+      let defaultRol = "chef";
+      if (currentRole === "super_admin") defaultRol = "admin";
+      else if (currentRole === "admin") defaultRol = "director";
+      else if (currentRole === "director") defaultRol = "encargado";
+
       setFormData({
         nombre: "",
         email: "",
         password: "",
-        rol: "chef",
+        rol: defaultRol,
         restaurante_id: "",
-        status: "active"
+        status: "active",
+        empresa_nombre: ""
       });
     }
-  }, [user]);
+  }, [user, currentRole]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,6 +98,22 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
                   />
                 </div>
 
+                {currentRole === "super_admin" && formData.rol === "admin" && (
+                  <div className="col-12">
+                    <label className="form-label">🏢 Nombre de la empresa</label>
+                    <input
+                      type="text"
+                      name="empresa_nombre"
+                      className="form-control"
+                      placeholder="Nombre de la empresa / franquicia"
+                      value={formData.empresa_nombre}
+                      onChange={handleChange}
+                      required={true}
+                      disabled={saving}
+                    />
+                  </div>
+                )}
+
                 <div className="col-12">
                   <label className="form-label">📧 Correo electrónico</label>
                   <input
@@ -130,22 +155,36 @@ const UserModal = ({ user, onSave, onClose, restaurants }) => {
                     value={formData.rol}
                     onChange={handleChange}
                     required
-                    disabled={saving}
+                    disabled={saving || !!user} // rol fijo al editar
                   >
-                    <option value="encargado">👨‍💼 Encargado</option>
-                    <option value="chef">👨‍🍳 Chef</option>
+                    {currentRole === "super_admin" && (
+                      <option value="admin">👑 Admin</option>
+                    )}
+                    {currentRole === "admin" && (
+                      <>
+                        <option value="director">📊 Director</option>
+                        <option value="encargado">👨‍💼 Encargado</option>
+                        <option value="chef">👨‍🍳 Chef</option>
+                      </>
+                    )}
+                    {currentRole === "director" && (
+                      <>
+                        <option value="encargado">👨‍💼 Encargado</option>
+                        <option value="chef">👨‍🍳 Chef</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label">🏪 Restaurante</label>
+                  <label className="form-label">🏢 Empresa / Restaurante</label>
                   <select
                     name="restaurante_id"
                     className="form-select"
                     value={formData.restaurante_id}
                     onChange={handleChange}
-                    required
-                    disabled={saving}
+                    required={formData.rol === "encargado" || formData.rol === "chef"}
+                    disabled={saving || formData.rol === "admin" || formData.rol === "director"}
                   >
                     <option value="">Selecciona restaurante...</option>
                     {Array.isArray(restaurants) && restaurants.map((r) => (
