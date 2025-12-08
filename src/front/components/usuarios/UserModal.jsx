@@ -6,7 +6,7 @@ const UserModal = ({ user, onSave, onClose, restaurants, currentRole }) => {
     nombre: "",
     email: "",
     password: "",
-    rol: "chef",
+    rol: "",
     restaurante_id: "",
     status: "active",
     empresa_nombre: ""
@@ -25,17 +25,11 @@ const UserModal = ({ user, onSave, onClose, restaurants, currentRole }) => {
         empresa_nombre: user.empresa_nombre || ""
       });
     } else {
-      // Rol por defecto según quién crea
-      let defaultRol = "chef";
-      if (currentRole === "super_admin") defaultRol = "admin";
-      else if (currentRole === "admin") defaultRol = "director";
-      else if (currentRole === "director") defaultRol = "encargado";
-
       setFormData({
         nombre: "",
         email: "",
         password: "",
-        rol: defaultRol,
+        rol: "",
         restaurante_id: "",
         status: "active",
         empresa_nombre: ""
@@ -45,6 +39,15 @@ const UserModal = ({ user, onSave, onClose, restaurants, currentRole }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Al cambiar rol, limpiar restaurante si no aplica
+    if (name === "rol" && (value === "admin" || value === "director")) {
+      setFormData((prev) => ({
+        ...prev,
+        rol: value,
+        restaurante_id: ""
+      }));
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: value
@@ -155,8 +158,9 @@ const UserModal = ({ user, onSave, onClose, restaurants, currentRole }) => {
                     value={formData.rol}
                     onChange={handleChange}
                     required
-                    disabled={saving || !!user} // rol fijo al editar
+                    disabled={saving}
                   >
+                    {!user && <option value="">Escoge un rol...</option>}
                     {currentRole === "super_admin" && (
                       <option value="admin">👑 Admin</option>
                     )}
