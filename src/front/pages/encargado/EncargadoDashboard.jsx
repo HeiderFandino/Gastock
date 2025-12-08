@@ -424,7 +424,10 @@ export const EncargadoDashboard = () => {
       </div>
 
       <div>
-        <h1 id="alerta">AQUI VA EL MENSJE </h1>
+        <h3 id="alerta">Se han hecho grandes cambios en la estructura de la app y en la base de datos;
+          <br /> -  Nuevos Roles, nuevos usuario entre otros...
+          <br />
+          <br />si notas que algo no va bien o hay algun error hacermelo saber.</h3>
       </div>
 
 
@@ -588,16 +591,20 @@ export const EncargadoDashboard = () => {
         <FiPlus size={24} />
       </button>
 
-      {mensaje && (
-        <div className={`alert mt-3 ${mensaje.includes("éxito") ? "alert-success" : "alert-danger"}`}>
-          {mensaje}
-        </div>
-      )}
+      {
+        mensaje && (
+          <div className={`alert mt-3 ${mensaje.includes("éxito") ? "alert-success" : "alert-danger"}`}>
+            {mensaje}
+          </div>
+        )
+      }
 
-      {mostrarModal && (
-        <VentaModal onSave={guardarVenta} onClose={() => setMostrarModal(false)} />
-      )}
-    </div>
+      {
+        mostrarModal && (
+          <VentaModal onSave={guardarVenta} onClose={() => setMostrarModal(false)} />
+        )
+      }
+    </div >
   );
 };
 
