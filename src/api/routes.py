@@ -679,6 +679,10 @@ def login():
             restaurante = db.session.get(Restaurante, user.restaurante_id)
             if restaurante:
                 data["restaurante_nombre"] = restaurante.nombre
+        if user.empresa_id:
+            empresa = db.session.get(Empresa, user.empresa_id)
+            if empresa:
+                data["empresa_nombre"] = empresa.nombre
 
         return jsonify({
             "access_token": token,
@@ -3614,7 +3618,8 @@ def private():
 @jwt_required()
 def update_profile():
     try:
-        current_user = _get_current_user()
+        current_user_id = int(get_jwt_identity())
+        current_user = Usuario.query.get(current_user_id)
 
         if not current_user:
             return jsonify({"error": "Usuario no encontrado"}), 404

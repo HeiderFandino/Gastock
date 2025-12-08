@@ -30,7 +30,6 @@ userServices.getUsuarios = async (token) => {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   });
-  await new Promise((res) => setTimeout(res, 2000));
   if (!response.ok) {
     handleUnauthorized(response);
     throw new Error("No se pudo obtener la información del los usuarios");
@@ -48,7 +47,6 @@ userServices.getUserinfo = async () => {
       Authorization: "Bearer " + token,
     },
   });
-  await new Promise((res) => setTimeout(res, 2000));
   if (!resp.ok) {
     handleUnauthorized(resp);
     throw new Error("No se pudo obtener la información del usuario");

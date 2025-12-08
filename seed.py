@@ -2,7 +2,6 @@ import os
 import random
 import sys
 import unicodedata
-from calendar import monthrange
 from datetime import date, timedelta
 
 from dotenv import load_dotenv
@@ -12,7 +11,16 @@ from werkzeug.security import generate_password_hash
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
-from api.models import AuditLog, Empresa, Gasto, Proveedor, Restaurante, Usuario, Venta  # noqa: E402
+from api.models import (
+    AuditLog,
+    Empresa,
+    Gasto,
+    MargenObjetivo,
+    Proveedor,
+    Restaurante,
+    Usuario,
+    Venta,
+)
 from app import app, db  # noqa: E402
 
 load_dotenv()
@@ -29,6 +37,7 @@ with app.app_context():
     # En PostgreSQL podemos usar TRUNCATE para limpiar más rápido; en SQLite no existe.
     try:
         db.session.execute(text("TRUNCATE audit_logs CASCADE"))
+        db.session.execute(text("TRUNCATE margen_objetivo CASCADE"))
         db.session.commit()
     except OperationalError:
         db.session.rollback()
@@ -52,6 +61,10 @@ with app.app_context():
     except OperationalError:
       db.session.rollback()
     try:
+      MargenObjetivo.query.delete()
+    except OperationalError:
+      db.session.rollback()
+    try:
       Usuario.query.delete()
     except OperationalError:
       db.session.rollback()
@@ -68,96 +81,20 @@ with app.app_context():
 
     print("Inicializando seed...")
 
-    nombres_restaurantes = [
-        "La Marea",
-        "Tango Grill",
-        "Internacional Bar",
-        "Mar & Terra",
-        "Sabor Criollo",
-        "Pasta & Vino",
-        "Fusion Oriental",
-        "El Rincon Vegano",
-        "Tapas Urbanas",
-        "Bistro Mediterraneo",
-    ]
-
-    estados_gasto = ["dentro"] * 3 + ["limite"] * 3 + ["fuera"] * 4
-    random.shuffle(estados_gasto)
-
-    # Empresa de ejemplo para agrupar restaurantes y usuarios
-    empresa_demo = Empresa(nombre="Empresa Demo", activo=True)
-    db.session.add(empresa_demo)
-    db.session.commit()
-
-    restaurantes = []
-    for i, nombre in enumerate(nombres_restaurantes):
-        clean_name = limpiar_email(nombre)
-        restaurante = Restaurante(
-            nombre=nombre,
-            direccion=f"Calle {random.randint(1, 200)}, Ciudad",
-            telefono=f"6{random.randint(10000000, 99999999)}",
-            email_contacto=f"contacto.{clean_name}@ohmychef.com",
-            empresa_id=empresa_demo.id,
-        )
-        db.session.add(restaurante)
-        restaurante.estado_gasto = estados_gasto[i]
-        restaurantes.append(restaurante)
-    db.session.commit()
-
-    print("Restaurantes creados.")
-
-    apellidos = ["Gomez", "Perez", "Rodriguez", "Fernandez", "Lopez", "Martinez"]
-    nombres_chef = ["Laura", "Carlos", "Sofia", "Pedro", "Ana", "Miguel", "Lucia", "David", "Elena", "Javier"]
-    nombres_encargado = ["Andres", "Patricia", "Raul", "Beatriz", "Tomas", "Irene", "Diego", "Clara", "Ruben", "Nuria"]
-
-    for i, restaurante in enumerate(restaurantes):
-        clean_name = limpiar_email(restaurante.nombre)
-
-        if restaurante.nombre == "La Marea":
-            email_encargado = "heiderfandino@gmail.com"
-            email_chef = "heideralfonsoo@gmail.com"
-        else:
-            email_encargado = f"encargado.{clean_name}@ohmychef.com"
-            email_chef = f"chef.{clean_name}@ohmychef.com"
-
-        encargado = Usuario(
-            nombre=f"{nombres_encargado[i]} {random.choice(apellidos)}",
-            email=email_encargado,
-            rol="encargado",
-            status="active",
-            empresa_id=empresa_demo.id,
-            restaurante_id=restaurante.id,
-            password=generate_password_hash("123456"),
-        )
-        chef = Usuario(
-            nombre=f"{nombres_chef[i]} {random.choice(apellidos)}",
-            email=email_chef,
-            rol="chef",
-            status="active",
-            empresa_id=empresa_demo.id,
-            restaurante_id=restaurante.id,
-            password=generate_password_hash("123456"),
-        )
-        db.session.add(encargado)
-        db.session.add(chef)
-
-    admin = Usuario(
-        nombre="Admin Principal",
-        email="ohmychefapp@gmail.com",
-        rol="admin",
+    # Superadmin fijo
+    superadmin = Usuario(
+        nombre="Superadmin",
+        email="gastockapp@gmail.com",
+        rol="super_admin",
         status="active",
-        empresa_id=empresa_demo.id,
+        empresa_id=None,
         restaurante_id=None,
-        password=generate_password_hash("123456"),
+        password=generate_password_hash("Haf1103."),
     )
-    db.session.add(admin)
+    db.session.add(superadmin)
     db.session.commit()
 
-    print("Admin y usuarios creados.")
-
-    print("Creando proveedores...")
-
-    proveedores_reales = [
+    proveedores_base = [
         {"nombre": "Gas y Energia", "categoria": "otros"},
         {"nombre": "Distribuidora Coca-Cola", "categoria": "bebidas"},
         {"nombre": "Bebidas Alianza", "categoria": "bebidas"},
@@ -170,83 +107,175 @@ with app.app_context():
         {"nombre": "Higiene Express", "categoria": "limpieza"},
     ]
 
-    proveedores_por_restaurante = {}
+    # Dos admins, cada uno con 10 restaurantes
+    admins_info = [
+        {"nombre": "Admin Norte", "email": "admin1@gastock.com", "empresa": "Empresa Norte"},
+        {"nombre": "Admin Sur", "email": "admin2@gastock.com", "empresa": "Empresa Sur"},
+    ]
 
-    for restaurante in restaurantes:
-        lista = []
-        for p in proveedores_reales:
-            clean_rest = limpiar_email(restaurante.nombre)
-            email = f"{p['nombre'].lower().replace(' ', '').replace('&','')}@{clean_rest}.com"
-            prov = Proveedor(
-                nombre=p["nombre"],
-                categoria=p["categoria"],
-                direccion="Calle Proveedor, Ciudad",
-                telefono=f"6{random.randint(10000000, 99999999)}",
-                email_contacto=email,
-                restaurante_id=restaurante.id,
-            )
-            db.session.add(prov)
-            lista.append(prov)
-        proveedores_por_restaurante[restaurante.id] = lista
+    apellidos = ["Gomez", "Perez", "Rodriguez", "Fernandez", "Lopez", "Martinez"]
+    nombres_chef = ["Laura", "Carlos", "Sofia", "Pedro", "Ana", "Miguel", "Lucia", "David", "Elena", "Javier"]
+    nombres_encargado = ["Andres", "Patricia", "Raul", "Beatriz", "Tomas", "Irene", "Diego", "Clara", "Ruben", "Nuria"]
+    nombres_director = ["Daniel", "Sandra", "Victor", "Patricia", "Alfonso", "Noelia"]
 
-    db.session.commit()
-
-    print("Generando gastos y ventas desde enero...")
-
-    fecha_inicio = date(2025, 1, 1)
     hoy = date.today()
-    ultimo_dia = monthrange(hoy.year, hoy.month)[1]
-    fecha_fin = date(hoy.year, hoy.month, ultimo_dia)
-    dias = (fecha_fin - fecha_inicio).days
+    # Últimos 3 meses (incluye mes en curso)
+    start_month = hoy.month - 2
+    start_year = hoy.year
+    if start_month <= 0:
+        start_month += 12
+        start_year -= 1
+    fecha_inicio = date(start_year, start_month, 1)
+    fecha_fin = hoy
+    dias = (fecha_fin - fecha_inicio).days + 1
 
-    for restaurante in restaurantes:
-        chef = Usuario.query.filter_by(rol="chef", restaurante_id=restaurante.id).first()
-        proveedores = proveedores_por_restaurante[restaurante.id]
+    for admin_idx, admin_info in enumerate(admins_info, start=1):
+        empresa = Empresa(nombre=admin_info["empresa"], activo=True)
+        db.session.add(empresa)
+        db.session.commit()
 
-        for i in range(dias):
-            fecha = fecha_inicio + timedelta(days=i)
+        admin_user = Usuario(
+            nombre=admin_info["nombre"],
+            email=admin_info["email"],
+            rol="admin",
+            status="active",
+            empresa_id=empresa.id,
+            restaurante_id=None,
+            password=generate_password_hash("123456"),
+        )
+        db.session.add(admin_user)
+        db.session.commit()
 
-            gastos_del_dia = []
-            for _ in range(3):  # Solo 3 gastos diarios
-                proveedor = random.choice(proveedores)
-
-                if restaurante.estado_gasto == "dentro":
-                    monto = round(random.uniform(10, 50), 2)
-                elif restaurante.estado_gasto == "limite":
-                    monto = round(random.uniform(20, 60), 2)
-                else:
-                    monto = round(random.uniform(40, 80), 2)
-
-                gasto = Gasto(
-                    fecha=fecha,
-                    monto=monto,
-                    categoria=proveedor.categoria,
-                    proveedor_id=proveedor.id,
-                    usuario_id=chef.id,
-                    restaurante_id=restaurante.id,
-                    nota=f"Gasto de {proveedor.nombre}",
-                )
-                db.session.add(gasto)
-                gastos_del_dia.append(monto)
-
-            total_gastos_dia = sum(gastos_del_dia)
-
-            if restaurante.estado_gasto == "dentro":
-                porcentaje = random.uniform(0.25, 0.30)
-            elif restaurante.estado_gasto == "limite":
-                porcentaje = random.uniform(0.30, 0.33)
-            else:
-                porcentaje = random.uniform(0.36, 0.42)
-
-            total_venta_dia = round(total_gastos_dia / porcentaje, 2)
-
-            venta = Venta(
-                fecha=fecha,
-                turno="tarde",
-                monto=total_venta_dia,
-                restaurante_id=restaurante.id,
+        # Dos directores por empresa
+        empresa_slug = limpiar_email(empresa.nombre)
+        for j in range(2):
+            director = Usuario(
+                nombre=f"{nombres_director[j % len(nombres_director)]} {random.choice(apellidos)}",
+                email=f"director{j + 1}.{empresa_slug}@gastock.com",
+                rol="director",
+                status="active",
+                empresa_id=empresa.id,
+                restaurante_id=None,
+                password=generate_password_hash("123456"),
             )
-            db.session.add(venta)
+            db.session.add(director)
+        db.session.commit()
 
-    db.session.commit()
+        print(f"Creando restaurantes para {admin_info['nombre']}...")
+
+        for i in range(10):
+            rest_name = f"Restaurante {admin_idx}-{i + 1}"
+            clean_rest = limpiar_email(rest_name)
+
+            restaurante = Restaurante(
+                nombre=rest_name,
+                direccion=f"Calle {random.randint(1, 200)}, Ciudad",
+                telefono=f"6{random.randint(10000000, 99999999)}",
+                email_contacto=f"contacto.{clean_rest}@gastock.com",
+                empresa_id=empresa.id,
+            )
+            db.session.add(restaurante)
+            db.session.commit()
+
+            # Margen objetivo por restaurante
+            margen_min = round(random.uniform(0.30, 0.34), 2)
+            margen_max = round(random.uniform(max(margen_min, 0.34), 0.40), 2)
+            margen = MargenObjetivo(
+                restaurante_id=restaurante.id,
+                porcentaje_min=margen_min * 100,
+                porcentaje_max=margen_max * 100,
+            )
+            db.session.add(margen)
+            db.session.commit()
+
+            # Usuarios por restaurante
+            encargado = Usuario(
+                nombre=f"{nombres_encargado[i % len(nombres_encargado)]} {random.choice(apellidos)}",
+                email=f"encargado.{clean_rest}@gastock.com",
+                rol="encargado",
+                status="active",
+                empresa_id=empresa.id,
+                restaurante_id=restaurante.id,
+                password=generate_password_hash("123456"),
+            )
+            chef = Usuario(
+                nombre=f"{nombres_chef[i % len(nombres_chef)]} {random.choice(apellidos)}",
+                email=f"chef.{clean_rest}@gastock.com",
+                rol="chef",
+                status="active",
+                empresa_id=empresa.id,
+                restaurante_id=restaurante.id,
+                password=generate_password_hash("123456"),
+            )
+            db.session.add(encargado)
+            db.session.add(chef)
+            db.session.commit()
+
+            # Proveedores (10 por restaurante)
+            proveedores_rest = []
+            for prov in proveedores_base:
+                email_prov = f"{prov['nombre'].lower().replace(' ', '').replace('&','')}@{clean_rest}.com"
+                proveedor_obj = Proveedor(
+                    nombre=prov["nombre"],
+                    categoria=prov["categoria"],
+                    direccion="Calle Proveedor, Ciudad",
+                    telefono=f"6{random.randint(10000000, 99999999)}",
+                    email_contacto=email_prov,
+                    restaurante_id=restaurante.id,
+                )
+                proveedores_rest.append(proveedor_obj)
+                db.session.add(proveedor_obj)
+            db.session.commit()
+
+            # Estado de gasto ficticio para calibrar montos
+            estado_gasto = random.choice(["dentro", "limite", "fuera"])
+
+            # Gastos y ventas de los últimos 3 meses
+            for offset in range(dias):
+                fecha = fecha_inicio + timedelta(days=offset)
+
+                gastos_del_dia = []
+                for _ in range(3):
+                    proveedor = random.choice(proveedores_rest)
+
+                    if estado_gasto == "dentro":
+                        monto = round(random.uniform(10, 50), 2)
+                    elif estado_gasto == "limite":
+                        monto = round(random.uniform(20, 60), 2)
+                    else:
+                        monto = round(random.uniform(40, 80), 2)
+
+                    gasto = Gasto(
+                        fecha=fecha,
+                        monto=monto,
+                        categoria=proveedor.categoria,
+                        proveedor_id=proveedor.id,
+                        usuario_id=chef.id,
+                        restaurante_id=restaurante.id,
+                        nota=f"Gasto de {proveedor.nombre}",
+                    )
+                    db.session.add(gasto)
+                    gastos_del_dia.append(monto)
+
+                total_gastos_dia = sum(gastos_del_dia)
+
+                if estado_gasto == "dentro":
+                    porcentaje = random.uniform(0.25, 0.30)
+                elif estado_gasto == "limite":
+                    porcentaje = random.uniform(0.30, 0.33)
+                else:
+                    porcentaje = random.uniform(0.36, 0.42)
+
+                total_venta_dia = round(total_gastos_dia / porcentaje, 2)
+
+                venta = Venta(
+                    fecha=fecha,
+                    turno="tarde",
+                    monto=total_venta_dia,
+                    restaurante_id=restaurante.id,
+                )
+                db.session.add(venta)
+
+            db.session.commit()
+
     print("Base de datos reiniciada con exito.")
