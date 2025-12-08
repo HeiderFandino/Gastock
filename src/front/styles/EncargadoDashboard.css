@@ -559,3 +559,8 @@
     }
   }
 }
+#alerta {
+  padding: 15px;
+  color: blue;
+  border: solid 10px red;
+}
