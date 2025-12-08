@@ -18,6 +18,7 @@ const AdminDashboardBB = () => {
   const [ultimaVentaPorRest, setUltimaVentaPorRest] = useState({});
   const [ultimaVentaDetalle, setUltimaVentaDetalle] = useState({});
   const [cargando, setCargando] = useState(false);
+  const [restauranteMap, setRestauranteMap] = useState({});
 
   // Fija --navbar-h según el header real
   useEffect(() => {
@@ -113,6 +114,14 @@ const AdminDashboardBB = () => {
     const cargar = async () => {
       setCargando(true);
       try {
+        // Mapa de restaurantes para márgenes
+        const listaRestaurantes = await adminService.getRestaurantes().catch(() => []);
+        const restMap = {};
+        (listaRestaurantes || []).forEach((r) => {
+          restMap[r.id] = r;
+        });
+        setRestauranteMap(restMap);
+
         // Cargar datos del mes actual
         const data = await adminService.getResumenGeneral(mes, ano);
         const lista = Array.isArray(data) ? data : [];
@@ -271,10 +280,10 @@ const AdminDashboardBB = () => {
     };
   };
 
-  const getColorClasses = (porcentaje) => {
-    if (porcentaje > 36) return ["bg-danger-subtle", "text-danger", "🚨"];
-    if (porcentaje > 33) return ["bg-warning-subtle", "text-warning", "⚠️"];
-    return ["bg-success-subtle", "text-success", "✅"];
+  const getColorClasses = (porcentaje, margenMin = 33, margenMax = 36) => {
+    if (porcentaje >= margenMax) return ["status-red", "text-danger", "🚨"];
+    if (porcentaje > margenMin) return ["status-yellow", "text-warning", "⚠️"];
+    return ["status-green", "text-success", "✅"];
   };
 
   const formateaFechaCorta = (d) => {
@@ -334,7 +343,12 @@ const AdminDashboardBB = () => {
           {[...resumenes]
             .sort((a, b) => b.venta_total - a.venta_total)
             .map((r) => {
-              const [bgClass, textClass, icono] = getColorClasses(r.porcentaje_gasto);
+              const meta = restauranteMap[r.restaurante_id] || {};
+              const [bgClass, textClass, icono] = getColorClasses(
+                r.porcentaje_gasto,
+                meta.porcentaje_min ?? 33,
+                meta.porcentaje_max ?? 36
+              );
               const lastDate = ultimaVentaPorRest[r.restaurante_id] || null;
 
               // Layout unificado: mismo diseño para móvil y desktop

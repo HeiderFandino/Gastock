@@ -191,6 +191,26 @@ class AuditService:
         query = AuditLog.query
 
         if filters:
+            if filters.get('empresa_id') is not None:
+                # Filtrar por empresa usando Restaurante y Usuario:
+                # - Logs asociados a restaurantes de la empresa
+                # - Logs sin restaurante pero de usuarios de esa empresa
+                from api.models import Restaurante, Usuario  # import local para evitar ciclos
+                empresa_id = filters['empresa_id']
+
+                query = query.join(
+                    Usuario,
+                    AuditLog.usuario_id == Usuario.id,
+                    isouter=True
+                ).join(
+                    Restaurante,
+                    AuditLog.restaurante_id == Restaurante.id,
+                    isouter=True
+                ).filter(
+                    (Restaurante.empresa_id == empresa_id) |
+                    ((AuditLog.restaurante_id.is_(None)) & (Usuario.empresa_id == empresa_id))
+                )
+
             if filters.get('user_id'):
                 query = query.filter(AuditLog.usuario_id == filters['user_id'])
 

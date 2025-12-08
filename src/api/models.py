@@ -3,6 +3,23 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+class Empresa(db.Model):
+    __tablename__ = 'empresas'
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    activo = db.Column(db.Boolean, default=True, nullable=False)
+
+    usuarios = db.relationship('Usuario', backref='empresa', lazy=True)
+    restaurantes = db.relationship('Restaurante', backref='empresa', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "activo": self.activo
+        }
+
+
 class Restaurante(db.Model):
     __tablename__ = 'restaurantes'
     id = db.Column(db.Integer, primary_key=True)
@@ -11,6 +28,7 @@ class Restaurante(db.Model):
     telefono = db.Column(db.String(11))
     email_contacto = db.Column(db.String(100))
     activo = db.Column(db.Boolean, default=True, nullable=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey('empresas.id'), nullable=True)
     usuarios = db.relationship('Usuario', backref='restaurante', lazy=True)
     ventas = db.relationship('Venta', backref='restaurante', lazy=True)
     gastos = db.relationship('Gasto', backref='restaurante', lazy=True)
@@ -25,7 +43,8 @@ class Restaurante(db.Model):
             "email_contacto": self.email_contacto,
             "usuarios": self.usuarios,
             "telefono": self.telefono,
-            "activo": self.activo
+            "activo": self.activo,
+            "empresa_id": self.empresa_id
         }
 
 
@@ -35,7 +54,18 @@ class Usuario(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(250), nullable=False)
-    rol = db.Column(db.Enum('admin', 'encargado', 'chef', name='roles'), nullable=False)
+    rol = db.Column(
+        db.Enum(
+            'super_admin',
+            'admin',
+            'director',
+            'encargado',
+            'chef',
+            name='roles'
+        ),
+        nullable=False
+    )
+    empresa_id = db.Column(db.Integer, db.ForeignKey('empresas.id'), nullable=True)
     restaurante_id = db.Column(db.Integer, db.ForeignKey('restaurantes.id'), nullable=True)
     status = db.Column(db.String(20), default="active")
     moneda = db.Column(db.String(10), nullable=True)
@@ -47,6 +77,7 @@ class Usuario(db.Model):
             "email": self.email,
             "rol": self.rol,
             "status": self.status,  # ✅ Añadir también al serialize
+            "empresa_id": self.empresa_id,
             "restaurante_id": self.restaurante_id,
             "moneda": self.moneda  # Incluida en el serialize
         }

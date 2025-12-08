@@ -24,9 +24,9 @@ const AdminActividad = () => {
     date_to: ""
   });
 
-  // Verificar que sea admin
+  // Verificar que sea admin o director
   useEffect(() => {
-    if (!user || user.rol !== "admin") {
+    if (!user || (user.rol !== "admin" && user.rol !== "director")) {
       navigate("/", { replace: true });
       return;
     }
@@ -57,7 +57,7 @@ const AdminActividad = () => {
   };
 
   useEffect(() => {
-    if (user?.rol === "admin") {
+    if (user?.rol === "admin" || user?.rol === "director") {
       loadLogs();
       loadStats();
     }
@@ -109,7 +109,7 @@ const AdminActividad = () => {
     return colors[actionType] || "text-muted";
   };
 
-  if (!user || user.rol !== "admin") {
+  if (!user || (user.rol !== "admin" && user.rol !== "director")) {
     return null;
   }
 

@@ -116,8 +116,8 @@ export default function Configuracion() {
             <main className="aj-content">
                 <div className="aj-panel aj-panel--center">
 
-                    {/* DATOS PERSONALES - Solo para admin */}
-                    {userRole === "admin" && (
+                    {/* DATOS PERSONALES - Para admin, super_admin y director */}
+                    {["admin", "super_admin", "director"].includes(userRole) && (
                         <>
                             <section className="aj-block">
                                 <h3 className="aj-block-title">Datos personales</h3>

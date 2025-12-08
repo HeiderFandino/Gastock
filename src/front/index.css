@@ -226,3 +226,24 @@ span.w-60 {
     width: 100% !important;
   }
 }
+
+#alerta {
+  background-color: yellow;
+  color: red;
+  align-content: center !important;
+  border-radius: 2px solid blue !important;
+}
+
+/* Estados de margen con gradientes suaves */
+.status-green {
+  background: linear-gradient(135deg, #d8f3e8, #c8e6ff);
+}
+.status-yellow {
+  background: linear-gradient(135deg, #fff2d6, #ffe6c9);
+}
+.status-red {
+  background: linear-gradient(135deg, #f8d7da, #e3c0d3);
+}
+.status-card {
+  border-radius: 16px;
+}

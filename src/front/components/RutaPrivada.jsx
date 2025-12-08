@@ -6,9 +6,13 @@ import userServices from "../services/userServices";
 import { LoadingScreen } from "./LoadingScreen";
 
 // ACL compartida (misma que usamos en Login.jsx)
+// super_admin solo debe acceder a /admin/usuarios y /admin/settings
 const ACL = [
+  { prefix: "/super-admin", roles: ["super_admin"] },
   { prefix: "/chef/gastos", roles: ["chef"] },
-  { prefix: "/admin", roles: ["admin"] },
+  { prefix: "/admin/usuarios", roles: ["admin", "super_admin", "director"] },
+  { prefix: "/admin/settings", roles: ["admin", "super_admin", "director"] },
+  { prefix: "/admin", roles: ["admin", "director"] },
   { prefix: "/encargado", roles: ["encargado"] },
   { prefix: "/chef", roles: ["chef"] },
   { prefix: "/ventas", roles: ["encargado"] },

@@ -16,7 +16,9 @@ export const Navbar = () => {
 
   const nombre = user?.nombre || "Usuario";
   const rol = (user?.rol || "").toLowerCase();
-  const restaurante = user?.restaurante_nombre || "Sin restaurante";
+  const restaurante = user?.restaurante_nombre || "";
+  const shouldShowRestaurante =
+    !!restaurante && !["super_admin", "admin", "director"].includes(rol);
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
@@ -96,7 +98,7 @@ export const Navbar = () => {
             >
               {rol}
             </div>
-            {rol !== "admin" && (
+            {shouldShowRestaurante && (
               <div
                 className="user-restaurant text-truncate"
                 title={restaurante}
@@ -186,7 +188,7 @@ export const Navbar = () => {
                 >
                   {rol}
                 </div>
-                {rol !== "admin" && (
+                {shouldShowRestaurante && (
                   <div
                     style={{ color: "var(--color-text-muted)", fontSize: "0.7rem" }}
                   >

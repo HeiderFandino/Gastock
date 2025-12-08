@@ -7,11 +7,12 @@ from datetime import date, timedelta
 
 from dotenv import load_dotenv
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from werkzeug.security import generate_password_hash
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
-from api.models import AuditLog, Gasto, Proveedor, Restaurante, Usuario, Venta  # noqa: E402
+from api.models import AuditLog, Empresa, Gasto, Proveedor, Restaurante, Usuario, Venta  # noqa: E402
 from app import app, db  # noqa: E402
 
 load_dotenv()
@@ -25,16 +26,44 @@ def limpiar_email(texto: str) -> str:
 with app.app_context():
     print("Borrando TODOS los datos...")
 
-    db.session.execute(text("TRUNCATE audit_logs CASCADE"))
-    db.session.execute(text("TRUNCATE token_blocklist CASCADE"))
-    db.session.commit()
+    # En PostgreSQL podemos usar TRUNCATE para limpiar más rápido; en SQLite no existe.
+    try:
+        db.session.execute(text("TRUNCATE audit_logs CASCADE"))
+        db.session.commit()
+    except OperationalError:
+        db.session.rollback()
 
-    AuditLog.query.delete()
-    Venta.query.delete()
-    Gasto.query.delete()
-    Proveedor.query.delete()
-    Usuario.query.delete()
-    Restaurante.query.delete()
+    # Borrado clásico con ORM; si alguna tabla no existe (por ejemplo en SQLite
+    # sin migraciones completas), ignoramos el error para no romper el seed.
+    try:
+      AuditLog.query.delete()
+    except OperationalError:
+      db.session.rollback()
+    try:
+      Venta.query.delete()
+    except OperationalError:
+      db.session.rollback()
+    try:
+      Gasto.query.delete()
+    except OperationalError:
+      db.session.rollback()
+    try:
+      Proveedor.query.delete()
+    except OperationalError:
+      db.session.rollback()
+    try:
+      Usuario.query.delete()
+    except OperationalError:
+      db.session.rollback()
+    try:
+      Restaurante.query.delete()
+    except OperationalError:
+      db.session.rollback()
+    try:
+      Empresa.query.delete()
+    except OperationalError:
+      db.session.rollback()
+
     db.session.commit()
 
     print("Inicializando seed...")
@@ -55,6 +84,11 @@ with app.app_context():
     estados_gasto = ["dentro"] * 3 + ["limite"] * 3 + ["fuera"] * 4
     random.shuffle(estados_gasto)
 
+    # Empresa de ejemplo para agrupar restaurantes y usuarios
+    empresa_demo = Empresa(nombre="Empresa Demo", activo=True)
+    db.session.add(empresa_demo)
+    db.session.commit()
+
     restaurantes = []
     for i, nombre in enumerate(nombres_restaurantes):
         clean_name = limpiar_email(nombre)
@@ -63,6 +97,7 @@ with app.app_context():
             direccion=f"Calle {random.randint(1, 200)}, Ciudad",
             telefono=f"6{random.randint(10000000, 99999999)}",
             email_contacto=f"contacto.{clean_name}@ohmychef.com",
+            empresa_id=empresa_demo.id,
         )
         db.session.add(restaurante)
         restaurante.estado_gasto = estados_gasto[i]
@@ -90,6 +125,7 @@ with app.app_context():
             email=email_encargado,
             rol="encargado",
             status="active",
+            empresa_id=empresa_demo.id,
             restaurante_id=restaurante.id,
             password=generate_password_hash("123456"),
         )
@@ -98,6 +134,7 @@ with app.app_context():
             email=email_chef,
             rol="chef",
             status="active",
+            empresa_id=empresa_demo.id,
             restaurante_id=restaurante.id,
             password=generate_password_hash("123456"),
         )
@@ -109,6 +146,7 @@ with app.app_context():
         email="ohmychefapp@gmail.com",
         rol="admin",
         status="active",
+        empresa_id=empresa_demo.id,
         restaurante_id=None,
         password=generate_password_hash("123456"),
     )

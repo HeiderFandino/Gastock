@@ -55,7 +55,7 @@ export const router = createBrowserRouter(
 
 
 
-      <Route element={<RutaPrivada allowedRoles={["admin", "encargado", "chef"]} />}>
+      <Route element={<RutaPrivada />}>
         <Route element={<Layout />}>
           {/* Admin */}
           <Route path="admin/dashboard" element={<AdminDashboard />} />

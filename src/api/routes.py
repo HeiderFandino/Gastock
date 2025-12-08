@@ -4,7 +4,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 # Debug message without emoji to avoid encoding issues on Windows consoles
 print("ROUTES.PY CARGADO - Servidor iniciado correctamente")
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, Usuario, Venta, Gasto, FacturaAlbaran, Proveedor, MargenObjetivo, Restaurante, AuditLog
+from api.models import db, Usuario, Venta, Gasto, FacturaAlbaran, Proveedor, MargenObjetivo, Restaurante, AuditLog, Empresa
 from api.audit_service import AuditService
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
@@ -103,7 +103,24 @@ def reset_password():
 @api.route('/usuarios', methods=['GET'])
 @jwt_required()
 def get_usuarios():
-    usuarios = Usuario.query.all()
+    current_user = _get_current_user()
+
+    if not current_user:
+        return jsonify({"error": "No autenticado"}), 401
+
+    # Filtrado por empresa/rol:
+    # - super_admin: ve todos los usuarios (frontend ya limita a admins)
+    # - admin/director: solo usuarios de su empresa
+    # - otros: solo se usan en contextos específicos, devolvemos todos por ahora
+    if _user_is_super_admin(current_user):
+        usuarios = Usuario.query.all()
+    elif _user_is_admin(current_user) or _user_is_director(current_user):
+        if current_user.empresa_id:
+            usuarios = Usuario.query.filter_by(empresa_id=current_user.empresa_id).all()
+        else:
+            usuarios = [current_user]
+    else:
+        usuarios = Usuario.query.all()
 
     resultados = []
     for u in usuarios:
@@ -113,6 +130,8 @@ def get_usuarios():
             "email": u.email,
             "rol": u.rol,
             "status": u.status,
+            "empresa_id": u.empresa_id,
+            "empresa_nombre": u.empresa.nombre if getattr(u, "empresa", None) else None,
             "restaurante_id": u.restaurante_id,
             "restaurante_nombre": u.restaurante.nombre if u.restaurante else None
         })
@@ -120,47 +139,137 @@ def get_usuarios():
     return jsonify(resultados), 200
 
 
+def _get_current_user():
+    """
+    Helper sencillo para obtener el usuario actual o None.
+    """
+    try:
+        current_user_id = get_jwt_identity()
+        if not current_user_id:
+            return None
+        return db.session.get(Usuario, int(current_user_id))
+    except Exception:
+        return None
+
+
+def _user_is_super_admin(user: Usuario) -> bool:
+    return bool(user and user.rol == "super_admin")
+
+
+def _user_is_admin(user: Usuario) -> bool:
+    return bool(user and user.rol == "admin")
+
+
+def _user_is_director(user: Usuario) -> bool:
+    return bool(user and user.rol == "director")
+
+
+def _user_is_staff(user: Usuario) -> bool:
+    """
+    Cualquier rol operativo (admin, director, encargado, chef).
+    """
+    return bool(user and user.rol in ["admin", "director", "encargado", "chef"])
+
+
 @api.route("/register", methods=["POST"])
 @jwt_required(optional=True)
 def register():
     print("🚀 LLAMANDO register() para crear usuario")  # Debug
     try:
-        data = request.json
+        data = request.json or {}
 
         if not data.get("email") or not data.get("password") or not data.get("rol") or not data.get("nombre"):
             return jsonify({"error": "Faltan datos obligatorios"}), 400
 
-        total_users = db.session.scalar(
-            select(func.count()).select_from(Usuario))
-        current_user_id = get_jwt_identity()
+        # Normalizar email a minúsculas y sin espacios
+        data["email"] = data["email"].strip().lower()
 
-        if total_users > 0:
-            if not current_user_id:
+        total_users = db.session.scalar(select(func.count()).select_from(Usuario))
+        current_user = _get_current_user()
+
+        requested_role = data["rol"]
+
+        # 1) Primer usuario del sistema -> siempre super_admin
+        if total_users == 0:
+            requested_role = "super_admin"
+        else:
+            # A partir del segundo usuario siempre debe estar autenticado
+            if not current_user:
                 return jsonify({"error": "No autorizado"}), 403
-            current_user = db.session.get(Usuario, current_user_id)
-            if not current_user or current_user.rol != "admin":
-                return jsonify({"error": "Solo el admin puede crear usuarios"}), 403
 
-        if data["rol"] in ["chef", "encargado"] and not data.get("restaurante_id"):
+            # super_admin: solo crea admins (según especificación)
+            if _user_is_super_admin(current_user):
+                if requested_role != "admin":
+                    return jsonify({"error": "El super admin solo puede crear usuarios con rol 'admin'"}), 403
+
+            # admin: crea directores / encargados / chefs
+            elif _user_is_admin(current_user):
+                if requested_role not in ["director", "encargado", "chef"]:
+                    return jsonify({"error": "El admin solo puede crear directores, encargados o chefs"}), 403
+
+            # director: crea encargados / chefs
+            elif _user_is_director(current_user):
+                if requested_role not in ["encargado", "chef"]:
+                    return jsonify({"error": "El director solo puede crear encargados o chefs"}), 403
+
+            # otros roles no pueden crear usuarios
+            else:
+                return jsonify({"error": "No autorizado para crear usuarios"}), 403
+
+        if requested_role in ["chef", "encargado"] and not data.get("restaurante_id"):
             return jsonify({"error": "Chef o encargado debe tener restaurante asignado"}), 400
 
-        existing_user = db.session.scalar(
-            select(Usuario).where(Usuario.email == data["email"]))
+        existing_user = db.session.scalar(select(Usuario).where(Usuario.email == data["email"]))
         if existing_user:
             return jsonify({"error": "Email ya registrado"}), 409
 
-        # Guardamos la contraseña en texto plano para el correo
+        # Guardar contraseña para el correo
         raw_password = data["password"]
         hashed_password = generate_password_hash(raw_password)
         status = data.get("status", "active")
+
+        # Normalizar empresa_id y restaurante_id desde el payload
+        raw_empresa_id = data.get("empresa_id")
+        empresa_id = int(raw_empresa_id) if raw_empresa_id not in (None, "", "null") else None
+
+        raw_restaurante_id = data.get("restaurante_id")
+        restaurante_id = int(raw_restaurante_id) if raw_restaurante_id not in (None, "", "null") else None
+
+        # Si crea un super_admin no asociamos empresa/restaurante
+        if requested_role == "super_admin":
+            empresa_id = None
+            restaurante_id = None
+        else:
+            # Si no viene empresa_id y el creador tiene empresa, la heredamos
+            # (pero nunca heredamos desde super_admin, cada admin tiene su propia empresa)
+            if (
+                not empresa_id
+                and current_user
+                and current_user.empresa_id
+                and not _user_is_super_admin(current_user)
+            ):
+                empresa_id = current_user.empresa_id
+
+            # Si el super_admin crea un admin y no se especifica empresa,
+            # se crea una Empresa propia para ese admin (su "mundo" aislado).
+            # En este caso, el nombre de la empresa es obligatorio.
+            if _user_is_super_admin(current_user) and requested_role == "admin" and not empresa_id:
+                empresa_nombre = (data.get("empresa_nombre") or "").strip()
+                if not empresa_nombre:
+                    return jsonify({"error": "El nombre de la empresa es obligatorio para crear un admin"}), 400
+                nueva_empresa = Empresa(nombre=empresa_nombre, activo=True)
+                db.session.add(nueva_empresa)
+                db.session.flush()
+                empresa_id = nueva_empresa.id
 
         new_user = Usuario(
             nombre=data["nombre"],
             email=data["email"],
             password=hashed_password,
-            rol=data["rol"],
+            rol=requested_role,
             status=status,
-            restaurante_id=data.get("restaurante_id")
+            empresa_id=empresa_id,
+            restaurante_id=restaurante_id
         )
         db.session.add(new_user)
         db.session.commit()
@@ -176,6 +285,7 @@ def register():
                     "email": new_user.email,
                     "rol": new_user.rol,
                     "status": new_user.status,
+                    "empresa_id": new_user.empresa_id,
                     "restaurante_id": new_user.restaurante_id,
                     "restaurante": restaurante.nombre if restaurante else None
                 },
@@ -184,33 +294,31 @@ def register():
         except Exception as log_error:
             print(f"⚠️ Error en logging de creación de usuario: {log_error}")
 
-        # 📬 Enviar correo con SendGrid
-        from api.email_utils import send_email
+        # 📬 Enviar correo con SendGrid (solo si no es super_admin inicial)
+        try:
+            from api.email_utils import send_email
 
-        subject = "Bienvenido a OhMyChef!"
-        html_content = f"""
-        <h3>Hola {data['nombre']},</h3>
+            subject = "Bienvenido a OhMyChef!"
+            html_content = f"""
+            <h3>Hola {data['nombre']},</h3>
 
-        <p>Tu cuenta en <strong>OhMyChef!</strong> ha sido creada exitosamente. Aquí tienes tus datos de acceso:</p>
+            <p>Tu cuenta en <strong>OhMyChef!</strong> ha sido creada exitosamente. Aquí tienes tus datos de acceso:</p>
 
-        <ul>
-          <li><strong>Rol:</strong> {data['rol']}</li>
-          <li><strong>Email:</strong> {data['email']}</li>
-          <li><strong>Contraseña:</strong> {raw_password}</li>
-        </ul>
+            <ul>
+              <li><strong>Rol:</strong> {requested_role}</li>
+              <li><strong>Email:</strong> {data['email']}</li>
+              <li><strong>Contraseña:</strong> {raw_password}</li>
+            </ul>
 
-       
-        <p>🛡️ Por seguridad, te recomendamos cambiar esta contraseña tras el primer ingreso.</p>
+            <p>Por seguridad, te recomendamos cambiar esta contraseña tras el primer ingreso.</p>
 
-        <p>📩 Si tienes alguna pregunta, contáctanos en 
-        <a href="mailto:soporte@ohmychef.com">soporte@ohmychef.com</a></p>
+            <p><strong>Equipo OhMyChef</strong></p>
+            <p style="font-size:0.8em;color:gray;"><em>Este mensaje ha sido generado automáticamente. No respondas a este correo.</em></p>
+            """
 
-        <p><strong>Equipo OhMyChef</strong></p>
-        <p style="font-size:0.8em;color:gray;"><em>Este mensaje ha sido generado automáticamente. No respondas a este correo.</em></p>
-        """
-
-        send_email(to_email=data["email"],
-                   subject=subject, html_content=html_content)
+            send_email(to_email=data["email"], subject=subject, html_content=html_content)
+        except Exception as e:
+            print("⚠️ Error enviando correo de bienvenida:", e)
 
         return jsonify({"msg": "Usuario creado correctamente"}), 201
 
@@ -233,6 +341,7 @@ def obtener_usuario(id):
         "email": usuario.email,
         "rol": usuario.rol,
         "status": usuario.status,  # ✅ Añadido
+        "empresa_id": usuario.empresa_id,
         "restaurante_id": usuario.restaurante_id,
         "restaurante_nombre": usuario.restaurante.nombre if usuario.restaurante else None  # ✅ Añadido
     }
@@ -247,15 +356,30 @@ def editar_usuario(id):
     try:
         data = request.json
         print(f"🔍 Datos recibidos: {data}")  # Debug
-        current_user_id = get_jwt_identity()
-        current_user = db.session.get(Usuario, current_user_id)
+        current_user = _get_current_user()
 
-        if not current_user or current_user.rol != "admin":
-            return jsonify({"error": "Solo el admin puede actualizar usuarios"}), 403
+        if not current_user:
+            return jsonify({"error": "No autenticado"}), 401
 
         user_to_update = db.session.get(Usuario, id)
         if not user_to_update:
             return jsonify({"error": "Usuario no encontrado"}), 404
+
+        # Reglas de quién puede editar a quién
+        # super_admin: solo admins
+        if _user_is_super_admin(current_user):
+            if user_to_update.rol != "admin":
+                return jsonify({"error": "El super admin solo puede editar admins"}), 403
+        # admin: solo roles inferiores (director/encargado/chef)
+        elif _user_is_admin(current_user):
+            if user_to_update.rol not in ["director", "encargado", "chef"]:
+                return jsonify({"error": "El admin solo puede editar directores, encargados o chefs"}), 403
+        # director: solo roles inferiores (encargado/chef)
+        elif _user_is_director(current_user):
+            if user_to_update.rol not in ["encargado", "chef"]:
+                return jsonify({"error": "El director solo puede editar encargados o chefs"}), 403
+        else:
+            return jsonify({"error": "No autorizado para editar usuarios"}), 403
 
         old_values = {
             "nombre": user_to_update.nombre,
@@ -268,24 +392,58 @@ def editar_usuario(id):
         print(f"🔍 Valores anteriores: {old_values}")  # Debug
 
         user_to_update.nombre = data.get("nombre", user_to_update.nombre)
-        user_to_update.email = data.get("email", user_to_update.email)
+        incoming_email = data.get("email")
+        if incoming_email:
+            normalized_email = incoming_email.strip().lower()
+            user_to_update.email = normalized_email
+        else:
+            user_to_update.email = user_to_update.email
 
         if data.get("password"):
             user_to_update.password = generate_password_hash(data["password"])
 
         new_rol = data.get("rol", user_to_update.rol)
-        if new_rol == "admin":
-            existing_admin = db.session.scalar(
-                select(Usuario).where(Usuario.rol == "admin"))
-            if existing_admin and existing_admin.id != user_to_update.id:
-                return jsonify({"error": "Ya existe un administrador en el sistema."}), 400
+
+        # Permitir actualizar el nombre de la empresa cuando el super_admin edita un admin
+        empresa_nombre = data.get("empresa_nombre")
+        if _user_is_super_admin(current_user) and user_to_update.rol == "admin" and empresa_nombre:
+            empresa_nombre = empresa_nombre.strip()
+            if user_to_update.empresa_id:
+                empresa = db.session.get(Empresa, user_to_update.empresa_id)
+                if empresa:
+                    empresa.nombre = empresa_nombre
+            else:
+                nueva_empresa = Empresa(nombre=empresa_nombre, activo=True)
+                db.session.add(nueva_empresa)
+                db.session.flush()
+                user_to_update.empresa_id = nueva_empresa.id
+
+        # Control de cambios de rol según quién edita
+        if _user_is_super_admin(current_user):
+            # super_admin solo gestiona admins: permite cambiar status/datos, no convertir otros roles
+            if user_to_update.rol == "admin":
+                if new_rol != "admin":
+                    return jsonify({"error": "El super admin no puede cambiar el rol del admin a otro distinto de 'admin'"}), 403
+        elif _user_is_admin(current_user):
+            # admin gestiona directores/encargados/chefs, sin poder subirlos a admin/super_admin
+            if new_rol not in ["director", "encargado", "chef"]:
+                return jsonify({"error": "El admin solo puede asignar roles director, encargado o chef"}), 403
+        elif _user_is_director(current_user):
+            # director gestiona encargados/chefs, sin poder subirlos a director/admin/super_admin
+            if new_rol not in ["encargado", "chef"]:
+                return jsonify({"error": "El director solo puede asignar roles encargado o chef"}), 403
+
         user_to_update.rol = new_rol
 
-        if user_to_update.rol in ["chef", "encargado"] and not data.get("restaurante_id"):
+        if user_to_update.rol in ["chef", "encargado"] and not data.get("restaurante_id") and not user_to_update.restaurante_id:
             return jsonify({"error": "Chef o encargado debe tener restaurante asignado"}), 400
 
-        user_to_update.restaurante_id = data.get(
-            "restaurante_id", user_to_update.restaurante_id) if user_to_update.rol != "admin" else None
+        # admins/directores no van ligados a un restaurante concreto
+        if user_to_update.rol in ["admin", "director"]:
+            user_to_update.restaurante_id = None
+        else:
+            user_to_update.restaurante_id = data.get(
+                "restaurante_id", user_to_update.restaurante_id)
 
         user_to_update.status = data.get("status", user_to_update.status)
 
@@ -351,11 +509,10 @@ def editar_usuario(id):
 @jwt_required()
 def eliminar_usuario(id):
     try:
-        current_user_id = get_jwt_identity()
-        current_user = db.session.get(Usuario, current_user_id)
+        current_user = _get_current_user()
 
-        if not current_user or current_user.rol != "admin":
-            return jsonify({"error": "Solo el admin puede eliminar usuarios"}), 403
+        if not current_user:
+            return jsonify({"error": "No autenticado"}), 401
 
         user_to_delete = db.session.get(
             Usuario, id)
@@ -371,8 +528,32 @@ def eliminar_usuario(id):
             "restaurante": user_to_delete.restaurante.nombre if user_to_delete.restaurante else None
         }
 
-        if user_to_delete.id == current_user_id:
-            return jsonify({"error": "No puedes eliminar tu propia cuenta de administrador"}), 400
+        # No se pueden eliminar admins (por los datos asociados)
+        if user_to_delete.rol == "admin":
+            return jsonify({"error": "No se permite eliminar usuarios con rol admin"}), 400
+
+        # super_admin tampoco se elimina nunca
+        if user_to_delete.rol == "super_admin":
+            return jsonify({"error": "No se permite eliminar el super admin"}), 400
+
+        # El usuario no puede eliminarse a sí mismo
+        if user_to_delete.id == current_user.id:
+            return jsonify({"error": "No puedes eliminar tu propia cuenta"}), 400
+
+        # Reglas de quién puede eliminar
+        if _user_is_super_admin(current_user):
+            # super_admin solo toca admins, y ya hemos bloqueado su borrado
+            return jsonify({"error": "El super admin no puede eliminar usuarios"}), 403
+        elif _user_is_admin(current_user):
+            # admin puede eliminar roles inferiores (director/encargado/chef)
+            if user_to_delete.rol not in ["director", "encargado", "chef"]:
+                return jsonify({"error": "El admin solo puede eliminar directores, encargados o chefs"}), 403
+        elif _user_is_director(current_user):
+            # director puede eliminar roles inferiores (encargado/chef)
+            if user_to_delete.rol not in ["encargado", "chef"]:
+                return jsonify({"error": "El director solo puede eliminar encargados o chefs"}), 403
+        else:
+            return jsonify({"error": "No autorizado para eliminar usuarios"}), 403
 
         # Verificar si el usuario tiene gastos asociados
         gastos_count = db.session.query(Gasto).filter_by(usuario_id=id).count()
@@ -402,7 +583,34 @@ def eliminar_usuario(id):
 @api.route('/ventas', methods=['GET'])
 @jwt_required()
 def get_ventas():
-    ventas = Venta.query.all()
+    """
+    Lista de ventas filtrada por rol/empresa:
+    - super_admin: no consume esta vista desde la UI, devolvemos lista vacía.
+    - admin/director: ventas solo de restaurantes de su empresa.
+    - encargado/chef: ventas solo de su restaurante.
+    """
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # super_admin no debe trabajar con datos operativos en la UI
+    if _user_is_super_admin(current_user):
+        return jsonify([]), 200
+
+    query = Venta.query.join(Restaurante, Venta.restaurante_id == Restaurante.id)
+
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        # Admin/director -> por empresa
+        if not current_user.empresa_id:
+            return jsonify([]), 200
+        query = query.filter(Restaurante.empresa_id == current_user.empresa_id)
+    else:
+        # Encargado/chef -> solo su restaurante
+        if not current_user.restaurante_id:
+            return jsonify([]), 200
+        query = query.filter(Venta.restaurante_id == current_user.restaurante_id)
+
+    ventas = query.all()
 
     resultados = []
     for v in ventas:
@@ -428,7 +636,8 @@ def login():
         if not data.get("email") or not data.get("password"):
             return jsonify({"error": "Faltan datos"}), 400
 
-        stm = select(Usuario).where(Usuario.email == data["email"])
+        email_normalized = data["email"].strip().lower()
+        stm = select(Usuario).where(Usuario.email == email_normalized)
         user = db.session.execute(stm).scalar()
 
         if not user:
@@ -484,6 +693,14 @@ def login():
 @api.route('/ventas', methods=['POST'])
 @jwt_required()
 def crear_venta():
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe crear ventas
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede crear ventas"}), 403
+
     data = request.get_json()
 
     if not data:
@@ -496,6 +713,28 @@ def crear_venta():
 
     if not fecha or not monto or not restaurante_id:
         return jsonify({"msg": "Faltan campos obligatorios"}), 400
+
+    # Normalizar restaurante_id
+    try:
+        restaurante_id = int(restaurante_id)
+    except (TypeError, ValueError):
+        return jsonify({"msg": "restaurante_id inválido"}), 400
+
+    # Validar que el restaurante existe
+    restaurante = Restaurante.query.get(restaurante_id)
+    if not restaurante:
+        return jsonify({"msg": "Restaurante no encontrado"}), 404
+
+    # Reglas de pertenencia:
+    # - admin/director: solo restaurantes de su empresa
+    # - encargado/chef: solo su restaurante
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para crear ventas en este restaurante"}), 403
+    else:
+        # encargado / chef u otros
+        if current_user.restaurante_id != restaurante_id:
+            return jsonify({"msg": "Solo puedes crear ventas en tu propio restaurante"}), 403
 
     try:
         # Validar duplicados por fecha, turno y restaurante
@@ -698,7 +937,25 @@ def eliminar_venta(id):
 @api.route('/gastos', methods=['GET'])
 @jwt_required()
 def get_gastos():
-    gastos = Gasto.query.all()
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    query = Gasto.query
+
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if current_user.empresa_id:
+            query = query.join(Restaurante).filter(Restaurante.empresa_id == current_user.empresa_id)
+        else:
+            query = query.filter(False)
+    elif _user_is_staff(current_user):
+        if current_user.restaurante_id:
+            query = query.filter(Gasto.restaurante_id == current_user.restaurante_id)
+        else:
+            query = query.filter(False)
+    # super_admin ve todos
+
+    gastos = query.all()
 
     resultados = []
     for g in gastos:
@@ -720,6 +977,14 @@ def get_gastos():
 @api.route('/gastos', methods=['POST'])
 @jwt_required()
 def crear_gasto():
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no crea gastos
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede crear gastos"}), 403
+
     data = request.get_json()
 
     if not data:
@@ -734,13 +999,31 @@ def crear_gasto():
                 if not g.get("fecha") or not g.get("monto") or not g.get("proveedor_id") or not g.get("usuario_id") or not g.get("restaurante_id"):
                     return jsonify({"msg": "Faltan campos obligatorios en uno de los gastos"}), 400
 
+                try:
+                    restaurante_id = int(g["restaurante_id"])
+                    usuario_id = int(g["usuario_id"])
+                except (TypeError, ValueError):
+                    return jsonify({"msg": "IDs inválidos en uno de los gastos"}), 400
+
+                restaurante = Restaurante.query.get(restaurante_id)
+                usuario = Usuario.query.get(usuario_id)
+                if not restaurante or not usuario:
+                    return jsonify({"msg": "Restaurante o usuario no encontrado en uno de los gastos"}), 404
+
+                if _user_is_admin(current_user) or _user_is_director(current_user):
+                    if not current_user.empresa_id or restaurante.empresa_id != current_user.empresa_id:
+                        return jsonify({"msg": "No autorizado para registrar gastos en este restaurante"}), 403
+                else:
+                    if current_user.restaurante_id != restaurante_id:
+                        return jsonify({"msg": "Solo puedes registrar gastos en tu propio restaurante"}), 403
+
                 nuevo_gasto = Gasto(
                     fecha=g["fecha"],
                     monto=g["monto"],
                     categoria=g.get("categoria"),
                     proveedor_id=g["proveedor_id"],
-                    usuario_id=g["usuario_id"],
-                    restaurante_id=g["restaurante_id"],
+                    usuario_id=usuario_id,
+                    restaurante_id=restaurante_id,
                     nota=g.get("nota"),
                     archivo_adjunto=g.get("archivo_adjunto")
                 )
@@ -750,8 +1033,8 @@ def crear_gasto():
 
                 # 📨 Notificación individual
                 try:
-                    restaurante = Restaurante.query.get(g["restaurante_id"])
-                    usuario = Usuario.query.get(g["usuario_id"])
+                    restaurante = Restaurante.query.get(restaurante_id)
+                    usuario = Usuario.query.get(usuario_id)
                     proveedor = Proveedor.query.get(g["proveedor_id"])
 
                     print("📤 Gasto lote:", g["monto"], "→", restaurante.nombre)
@@ -804,6 +1087,24 @@ def crear_gasto():
 
         if not fecha or not monto or not proveedor_id or not usuario_id or not restaurante_id:
             return jsonify({"msg": "Faltan campos obligatorios"}), 400
+
+        try:
+            restaurante_id = int(restaurante_id)
+            usuario_id = int(usuario_id)
+        except (TypeError, ValueError):
+            return jsonify({"msg": "IDs inválidos"}), 400
+
+        restaurante = Restaurante.query.get(restaurante_id)
+        usuario = Usuario.query.get(usuario_id)
+        if not restaurante or not usuario:
+            return jsonify({"msg": "Restaurante o usuario no encontrado"}), 404
+
+        if _user_is_admin(current_user) or _user_is_director(current_user):
+            if not current_user.empresa_id or restaurante.empresa_id != current_user.empresa_id:
+                return jsonify({"msg": "No autorizado para registrar gastos en este restaurante"}), 403
+        else:
+            if current_user.restaurante_id != restaurante_id:
+                return jsonify({"msg": "Solo puedes registrar gastos en tu propio restaurante"}), 403
 
         try:
             nuevo_gasto = Gasto(
@@ -1027,7 +1328,31 @@ def eliminar_gastos_por_usuario(usuario_id):
 @api.route('/facturas', methods=['GET'])
 @jwt_required()
 def get_facturas():
-    facturas = FacturaAlbaran.query.all()
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    query = FacturaAlbaran.query.join(
+        Restaurante, FacturaAlbaran.restaurante_id == Restaurante.id
+    )
+
+    if _user_is_super_admin(current_user):
+        # super_admin no usa esta vista desde la UI, pero puede ver todas
+        facturas = query.all()
+    elif _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id:
+            facturas = []
+        else:
+            facturas = query.filter(
+                Restaurante.empresa_id == current_user.empresa_id
+            ).all()
+    else:
+        if not current_user.restaurante_id:
+            facturas = []
+        else:
+            facturas = query.filter(
+                FacturaAlbaran.restaurante_id == current_user.restaurante_id
+            ).all()
 
     resultados = []
     for f in facturas:
@@ -1046,6 +1371,14 @@ def get_facturas():
 @api.route('/facturas', methods=['POST'])
 @jwt_required()
 def crear_factura():
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe crear facturas
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede crear facturas"}), 403
+
     data = request.get_json()
 
     if not data:
@@ -1059,6 +1392,23 @@ def crear_factura():
 
     if not proveedor_id or not restaurante_id or not fecha or not monto:
         return jsonify({"msg": "Faltan campos obligatorios"}), 400
+
+    # Validar restaurante
+    try:
+        restaurante_id = int(restaurante_id)
+    except (TypeError, ValueError):
+        return jsonify({"msg": "restaurante_id inválido"}), 400
+
+    restaurante = Restaurante.query.get(restaurante_id)
+    if not restaurante:
+        return jsonify({"msg": "Restaurante no encontrado"}), 404
+
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para crear facturas en este restaurante"}), 403
+    else:
+        if current_user.restaurante_id != restaurante_id:
+            return jsonify({"msg": "Solo puedes crear facturas en tu restaurante"}), 403
 
     try:
         nueva_factura = FacturaAlbaran(
@@ -1079,10 +1429,22 @@ def crear_factura():
 @api.route('/facturas/<int:id>', methods=['GET'])
 @jwt_required()
 def obtener_factura(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
     factura = FacturaAlbaran.query.get(id)
 
     if factura is None:
         return jsonify({"msg": "Factura no encontrada"}), 404
+
+    restaurante = Restaurante.query.get(factura.restaurante_id)
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or not restaurante or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para ver esta factura"}), 403
+    elif not _user_is_super_admin(current_user):
+        if current_user.restaurante_id != factura.restaurante_id:
+            return jsonify({"msg": "No autorizado para ver esta factura"}), 403
 
     resultado = {
         "id": factura.id,
@@ -1099,17 +1461,53 @@ def obtener_factura(id):
 @api.route('/facturas/<int:id>', methods=['PUT'])
 @jwt_required()
 def editar_factura(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe editar facturas
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede editar facturas"}), 403
+
     factura = FacturaAlbaran.query.get(id)
 
     if factura is None:
         return jsonify({"msg": "Factura no encontrada"}), 404
+
+    restaurante_actual = Restaurante.query.get(factura.restaurante_id)
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or not restaurante_actual or restaurante_actual.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para editar esta factura"}), 403
+    else:
+        if current_user.restaurante_id != factura.restaurante_id:
+            return jsonify({"msg": "Solo puedes editar facturas de tu restaurante"}), 403
 
     data = request.get_json()
     if not data:
         return jsonify({"msg": "Datos no recibidos"}), 400
 
     factura.proveedor_id = data.get("proveedor_id", factura.proveedor_id)
-    factura.restaurante_id = data.get("restaurante_id", factura.restaurante_id)
+    nuevo_restaurante_id = data.get("restaurante_id", factura.restaurante_id)
+    if nuevo_restaurante_id != factura.restaurante_id:
+        try:
+            nuevo_restaurante_id = int(nuevo_restaurante_id)
+        except (TypeError, ValueError):
+            return jsonify({"msg": "restaurante_id inválido"}), 400
+
+        nuevo_restaurante = Restaurante.query.get(nuevo_restaurante_id)
+        if not nuevo_restaurante:
+            return jsonify({"msg": "Nuevo restaurante no encontrado"}), 404
+
+        if _user_is_admin(current_user) or _user_is_director(current_user):
+            if not current_user.empresa_id or nuevo_restaurante.empresa_id != current_user.empresa_id:
+                return jsonify({"msg": "No autorizado para mover la factura a este restaurante"}), 403
+        else:
+            if current_user.restaurante_id != nuevo_restaurante_id:
+                return jsonify({"msg": "Solo puedes mover facturas dentro de tu restaurante"}), 403
+
+        factura.restaurante_id = nuevo_restaurante_id
+    else:
+        factura.restaurante_id = nuevo_restaurante_id
     factura.fecha = data.get("fecha", factura.fecha)
     factura.monto = data.get("monto", factura.monto)
     factura.descripcion = data.get("descripcion", factura.descripcion)
@@ -1125,10 +1523,26 @@ def editar_factura(id):
 @api.route('/facturas/<int:id>', methods=['DELETE'])
 @jwt_required()
 def eliminar_factura(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe eliminar facturas
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede eliminar facturas"}), 403
+
     factura = FacturaAlbaran.query.get(id)
 
     if factura is None:
         return jsonify({"msg": "Factura no encontrada"}), 404
+
+    restaurante = Restaurante.query.get(factura.restaurante_id)
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or not restaurante or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para eliminar esta factura"}), 403
+    else:
+        if current_user.restaurante_id != factura.restaurante_id:
+            return jsonify({"msg": "Solo puedes eliminar facturas de tu restaurante"}), 403
 
     try:
         db.session.delete(factura)
@@ -1142,13 +1556,40 @@ def eliminar_factura(id):
 @api.route('/proveedores', methods=['GET'])
 @jwt_required()
 def get_proveedores():
-    restaurante_id = request.args.get("restaurante_id", type=int)
-    if restaurante_id:
-        proveedores = Proveedor.query.filter_by(
-            restaurante_id=restaurante_id).all()
-    else:
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
 
-        proveedores = Proveedor.query.all()
+    restaurante_id = request.args.get("restaurante_id", type=int)
+
+    # super_admin -> sin uso en la UI, pero puede ver todos o filtrar por restaurante
+    if _user_is_super_admin(current_user):
+        if restaurante_id:
+            proveedores = Proveedor.query.filter_by(restaurante_id=restaurante_id).all()
+        else:
+            proveedores = Proveedor.query.all()
+    elif _user_is_admin(current_user) or _user_is_director(current_user):
+        # Admin / director: solo proveedores de restaurantes de su empresa
+        if not current_user.empresa_id:
+            proveedores = []
+        else:
+            query = Proveedor.query.join(
+                Restaurante, Proveedor.restaurante_id == Restaurante.id
+            ).filter(Restaurante.empresa_id == current_user.empresa_id)
+            if restaurante_id:
+                query = query.filter(Proveedor.restaurante_id == restaurante_id)
+            proveedores = query.all()
+    else:
+        # Encargado / chef: solo proveedores de su restaurante
+        if not current_user.restaurante_id:
+            proveedores = []
+        else:
+            if restaurante_id and restaurante_id != current_user.restaurante_id:
+                return jsonify({"msg": "No autorizado para ver proveedores de este restaurante"}), 403
+            proveedores = Proveedor.query.filter_by(
+                restaurante_id=current_user.restaurante_id
+            ).all()
+
     resultados = [
         {
             "id": p.id,
@@ -1167,6 +1608,14 @@ def get_proveedores():
 @api.route('/proveedores', methods=['POST'])
 @jwt_required()
 def crear_proveedor():
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe crear proveedores
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede crear proveedores"}), 403
+
     data = request.get_json()
 
     if not data:
@@ -1181,6 +1630,25 @@ def crear_proveedor():
 
     if not nombre or not restaurante_id:
         return jsonify({"msg": "Faltan campos obligatorios"}), 400
+
+    # Normalizar y validar restaurante
+    try:
+        restaurante_id = int(restaurante_id)
+    except (TypeError, ValueError):
+        return jsonify({"msg": "restaurante_id inválido"}), 400
+
+    restaurante = Restaurante.query.get(restaurante_id)
+    if not restaurante:
+        return jsonify({"msg": "Restaurante no encontrado"}), 404
+
+    # Reglas de pertenencia
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para crear proveedores en este restaurante"}), 403
+    else:
+        # encargado/chef
+        if current_user.restaurante_id != restaurante_id:
+            return jsonify({"msg": "Solo puedes crear proveedores en tu propio restaurante"}), 403
 
     try:
         nuevo_proveedor = Proveedor(
@@ -1223,10 +1691,24 @@ def crear_proveedor():
 @api.route('/proveedores/<int:id>', methods=['GET'])
 @jwt_required()
 def obtener_proveedor(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
     proveedor = Proveedor.query.get(id)
 
     if proveedor is None:
         return jsonify({"msg": "Proveedor no encontrado"}), 404
+
+    # Control de acceso por empresa/restaurante
+    restaurante = Restaurante.query.get(proveedor.restaurante_id)
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or not restaurante or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para ver este proveedor"}), 403
+    elif not _user_is_super_admin(current_user):
+        # Encargado/chef
+        if current_user.restaurante_id != proveedor.restaurante_id:
+            return jsonify({"msg": "No autorizado para ver este proveedor"}), 403
 
     resultado = {
         "id": proveedor.id,
@@ -1244,10 +1726,26 @@ def obtener_proveedor(id):
 @api.route('/proveedores/<int:id>', methods=['PUT'])
 @jwt_required()
 def editar_proveedor(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe editar proveedores
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede editar proveedores"}), 403
+
     proveedor = Proveedor.query.get(id)
 
     if proveedor is None:
         return jsonify({"msg": "Proveedor no encontrado"}), 404
+
+    restaurante_actual = Restaurante.query.get(proveedor.restaurante_id)
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or not restaurante_actual or restaurante_actual.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para editar este proveedor"}), 403
+    else:
+        if current_user.restaurante_id != proveedor.restaurante_id:
+            return jsonify({"msg": "Solo puedes editar proveedores de tu restaurante"}), 403
 
     data = request.get_json()
     if not data:
@@ -1264,8 +1762,29 @@ def editar_proveedor(id):
 
     proveedor.nombre = data.get("nombre", proveedor.nombre)
     proveedor.categoria = data.get("categoria", proveedor.categoria)
-    proveedor.restaurante_id = data.get(
-        "restaurante_id", proveedor.restaurante_id)
+
+    nuevo_restaurante_id = data.get("restaurante_id", proveedor.restaurante_id)
+    # Validar posible cambio de restaurante
+    if nuevo_restaurante_id != proveedor.restaurante_id:
+        try:
+            nuevo_restaurante_id = int(nuevo_restaurante_id)
+        except (TypeError, ValueError):
+            return jsonify({"msg": "restaurante_id inválido"}), 400
+
+        nuevo_restaurante = Restaurante.query.get(nuevo_restaurante_id)
+        if not nuevo_restaurante:
+            return jsonify({"msg": "Nuevo restaurante no encontrado"}), 404
+
+        if _user_is_admin(current_user) or _user_is_director(current_user):
+            if not current_user.empresa_id or nuevo_restaurante.empresa_id != current_user.empresa_id:
+                return jsonify({"msg": "No autorizado para mover el proveedor a este restaurante"}), 403
+        else:
+            if current_user.restaurante_id != nuevo_restaurante_id:
+                return jsonify({"msg": "Solo puedes mover proveedores dentro de tu restaurante"}), 403
+
+        proveedor.restaurante_id = nuevo_restaurante_id
+    else:
+        proveedor.restaurante_id = nuevo_restaurante_id
     proveedor.telefono = data.get("telefono", proveedor.telefono)
     proveedor.direccion = data.get("direccion", proveedor.direccion)
     proveedor.email_contacto = data.get("email_contacto", proveedor.email_contacto)
@@ -1330,10 +1849,26 @@ def editar_proveedor(id):
 @api.route('/proveedores/<int:id>', methods=['DELETE'])
 @jwt_required()
 def eliminar_proveedor(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe eliminar proveedores
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede eliminar proveedores"}), 403
+
     proveedor = Proveedor.query.get(id)
 
     if proveedor is None:
         return jsonify({"msg": "Proveedor no encontrado"}), 404
+
+    restaurante = Restaurante.query.get(proveedor.restaurante_id)
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or not restaurante or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para eliminar este proveedor"}), 403
+    else:
+        if current_user.restaurante_id != proveedor.restaurante_id:
+            return jsonify({"msg": "Solo puedes eliminar proveedores de tu restaurante"}), 403
 
     old_values = {
         "nombre": proveedor.nombre,
@@ -1368,7 +1903,30 @@ def eliminar_proveedor(id):
 @api.route('/margen', methods=['GET'])
 @jwt_required()
 def get_margen():
-    margenes = MargenObjetivo.query.all()
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # Filtrado por rol/empresa/restaurante
+    if _user_is_super_admin(current_user):
+        margenes = MargenObjetivo.query.all()
+    elif _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id:
+            margenes = []
+        else:
+            margenes = (
+                MargenObjetivo.query
+                .join(Restaurante, MargenObjetivo.restaurante_id == Restaurante.id)
+                .filter(Restaurante.empresa_id == current_user.empresa_id)
+                .all()
+            )
+    else:
+        if not current_user.restaurante_id:
+            margenes = []
+        else:
+            margenes = MargenObjetivo.query.filter_by(
+                restaurante_id=current_user.restaurante_id
+            ).all()
 
     resultados = []
     for m in margenes:
@@ -1385,6 +1943,14 @@ def get_margen():
 @api.route('/margen', methods=['POST'])
 @jwt_required()
 def crear_margen():
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe crear márgenes operativos
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede crear márgenes"}), 403
+
     data = request.get_json()
 
     if not data:
@@ -1396,6 +1962,23 @@ def crear_margen():
 
     if not restaurante_id or porcentaje_min is None or porcentaje_max is None:
         return jsonify({"msg": "Faltan campos obligatorios"}), 400
+
+    # Validar restaurante
+    try:
+        restaurante_id = int(restaurante_id)
+    except (TypeError, ValueError):
+        return jsonify({"msg": "restaurante_id inválido"}), 400
+
+    restaurante = Restaurante.query.get(restaurante_id)
+    if not restaurante:
+        return jsonify({"msg": "Restaurante no encontrado"}), 404
+
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para crear margen en este restaurante"}), 403
+    else:
+        if current_user.restaurante_id != restaurante_id:
+            return jsonify({"msg": "Solo puedes crear margen para tu restaurante"}), 403
 
     try:
         nuevo_margen = MargenObjetivo(
@@ -1414,10 +1997,22 @@ def crear_margen():
 @api.route('/margen/<int:id>', methods=['GET'])
 @jwt_required()
 def obtener_margen(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
     margen = MargenObjetivo.query.get(id)
 
     if margen is None:
         return jsonify({"msg": "Margen no encontrado"}), 404
+
+    restaurante = Restaurante.query.get(margen.restaurante_id)
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or not restaurante or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para ver este margen"}), 403
+    elif not _user_is_super_admin(current_user):
+        if current_user.restaurante_id != margen.restaurante_id:
+            return jsonify({"msg": "No autorizado para ver este margen"}), 403
 
     resultado = {
         "id": margen.id,
@@ -1432,16 +2027,52 @@ def obtener_margen(id):
 @api.route('/margen/<int:id>', methods=['PUT'])
 @jwt_required()
 def editar_margen(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe editar márgenes
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede editar márgenes"}), 403
+
     margen = MargenObjetivo.query.get(id)
 
     if margen is None:
         return jsonify({"msg": "Margen no encontrado"}), 404
 
+    restaurante_actual = Restaurante.query.get(margen.restaurante_id)
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or not restaurante_actual or restaurante_actual.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para editar este margen"}), 403
+    else:
+        if current_user.restaurante_id != margen.restaurante_id:
+            return jsonify({"msg": "Solo puedes editar márgenes de tu restaurante"}), 403
+
     data = request.get_json()
     if not data:
         return jsonify({"msg": "Datos no recibidos"}), 400
 
-    margen.restaurante_id = data.get("restaurante_id", margen.restaurante_id)
+    nuevo_restaurante_id = data.get("restaurante_id", margen.restaurante_id)
+    if nuevo_restaurante_id != margen.restaurante_id:
+        try:
+            nuevo_restaurante_id = int(nuevo_restaurante_id)
+        except (TypeError, ValueError):
+            return jsonify({"msg": "restaurante_id inválido"}), 400
+
+        nuevo_restaurante = Restaurante.query.get(nuevo_restaurante_id)
+        if not nuevo_restaurante:
+            return jsonify({"msg": "Nuevo restaurante no encontrado"}), 404
+
+        if _user_is_admin(current_user) or _user_is_director(current_user):
+            if not current_user.empresa_id or nuevo_restaurante.empresa_id != current_user.empresa_id:
+                return jsonify({"msg": "No autorizado para mover el margen a este restaurante"}), 403
+        else:
+            if current_user.restaurante_id != nuevo_restaurante_id:
+                return jsonify({"msg": "Solo puedes mover márgenes dentro de tu restaurante"}), 403
+
+        margen.restaurante_id = nuevo_restaurante_id
+    else:
+        margen.restaurante_id = nuevo_restaurante_id
     margen.porcentaje_min = data.get("porcentaje_min", margen.porcentaje_min)
     margen.porcentaje_max = data.get("porcentaje_max", margen.porcentaje_max)
 
@@ -1456,10 +2087,26 @@ def editar_margen(id):
 @api.route('/margen/<int:id>', methods=['DELETE'])
 @jwt_required()
 def eliminar_margen(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    # El super_admin no debe eliminar márgenes
+    if _user_is_super_admin(current_user):
+        return jsonify({"msg": "El super admin no puede eliminar márgenes"}), 403
+
     margen = MargenObjetivo.query.get(id)
 
     if margen is None:
         return jsonify({"msg": "Margen no encontrado"}), 404
+
+    restaurante = Restaurante.query.get(margen.restaurante_id)
+    if _user_is_admin(current_user) or _user_is_director(current_user):
+        if not current_user.empresa_id or not restaurante or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"msg": "No autorizado para eliminar este margen"}), 403
+    else:
+        if current_user.restaurante_id != margen.restaurante_id:
+            return jsonify({"msg": "Solo puedes eliminar márgenes de tu restaurante"}), 403
 
     try:
         db.session.delete(margen)
@@ -1473,9 +2120,38 @@ def eliminar_margen(id):
 @api.route('/restaurantes', methods=['GET'])
 @jwt_required()
 def get_restaurantes():
-    restaurantes = Restaurante.query.all()
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"error": "No autenticado"}), 401
+
+    # Filtrado según rol
+    if _user_is_super_admin(current_user):
+        restaurantes = Restaurante.query.all()
+    elif _user_is_admin(current_user) or _user_is_director(current_user):
+        # Admin / director ven solo restaurantes de su empresa.
+        # Si no tienen empresa asociada aún, no ven restaurantes.
+        if current_user.empresa_id:
+            restaurantes = Restaurante.query.filter_by(empresa_id=current_user.empresa_id).all()
+        else:
+            restaurantes = []
+    else:
+        # Otros roles: solo su restaurante, si tienen
+        if current_user.restaurante_id:
+            restaurantes = Restaurante.query.filter_by(id=current_user.restaurante_id).all()
+        else:
+            restaurantes = []
+
     resultados = []
     for r in restaurantes:
+        margen = None
+        if hasattr(r, "margen_objetivo") and r.margen_objetivo:
+            # margen_objetivo es una lista (backref), tomamos el primero
+            margen_obj = r.margen_objetivo[0] if isinstance(r.margen_objetivo, list) else r.margen_objetivo
+            if margen_obj:
+                margen = {
+                    "porcentaje_min": margen_obj.porcentaje_min,
+                    "porcentaje_max": margen_obj.porcentaje_max
+                }
         resultados.append({
             "id": r.id,
             "nombre": r.nombre,
@@ -1488,8 +2164,9 @@ def get_restaurantes():
                 "rol": u.rol
             }
                 for u in r.usuarios
-            ]
-            # "usuarios": [u.serialize() for u in r.usuarios]
+            ],
+            "porcentaje_min": margen["porcentaje_min"] if margen else None,
+            "porcentaje_max": margen["porcentaje_max"] if margen else None
         })
 
     return jsonify(resultados), 200
@@ -1498,6 +2175,14 @@ def get_restaurantes():
 @api.route('/restaurantes', methods=['POST'])
 @jwt_required()
 def crear_restaurante():
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"error": "No autenticado"}), 401
+
+    # Solo admin puede crear restaurantes (no directores ni otros roles)
+    if not _user_is_admin(current_user):
+        return jsonify({"error": "Solo el admin puede crear restaurantes; directores y otros roles no pueden"}), 403
+
     data = request.get_json()
 
     if not data:
@@ -1507,18 +2192,44 @@ def crear_restaurante():
     direccion = data.get("direccion")
     email_contacto = data.get("email_contacto")
     telefono = data.get("telefono")
+    porcentaje_min = data.get("porcentaje_min")
+    porcentaje_max = data.get("porcentaje_max")
 
     if not nombre:
         return jsonify({"msg": "El campo 'nombre' es obligatorio"}), 400
 
+    # Validar márgenes requeridos
     try:
+        porcentaje_min = float(porcentaje_min)
+        porcentaje_max = float(porcentaje_max)
+    except (TypeError, ValueError):
+        return jsonify({"msg": "Los porcentajes de margen deben ser numéricos"}), 400
+
+    if porcentaje_min < 0 or porcentaje_max < 0 or porcentaje_min > 100 or porcentaje_max > 100:
+        return jsonify({"msg": "Los porcentajes deben estar entre 0 y 100"}), 400
+    if porcentaje_min > porcentaje_max:
+        return jsonify({"msg": "El margen mínimo no puede ser mayor que el máximo"}), 400
+
+    try:
+        # Asociar el restaurante a la empresa del admin (si la tiene)
+        empresa_id = current_user.empresa_id
+
         nuevo = Restaurante(
             nombre=nombre,
             direccion=direccion,
             email_contacto=email_contacto,
-            telefono=telefono
+            telefono=telefono,
+            empresa_id=empresa_id
         )
         db.session.add(nuevo)
+
+        # Crear margen objetivo vinculado al restaurante
+        margen = MargenObjetivo(
+            restaurante=nuevo,
+            porcentaje_min=porcentaje_min,
+            porcentaje_max=porcentaje_max
+        )
+        db.session.add(margen)
         db.session.commit()
 
         # 🔍 Logging de auditoría
@@ -1549,10 +2260,25 @@ def crear_restaurante():
 @api.route('/restaurantes/<int:id>', methods=['GET'])
 @jwt_required()
 def obtener_restaurante(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"error": "No autenticado"}), 401
+
     restaurante = Restaurante.query.get(id)
 
     if restaurante is None:
         return jsonify({"msg": "Restaurante no encontrado"}), 404
+
+    # Reglas de acceso: super_admin ve todos; admin/director solo su empresa; otros solo su restaurante
+    if _user_is_super_admin(current_user):
+        pass
+    elif _user_is_admin(current_user) or _user_is_director(current_user):
+        # Admin/director solo pueden ver restaurantes de su empresa, y solo si tienen empresa asignada
+        if not current_user.empresa_id or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"error": "No autorizado para ver este restaurante"}), 403
+    else:
+        if current_user.restaurante_id != restaurante.id:
+            return jsonify({"error": "No autorizado para ver este restaurante"}), 403
 
     resultado = {
         "id": restaurante.id,
@@ -1561,16 +2287,40 @@ def obtener_restaurante(id):
         "email_contacto": restaurante.email_contacto
     }
 
+    # Incluir margen objetivo si existe
+    margen = None
+    if hasattr(restaurante, "margen_objetivo") and restaurante.margen_objetivo:
+        margen_obj = restaurante.margen_objetivo[0] if isinstance(restaurante.margen_objetivo, list) else restaurante.margen_objetivo
+        if margen_obj:
+            margen = {
+                "porcentaje_min": margen_obj.porcentaje_min,
+                "porcentaje_max": margen_obj.porcentaje_max
+            }
+    resultado["porcentaje_min"] = margen["porcentaje_min"] if margen else None
+    resultado["porcentaje_max"] = margen["porcentaje_max"] if margen else None
+
     return jsonify(resultado), 200
 
 
 @api.route('/restaurantes/<int:id>', methods=['PUT'])
 @jwt_required()
 def editar_restaurante(id):
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"error": "No autenticado"}), 401
+
+    # Solo admin o director pueden editar restaurantes
+    if not (_user_is_admin(current_user) or _user_is_director(current_user)):
+        return jsonify({"error": "Solo admin o director pueden editar restaurantes"}), 403
+
     restaurante = Restaurante.query.get(id)
 
     if restaurante is None:
         return jsonify({"msg": "Restaurante no encontrado"}), 404
+
+    # Restringir por empresa para admin/director: deben tener empresa y coincidir
+    if not current_user.empresa_id or restaurante.empresa_id != current_user.empresa_id:
+        return jsonify({"error": "No autorizado para editar este restaurante"}), 403
 
     data = request.get_json()
     if not data:
@@ -1583,11 +2333,42 @@ def editar_restaurante(id):
         "telefono": restaurante.telefono
     }
 
+    # Márgenes (opcionales en edición, pero si se envían, validar)
+    porcentaje_min = data.get("porcentaje_min")
+    porcentaje_max = data.get("porcentaje_max")
+    if porcentaje_min is not None or porcentaje_max is not None:
+        try:
+            porcentaje_min = float(porcentaje_min)
+            porcentaje_max = float(porcentaje_max)
+        except (TypeError, ValueError):
+            return jsonify({"msg": "Los porcentajes de margen deben ser numéricos"}), 400
+        if porcentaje_min < 0 or porcentaje_max < 0 or porcentaje_min > 100 or porcentaje_max > 100:
+            return jsonify({"msg": "Los porcentajes deben estar entre 0 y 100"}), 400
+        if porcentaje_min > porcentaje_max:
+            return jsonify({"msg": "El margen mínimo no puede ser mayor que el máximo"}), 400
+    else:
+        porcentaje_min = None
+        porcentaje_max = None
+
     restaurante.nombre = data.get("nombre", restaurante.nombre)
     restaurante.direccion = data.get("direccion", restaurante.direccion)
     restaurante.email_contacto = data.get(
         "email_contacto", restaurante.email_contacto)
     restaurante.telefono = data.get("telefono", restaurante.telefono)
+
+    # Actualizar/crear margen antes del commit
+    if porcentaje_min is not None and porcentaje_max is not None:
+        margen = MargenObjetivo.query.filter_by(restaurante_id=restaurante.id).first()
+        if margen:
+            margen.porcentaje_min = porcentaje_min
+            margen.porcentaje_max = porcentaje_max
+        else:
+            nuevo_margen = MargenObjetivo(
+                restaurante_id=restaurante.id,
+                porcentaje_min=porcentaje_min,
+                porcentaje_max=porcentaje_max
+            )
+            db.session.add(nuevo_margen)
 
     try:
         db.session.commit()
@@ -1600,6 +2381,10 @@ def editar_restaurante(id):
                 "email_contacto": restaurante.email_contacto,
                 "telefono": restaurante.telefono
             }
+            if porcentaje_min is not None and porcentaje_max is not None:
+                new_values["porcentaje_min"] = porcentaje_min
+                new_values["porcentaje_max"] = porcentaje_max
+
             AuditService.log_update(
                 table_name="restaurantes",
                 record_id=restaurante.id,
@@ -1621,12 +2406,12 @@ def editar_restaurante(id):
 def eliminar_restaurante(id):
     try:
         # Autenticación y rol
-        current_user_id = get_jwt_identity()
-        if not current_user_id:
+        current_user = _get_current_user()
+        if not current_user:
             return jsonify({"error": "No autenticado"}), 401
 
-        current_user = db.session.get(Usuario, current_user_id)
-        if not current_user or current_user.rol != "admin":
+        # Solo admin puede eliminar restaurantes (no super_admin, no director)
+        if not _user_is_admin(current_user):
             return jsonify({"error": "Solo el admin puede eliminar restaurantes"}), 403
 
         # Obtener password desde cabecera o JSON o query
@@ -1649,6 +2434,10 @@ def eliminar_restaurante(id):
         restaurante = db.session.get(Restaurante, id)
         if not restaurante:
             return jsonify({"error": "Restaurante no encontrado"}), 404
+
+        # Restringir por empresa: el admin solo puede eliminar restaurantes de su empresa
+        if not current_user.empresa_id or restaurante.empresa_id != current_user.empresa_id:
+            return jsonify({"error": "No autorizado para eliminar este restaurante"}), 403
 
         old_values = {
             "nombre": restaurante.nombre,
@@ -1939,12 +2728,26 @@ def resumen_diario_chef_encargado():
 @jwt_required()
 def resumen_diario_admin():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        # Solo super_admin, admin o director
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         restaurante_id = request.args.get("restaurante_id", type=int)
         mes = request.args.get("mes", type=int)
         ano = request.args.get("ano", type=int)
 
         if not restaurante_id or not mes or not ano:
             return jsonify({"msg": "Faltan parámetros"}), 400
+
+        # Verificar que el restaurante pertenece a la empresa del usuario (si aplica)
+        if restaurante_id and current_user.empresa_id:
+            restaurante = Restaurante.query.get(restaurante_id)
+            if restaurante and restaurante.empresa_id and restaurante.empresa_id != current_user.empresa_id:
+                return jsonify({"msg": "No autorizado para ver este restaurante"}), 403
 
         ventas_diarias = db.session.query(
             extract("day", Venta.fecha).label("dia"),
@@ -2072,12 +2875,27 @@ def resumen_ventas_diario():
 @jwt_required()
 def resumen_general_admin():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        # Solo super_admin, admin o director
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         # Obtener mes y año actual si no se pasan como query
         from datetime import datetime
         mes = int(request.args.get("mes", datetime.now().month))
         anio = int(request.args.get("ano", datetime.now().year))
 
-        restaurantes = Restaurante.query.all()
+        # Filtrar restaurantes según empresa si no es super_admin
+        if _user_is_super_admin(current_user):
+            restaurantes = Restaurante.query.all()
+        else:
+            if current_user.empresa_id:
+                restaurantes = Restaurante.query.filter_by(empresa_id=current_user.empresa_id).all()
+            else:
+                restaurantes = Restaurante.query.all()
         resumen = []
 
         for r in restaurantes:
@@ -2119,12 +2937,25 @@ def resumen_general_admin():
 @jwt_required()
 def ventas_diarias_admin():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         restaurante_id = request.args.get("restaurante_id")
         mes = int(request.args.get("mes"))
         ano = int(request.args.get("ano"))
 
         if not restaurante_id or not mes or not ano:
             return jsonify({"msg": "Faltan parámetros"}), 400
+
+        # Verificar empresa si aplica
+        if restaurante_id and current_user.empresa_id:
+            restaurante = Restaurante.query.get(int(restaurante_id))
+            if restaurante and restaurante.empresa_id and restaurante.empresa_id != current_user.empresa_id:
+                return jsonify({"msg": "No autorizado para ver este restaurante"}), 403
 
         ventas = db.session.query(Venta).filter(
             Venta.restaurante_id == restaurante_id,
@@ -2142,12 +2973,25 @@ def ventas_diarias_admin():
 @jwt_required()
 def admin_resumen_porcentaje():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         restaurante_id = request.args.get("restaurante_id")
         mes = int(request.args.get("mes"))
         ano = int(request.args.get("ano"))
 
         if not restaurante_id or not mes or not ano:
             return jsonify({"msg": "Parámetros incompletos"}), 400
+
+        # Verificar empresa si aplica
+        if restaurante_id and current_user.empresa_id:
+            restaurante = Restaurante.query.get(int(restaurante_id))
+            if restaurante and restaurante.empresa_id and restaurante.empresa_id != current_user.empresa_id:
+                return jsonify({"msg": "No autorizado para ver este restaurante"}), 403
 
         total_ventas = db.session.query(func.sum(Venta.monto)).filter(
             Venta.restaurante_id == restaurante_id,
@@ -2184,33 +3028,62 @@ def admin_resumen_porcentaje():
 @jwt_required()
 def gastos_por_dia_admin():
     try:
-        user_id = int(get_jwt_identity())
-        usuario = Usuario.query.get(user_id)
-        if not usuario or usuario.rol != "admin":
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        # Solo super_admin, admin o director
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
             return jsonify({"msg": "Acceso no autorizado"}), 403
+
         mes = int(request.args.get("mes", 0))
         anio = int(request.args.get("ano", 0))
         if not mes or not anio:
             return jsonify({"msg": "Mes y año requeridos"}), 400
-        total_gastado = db.session.query(func.sum(Gasto.monto)).filter(
+
+        # Base query de gastos
+        gastos_query = db.session.query(Gasto).join(Restaurante, Gasto.restaurante_id == Restaurante.id).filter(
             extract("month", Gasto.fecha) == mes,
             extract("year", Gasto.fecha) == anio
-        ).scalar() or 0
-        restaurantes_activos = db.session.query(
-            Restaurante.id).filter(Restaurante.activo == True).count()
+        )
+
+        # Si no es super_admin y tiene empresa, limitar a su empresa
+        if not _user_is_super_admin(current_user) and current_user.empresa_id:
+            gastos_query = gastos_query.filter(Restaurante.empresa_id == current_user.empresa_id)
+
+        total_gastado = db.session.query(func.sum(Gasto.monto)).select_from(gastos_query.subquery()).scalar() or 0
+
+        # Restaurantes activos dentro del alcance
+        restaurantes_query = Restaurante.query.filter(Restaurante.activo == True)
+        if not _user_is_super_admin(current_user) and current_user.empresa_id:
+            restaurantes_query = restaurantes_query.filter(Restaurante.empresa_id == current_user.empresa_id)
+        restaurantes_activos = restaurantes_query.count()
+
+        # Proveedor más usado dentro del alcance
         proveedor_mas_usado = db.session.query(
             Proveedor.nombre, func.count(Gasto.id).label("cantidad")
-        ).join(Gasto).filter(
+        ).join(Gasto, Gasto.proveedor_id == Proveedor.id).join(Restaurante, Gasto.restaurante_id == Restaurante.id).filter(
             extract("month", Gasto.fecha) == mes,
             extract("year", Gasto.fecha) == anio
-        ).group_by(Proveedor.nombre).order_by(desc("cantidad")).first()
+        ).group_by(Proveedor.nombre)
+
+        if not _user_is_super_admin(current_user) and current_user.empresa_id:
+            proveedor_mas_usado = proveedor_mas_usado.filter(Restaurante.empresa_id == current_user.empresa_id)
+
+        proveedor_mas_usado = proveedor_mas_usado.order_by(desc("cantidad")).first()
+
         proveedor_nombre = proveedor_mas_usado[0] if proveedor_mas_usado else "Sin datos"
-        restaurante_top = db.session.query(
+
+        restaurante_top_query = db.session.query(
             Restaurante.nombre, func.sum(Gasto.monto).label("total")
-        ).join(Gasto).filter(
+        ).join(Gasto, Gasto.restaurante_id == Restaurante.id).filter(
             extract("month", Gasto.fecha) == mes,
             extract("year", Gasto.fecha) == anio
-        ).group_by(Restaurante.nombre).order_by(desc("total")).first()
+        )
+        if not _user_is_super_admin(current_user) and current_user.empresa_id:
+            restaurante_top_query = restaurante_top_query.filter(Restaurante.empresa_id == current_user.empresa_id)
+
+        restaurante_top = restaurante_top_query.group_by(Restaurante.nombre).order_by(desc("total")).first()
         restaurante_nombre = restaurante_top[0] if restaurante_top else "Sin datos"
         return jsonify({
             "total_gastado": round(total_gastado, 2),
@@ -2228,10 +3101,27 @@ def gastos_por_dia_admin():
 @jwt_required()
 def resumen_gastos_admin():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        # Solo super_admin, admin o director
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         from datetime import datetime
         mes = int(request.args.get("mes", datetime.now().month))
         ano = int(request.args.get("ano", datetime.now().year))
-        restaurantes = Restaurante.query.all()
+
+        # Filtrar restaurantes según empresa si aplica
+        if _user_is_super_admin(current_user):
+            restaurantes = Restaurante.query.all()
+        else:
+            if current_user.empresa_id:
+                restaurantes = Restaurante.query.filter_by(empresa_id=current_user.empresa_id).all()
+            else:
+                restaurantes = []
+
         total_gastado = 0
         proveedor_contador = {}
         restaurante_gastos = {}
@@ -2277,6 +3167,13 @@ def resumen_gastos_admin():
 @jwt_required()
 def gasto_por_restaurante():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         # Obtener parámetros de la URL
         mes_str = request.args.get("mes")
         ano_str = request.args.get("ano")
@@ -2286,8 +3183,14 @@ def gasto_por_restaurante():
         # Convertir a enteros
         mes = int(mes_str)
         ano = int(ano_str)
-        # Obtener todos los restaurantes
-        restaurantes = Restaurante.query.all()
+        # Obtener restaurantes según empresa
+        if _user_is_super_admin(current_user):
+            restaurantes = Restaurante.query.all()
+        else:
+            if current_user.empresa_id:
+                restaurantes = Restaurante.query.filter_by(empresa_id=current_user.empresa_id).all()
+            else:
+                restaurantes = []
         resultado = []
         for r in restaurantes:
             gastos = db.session.query(db.func.sum(Gasto.monto)).filter(
@@ -2311,10 +3214,24 @@ def gasto_por_restaurante():
 @jwt_required()
 def evolucion_gasto_mensual():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         from datetime import datetime
         ano = int(request.args.get("ano", datetime.now().year))
-        # Obtener todos los restaurantes
-        restaurantes = Restaurante.query.all()
+
+        # Obtener restaurantes según empresa
+        if _user_is_super_admin(current_user):
+            restaurantes = Restaurante.query.all()
+        else:
+            if current_user.empresa_id:
+                restaurantes = Restaurante.query.filter_by(empresa_id=current_user.empresa_id).all()
+            else:
+                restaurantes = []
         if not restaurantes:
             return jsonify([]), 200
         resultado = []
@@ -2340,20 +3257,35 @@ def evolucion_gasto_mensual():
 @api.route('/proveedores-top', methods=['GET'])
 @jwt_required()
 def get_proveedores_top():
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+        return jsonify({"msg": "Acceso no autorizado"}), 403
+
     mes = request.args.get("mes")
     ano = request.args.get("ano")
     if not mes or not ano:
         return jsonify({"msg": "Parámetros mes y año requeridos"}), 400
     try:
-        resultados = (
+        query = (
             db.session.query(
                 Proveedor.nombre,
                 func.count(Gasto.id).label("veces_usado"),
                 func.sum(Gasto.monto).label("total_gastado")
             )
             .join(Gasto, Gasto.proveedor_id == Proveedor.id)
+            .join(Restaurante, Gasto.restaurante_id == Restaurante.id)
             .filter(func.extract("month", Gasto.fecha) == int(mes))
             .filter(func.extract("year", Gasto.fecha) == int(ano))
+        )
+
+        if not _user_is_super_admin(current_user) and current_user.empresa_id:
+            query = query.filter(Restaurante.empresa_id == current_user.empresa_id)
+
+        resultados = (
+            query
             .group_by(Proveedor.nombre)
             .order_by(func.sum(Gasto.monto).desc())
             .limit(5)
@@ -2378,10 +3310,25 @@ def get_proveedores_top():
 @jwt_required()
 def resumen_ventas_admin():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         from datetime import datetime
         mes = int(request.args.get("mes", datetime.now().month))
         ano = int(request.args.get("ano", datetime.now().year))
-        restaurantes = Restaurante.query.all()
+
+        # Restaurantes según empresa
+        if _user_is_super_admin(current_user):
+            restaurantes = Restaurante.query.all()
+        else:
+            if current_user.empresa_id:
+                restaurantes = Restaurante.query.filter_by(empresa_id=current_user.empresa_id).all()
+            else:
+                restaurantes = []
         total_vendido = 0
         restaurante_ventas = {}
         for r in restaurantes:
@@ -2416,9 +3363,23 @@ def resumen_ventas_admin():
 @jwt_required()
 def evolucion_venta_mensual():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         from datetime import datetime
         ano = int(request.args.get("ano", datetime.now().year))
-        restaurantes = Restaurante.query.all()
+
+        if _user_is_super_admin(current_user):
+            restaurantes = Restaurante.query.all()
+        else:
+            if current_user.empresa_id:
+                restaurantes = Restaurante.query.filter_by(empresa_id=current_user.empresa_id).all()
+            else:
+                restaurantes = []
         if not restaurantes:
             return jsonify([]), 200
         resultado = []
@@ -2444,13 +3405,27 @@ def evolucion_venta_mensual():
 @jwt_required()
 def ventas_por_restaurante():
     try:
+        current_user = _get_current_user()
+        if not current_user:
+            return jsonify({"msg": "No autenticado"}), 401
+
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"msg": "Acceso no autorizado"}), 403
+
         mes_str = request.args.get("mes")
         ano_str = request.args.get("ano")
         if not mes_str or not ano_str:
             return jsonify({"msg": "Faltan parámetros 'mes' y 'ano'"}), 422
         mes = int(mes_str)
         ano = int(ano_str)
-        restaurantes = Restaurante.query.all()
+
+        if _user_is_super_admin(current_user):
+            restaurantes = Restaurante.query.all()
+        else:
+            if current_user.empresa_id:
+                restaurantes = Restaurante.query.filter_by(empresa_id=current_user.empresa_id).all()
+            else:
+                restaurantes = []
         resultado = []
         for r in restaurantes:
             ventas = db.session.query(db.func.sum(Venta.monto)).filter(
@@ -2473,12 +3448,19 @@ def ventas_por_restaurante():
 @api.route('/restaurantes-top', methods=['GET'])
 @jwt_required()
 def get_restaurantes_top():
+    current_user = _get_current_user()
+    if not current_user:
+        return jsonify({"msg": "No autenticado"}), 401
+
+    if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+        return jsonify({"msg": "Acceso no autorizado"}), 403
+
     mes = request.args.get("mes")
     ano = request.args.get("ano")
     if not mes or not ano:
         return jsonify({"msg": "Parámetros mes y año requeridos"}), 400
     try:
-        resultados = (
+        query = (
             db.session.query(
                 Restaurante.nombre,
                 func.count(Venta.id).label("ventas_realizadas"),
@@ -2487,6 +3469,13 @@ def get_restaurantes_top():
             .join(Venta, Venta.restaurante_id == Restaurante.id)
             .filter(func.extract("month", Venta.fecha) == int(mes))
             .filter(func.extract("year", Venta.fecha) == int(ano))
+        )
+
+        if not _user_is_super_admin(current_user) and current_user.empresa_id:
+            query = query.filter(Restaurante.empresa_id == current_user.empresa_id)
+
+        resultados = (
+            query
             .group_by(Restaurante.nombre)
             .order_by(func.sum(Venta.monto).desc())
             .limit(5)
@@ -2604,6 +3593,12 @@ def private():
             if r:
                 data["restaurante_nombre"] = r.nombre
 
+        # Agrega información de empresa si aplica
+        if user.empresa_id:
+            empresa = Empresa.query.get(user.empresa_id)
+            if empresa:
+                data["empresa_nombre"] = empresa.nombre
+
         # Evita respuestas 304 (caché)
         resp = jsonify(data)
         resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
@@ -2619,14 +3614,14 @@ def private():
 @jwt_required()
 def update_profile():
     try:
-        current_user_id = int(get_jwt_identity())
-        current_user = Usuario.query.get(current_user_id)
+        current_user = _get_current_user()
 
         if not current_user:
             return jsonify({"error": "Usuario no encontrado"}), 404
 
-        if current_user.rol != "admin":
-            return jsonify({"error": "Solo el admin puede actualizar datos personales"}), 403
+        # super_admin, admin y director pueden actualizar sus propios datos personales
+        if not (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user)):
+            return jsonify({"error": "Solo el admin, super admin o director pueden actualizar estos datos"}), 403
 
         data = request.get_json()
 
@@ -2707,12 +3702,11 @@ def get_audit_logs():
     try:
         from api.audit_service import AuditService
 
-        user_id = int(get_jwt_identity())
-        current_user = Usuario.query.get(user_id)
+        current_user = _get_current_user()
 
-        # Solo admins pueden ver los logs
-        if not current_user or current_user.rol != 'admin':
-            return jsonify({"msg": "Acceso denegado. Solo administradores."}), 403
+        # Solo super_admin, admin o director pueden ver los logs
+        if not (current_user and (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user))):
+            return jsonify({"msg": "Acceso denegado. Solo administradores o directores."}), 403
 
         # Obtener parámetros de consulta
         page = int(request.args.get('page', 1))
@@ -2735,6 +3729,10 @@ def get_audit_logs():
             from datetime import datetime
             filters['date_to'] = datetime.fromisoformat(request.args.get('date_to'))
 
+        # Filtrar por empresa para admin/director (el super_admin ve todo)
+        if (_user_is_admin(current_user) or _user_is_director(current_user)) and current_user.empresa_id:
+            filters['empresa_id'] = current_user.empresa_id
+
         # Obtener logs
         result = AuditService.get_logs(page=page, per_page=per_page, filters=filters)
 
@@ -2750,12 +3748,11 @@ def get_audit_logs():
 def get_audit_stats():
     """Obtiene estadísticas de los logs de auditoría (solo para admins)"""
     try:
-        user_id = int(get_jwt_identity())
-        current_user = Usuario.query.get(user_id)
+        current_user = _get_current_user()
 
-        # Solo admins pueden ver las estadísticas
-        if not current_user or current_user.rol != 'admin':
-            return jsonify({"msg": "Acceso denegado. Solo administradores."}), 403
+        # Solo super_admin, admin o director pueden ver las estadísticas
+        if not (current_user and (_user_is_super_admin(current_user) or _user_is_admin(current_user) or _user_is_director(current_user))):
+            return jsonify({"msg": "Acceso denegado. Solo administradores o directores."}), 403
 
         from sqlalchemy import func
         from datetime import datetime, timedelta
@@ -2763,22 +3760,49 @@ def get_audit_stats():
         # Estadísticas de los últimos 30 días
         fecha_inicio = datetime.utcnow() - timedelta(days=30)
 
+        # Base query para stats
+        base_query = db.session.query(AuditLog).filter(
+            AuditLog.timestamp >= fecha_inicio
+        )
+
+        # Si es admin/director (no super_admin), limitar a su empresa usando Restaurante y Usuario
+        if (_user_is_admin(current_user) or _user_is_director(current_user)) and current_user.empresa_id:
+            from api.models import Restaurante, Usuario  # import local para evitar ciclos
+            empresa_id = current_user.empresa_id
+
+            base_query = base_query.join(
+                Usuario,
+                AuditLog.usuario_id == Usuario.id,
+                isouter=True
+            ).join(
+                Restaurante,
+                AuditLog.restaurante_id == Restaurante.id,
+                isouter=True
+            ).filter(
+                (Restaurante.empresa_id == empresa_id) |
+                ((AuditLog.restaurante_id.is_(None)) & (Usuario.empresa_id == empresa_id))
+            )
+
+        base_subq = base_query.subquery()
+
         # Total de acciones por tipo
         actions_by_type = db.session.query(
-            AuditLog.action_type,
-            func.count(AuditLog.id).label('count')
-        ).filter(
-            AuditLog.timestamp >= fecha_inicio
-        ).group_by(AuditLog.action_type).all()
+            base_subq.c.action_type,
+            func.count(base_subq.c.id).label('count')
+        ).group_by(base_subq.c.action_type).all()
 
-        # Usuarios más activos
-        most_active_users = db.session.query(
+        # Usuarios más activos (filtrados por empresa si aplica)
+        most_active_query = db.session.query(
             Usuario.nombre,
             Usuario.email,
             func.count(AuditLog.id).label('count')
         ).join(AuditLog).filter(
             AuditLog.timestamp >= fecha_inicio
-        ).group_by(
+        )
+        if (_user_is_admin(current_user) or _user_is_director(current_user)) and current_user.empresa_id:
+            most_active_query = most_active_query.filter(Usuario.empresa_id == current_user.empresa_id)
+
+        most_active_users = most_active_query.group_by(
             Usuario.id, Usuario.nombre, Usuario.email
         ).order_by(
             func.count(AuditLog.id).desc()
@@ -2786,11 +3810,9 @@ def get_audit_stats():
 
         # Acciones por tabla
         actions_by_table = db.session.query(
-            AuditLog.table_name,
-            func.count(AuditLog.id).label('count')
-        ).filter(
-            AuditLog.timestamp >= fecha_inicio
-        ).group_by(AuditLog.table_name).all()
+            base_subq.c.table_name,
+            func.count(base_subq.c.id).label('count')
+        ).group_by(base_subq.c.table_name).all()
 
         return jsonify({
             "period": "Últimos 30 días",
