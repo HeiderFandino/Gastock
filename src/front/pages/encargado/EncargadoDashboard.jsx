@@ -423,14 +423,6 @@ export const EncargadoDashboard = () => {
         </div>
       </div>
 
-      <div>
-        <h3 id="alerta">Se han hecho grandes cambios en la estructura de la app y en la base de datos;
-          <br /> -  Nuevos Roles, nuevos usuario entre otros...
-          <br />
-          <br />si notas que algo no va bien o hay algun error hacermelo saber.</h3>
-      </div>
-
-
       {/* ===== VENTAS ===== */}
       <div className="ag-card mb-4">
         <div className="ag-card-header">
