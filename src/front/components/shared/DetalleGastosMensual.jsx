@@ -258,6 +258,13 @@ export const DetalleGastosMensual = () => {
     return totales;
   }, [filteredProveedoresMensual, filteredMonthlyDias, monthlyData.datos]);
 
+  // Ordenar proveedores por total descendente para la vista mensual
+  const proveedoresOrdenados = useMemo(() => {
+    return [...filteredProveedoresMensual].sort(
+      (a, b) => (filteredTotales[b] || 0) - (filteredTotales[a] || 0)
+    );
+  }, [filteredProveedoresMensual, filteredTotales]);
+
   const totalGastosMesFiltrado = useMemo(
     () => Object.values(filteredTotales || {}).reduce((s, v) => s + (parseFloat(v) || 0), 0),
     [filteredTotales]
@@ -542,7 +549,7 @@ export const DetalleGastosMensual = () => {
 
                 {/* ===== Lista mobile (cards) ===== */}
                 <ul className="list-unstyled d-sm-none">
-                  {filteredProveedoresMensual.map((prov) => (
+                  {proveedoresOrdenados.map((prov) => (
                     <li key={prov} className="ag-card p-3 ">
                       <div className="d-flex justify-content-between align-items-center">
                         <div className="flex-grow-1">
@@ -594,7 +601,7 @@ export const DetalleGastosMensual = () => {
                         </tr>
                       </thead>
                       <tbody >
-                        {filteredProveedoresMensual.map((prov) => (
+                        {proveedoresOrdenados.map((prov) => (
                           <tr key={`left-${prov}`}>
                             <td className="fw-bold table-split-provider" style={{ padding: '12px', marginBottom: "20px" }} >
                               {prov}
@@ -694,7 +701,7 @@ export const DetalleGastosMensual = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredProveedoresMensual.map((prov) => (
+                        {proveedoresOrdenados.map((prov) => (
                           <tr key={prov}>
                             {filteredMonthlyDias.map((d) => (
                               <td
