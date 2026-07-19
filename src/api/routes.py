@@ -8,7 +8,7 @@ from api.models import db, Usuario, Venta, Gasto, FacturaAlbaran, Proveedor, Mar
 from api.audit_service import AuditService
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from sqlalchemy import select, func, extract, desc, text
+from sqlalchemy import func, extract, desc, text
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, decode_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from api.mail.mailer import send_reset_email
@@ -25,6 +25,7 @@ from calendar import monthrange
 
 
 api = Blueprint('api', __name__)
+PASSWORD_HASH_METHOD = "pbkdf2:sha256"
 
 
 def send_email(to_email, subject, html_content):
@@ -89,10 +90,12 @@ def reset_password():
             user_id = decoded["sub"]
         except Exception as e:
             return jsonify({"msg": "Token inválido o expirado"}), 401
-        user = db.session.get(Usuario, user_id)
+        user = Usuario.query.get(user_id)
         if not user:
             return jsonify({"msg": "Usuario no encontrado"}), 404
-        user.password = generate_password_hash(new_password)
+        user.password = generate_password_hash(
+            new_password, method=PASSWORD_HASH_METHOD
+        )
         db.session.commit()
         return jsonify({"success": True, "msg": "Contraseña actualizada correctamente"}), 200
     except Exception as e:
@@ -147,7 +150,7 @@ def _get_current_user():
         current_user_id = get_jwt_identity()
         if not current_user_id:
             return None
-        return db.session.get(Usuario, int(current_user_id))
+        return Usuario.query.get(int(current_user_id))
     except Exception:
         return None
 
@@ -184,7 +187,7 @@ def register():
         # Normalizar email a minúsculas y sin espacios
         data["email"] = data["email"].strip().lower()
 
-        total_users = db.session.scalar(select(func.count()).select_from(Usuario))
+        total_users = Usuario.query.count()
         current_user = _get_current_user()
 
         requested_role = data["rol"]
@@ -219,13 +222,15 @@ def register():
         if requested_role in ["chef", "encargado"] and not data.get("restaurante_id"):
             return jsonify({"error": "Chef o encargado debe tener restaurante asignado"}), 400
 
-        existing_user = db.session.scalar(select(Usuario).where(Usuario.email == data["email"]))
+        existing_user = Usuario.query.filter_by(email=data["email"]).first()
         if existing_user:
             return jsonify({"error": "Email ya registrado"}), 409
 
         # Guardar contraseña para el correo
         raw_password = data["password"]
-        hashed_password = generate_password_hash(raw_password)
+        hashed_password = generate_password_hash(
+            raw_password, method=PASSWORD_HASH_METHOD
+        )
         status = data.get("status", "active")
 
         # Normalizar empresa_id y restaurante_id desde el payload
@@ -361,7 +366,7 @@ def editar_usuario(id):
         if not current_user:
             return jsonify({"error": "No autenticado"}), 401
 
-        user_to_update = db.session.get(Usuario, id)
+        user_to_update = Usuario.query.get(id)
         if not user_to_update:
             return jsonify({"error": "Usuario no encontrado"}), 404
 
@@ -400,7 +405,9 @@ def editar_usuario(id):
             user_to_update.email = user_to_update.email
 
         if data.get("password"):
-            user_to_update.password = generate_password_hash(data["password"])
+            user_to_update.password = generate_password_hash(
+                data["password"], method=PASSWORD_HASH_METHOD
+            )
 
         new_rol = data.get("rol", user_to_update.rol)
 
@@ -409,7 +416,7 @@ def editar_usuario(id):
         if _user_is_super_admin(current_user) and user_to_update.rol == "admin" and empresa_nombre:
             empresa_nombre = empresa_nombre.strip()
             if user_to_update.empresa_id:
-                empresa = db.session.get(Empresa, user_to_update.empresa_id)
+                empresa = Empresa.query.get(user_to_update.empresa_id)
                 if empresa:
                     empresa.nombre = empresa_nombre
             else:
@@ -514,8 +521,7 @@ def eliminar_usuario(id):
         if not current_user:
             return jsonify({"error": "No autenticado"}), 401
 
-        user_to_delete = db.session.get(
-            Usuario, id)
+        user_to_delete = Usuario.query.get(id)
         if not user_to_delete:
             return jsonify({"error": "Usuario no encontrado"}), 404
 
@@ -637,8 +643,7 @@ def login():
             return jsonify({"error": "Faltan datos"}), 400
 
         email_normalized = data["email"].strip().lower()
-        stm = select(Usuario).where(Usuario.email == email_normalized)
-        user = db.session.execute(stm).scalar()
+        user = Usuario.query.filter_by(email=email_normalized).first()
 
         if not user:
             # 🔍 Logging de intento de login con email inexistente
@@ -676,11 +681,11 @@ def login():
         data = user.serialize()
 
         if user.restaurante_id:
-            restaurante = db.session.get(Restaurante, user.restaurante_id)
+            restaurante = Restaurante.query.get(user.restaurante_id)
             if restaurante:
                 data["restaurante_nombre"] = restaurante.nombre
         if user.empresa_id:
-            empresa = db.session.get(Empresa, user.empresa_id)
+            empresa = Empresa.query.get(user.empresa_id)
             if empresa:
                 data["empresa_nombre"] = empresa.nombre
 
@@ -691,6 +696,7 @@ def login():
 
     except Exception as e:
         db.session.rollback()
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -2435,7 +2441,7 @@ def eliminar_restaurante(id):
             return jsonify({"error": "Contraseña del administrador incorrecta"}), 401
 
         # Restaurante
-        restaurante = db.session.get(Restaurante, id)
+        restaurante = Restaurante.query.get(id)
         if not restaurante:
             return jsonify({"error": "Restaurante no encontrado"}), 404
 
@@ -2578,7 +2584,9 @@ def cambiar_password():
     if not check_password_hash(user.password, actual):
         return jsonify({"msg": "Contraseña actual incorrecta"}), 401
 
-    user.password = generate_password_hash(nueva)
+    user.password = generate_password_hash(
+        nueva, method=PASSWORD_HASH_METHOD
+    )
     db.session.commit()
 
     return jsonify({"msg": "Contraseña actualizada correctamente"}), 200
@@ -3685,7 +3693,9 @@ def change_password():
             return jsonify({"error": "La nueva contraseña debe tener al menos 6 caracteres"}), 400
 
         # Actualizar contraseña
-        current_user.password = generate_password_hash(new_password)
+        current_user.password = generate_password_hash(
+            new_password, method=PASSWORD_HASH_METHOD
+        )
         db.session.commit()
 
         return jsonify({

@@ -5,15 +5,22 @@ import unicodedata
 from datetime import date, timedelta
 
 from dotenv import load_dotenv
-from sqlalchemy import text
-from sqlalchemy.exc import OperationalError
+from sqlalchemy import inspect, text
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# app.py reads DATABASE_URL while it is being imported, so the environment must
+# be loaded first. Pipenv normally does this too, but keeping it here makes
+# `python seed.py` behave consistently.
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+sys.path.insert(0, os.path.join(BASE_DIR, "src"))
 
 from api.models import (
     AuditLog,
     Empresa,
+    FacturaAlbaran,
     Gasto,
     MargenObjetivo,
     Proveedor,
@@ -23,7 +30,7 @@ from api.models import (
 )
 from app import app, db  # noqa: E402
 
-load_dotenv()
+PASSWORD_HASH_METHOD = "pbkdf2:sha256"
 
 
 def limpiar_email(texto: str) -> str:
@@ -31,53 +38,47 @@ def limpiar_email(texto: str) -> str:
     return texto.lower().replace(" ", "").replace("&", "")
 
 
+def limpiar_base_de_datos() -> None:
+    """Delete application data without leaving orphaned foreign keys."""
+    modelos = (
+        AuditLog,
+        FacturaAlbaran,
+        Gasto,
+        Venta,
+        MargenObjetivo,
+        Proveedor,
+        Usuario,
+        Restaurante,
+        Empresa,
+    )
+    tablas_esperadas = {modelo.__tablename__ for modelo in modelos}
+    tablas_existentes = set(inspect(db.engine).get_table_names())
+    tablas_faltantes = sorted(tablas_esperadas - tablas_existentes)
+
+    if tablas_faltantes:
+        raise RuntimeError(
+            "Faltan tablas en la base de datos: "
+            f"{', '.join(tablas_faltantes)}. Ejecuta `pipenv run upgrade` antes del seed."
+        )
+
+    try:
+        if db.engine.dialect.name == "postgresql":
+            nombres = ", ".join(f'"{modelo.__tablename__}"' for modelo in modelos)
+            db.session.execute(
+                text(f"TRUNCATE TABLE {nombres} RESTART IDENTITY CASCADE")
+            )
+        else:
+            # This order starts with child tables and ends with parent tables.
+            for modelo in modelos:
+                db.session.execute(modelo.__table__.delete())
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise
+
+
 with app.app_context():
     print("Borrando TODOS los datos...")
-
-    # En PostgreSQL podemos usar TRUNCATE para limpiar más rápido; en SQLite no existe.
-    try:
-        db.session.execute(text("TRUNCATE audit_logs CASCADE"))
-        db.session.execute(text("TRUNCATE margen_objetivo CASCADE"))
-        db.session.commit()
-    except OperationalError:
-        db.session.rollback()
-
-    # Borrado clásico con ORM; si alguna tabla no existe (por ejemplo en SQLite
-    # sin migraciones completas), ignoramos el error para no romper el seed.
-    try:
-      AuditLog.query.delete()
-    except OperationalError:
-      db.session.rollback()
-    try:
-      Venta.query.delete()
-    except OperationalError:
-      db.session.rollback()
-    try:
-      Gasto.query.delete()
-    except OperationalError:
-      db.session.rollback()
-    try:
-      Proveedor.query.delete()
-    except OperationalError:
-      db.session.rollback()
-    try:
-      MargenObjetivo.query.delete()
-    except OperationalError:
-      db.session.rollback()
-    try:
-      Usuario.query.delete()
-    except OperationalError:
-      db.session.rollback()
-    try:
-      Restaurante.query.delete()
-    except OperationalError:
-      db.session.rollback()
-    try:
-      Empresa.query.delete()
-    except OperationalError:
-      db.session.rollback()
-
-    db.session.commit()
+    limpiar_base_de_datos()
 
     print("Inicializando seed...")
 
@@ -89,10 +90,12 @@ with app.app_context():
         status="active",
         empresa_id=None,
         restaurante_id=None,
-        password=generate_password_hash("Haf1103."),
+        password=generate_password_hash(
+            "Haf1103.", method=PASSWORD_HASH_METHOD
+        ),
     )
     db.session.add(superadmin)
-    db.session.commit()
+    db.session.flush()
 
     proveedores_base = [
         {"nombre": "Gas y Energia", "categoria": "otros"},
@@ -132,7 +135,7 @@ with app.app_context():
     for admin_idx, admin_info in enumerate(admins_info, start=1):
         empresa = Empresa(nombre=admin_info["empresa"], activo=True)
         db.session.add(empresa)
-        db.session.commit()
+        db.session.flush()
 
         admin_user = Usuario(
             nombre=admin_info["nombre"],
@@ -141,10 +144,12 @@ with app.app_context():
             status="active",
             empresa_id=empresa.id,
             restaurante_id=None,
-            password=generate_password_hash("123456"),
+            password=generate_password_hash(
+                "123456", method=PASSWORD_HASH_METHOD
+            ),
         )
         db.session.add(admin_user)
-        db.session.commit()
+        db.session.flush()
 
         # Dos directores por empresa
         empresa_slug = limpiar_email(empresa.nombre)
@@ -156,10 +161,12 @@ with app.app_context():
                 status="active",
                 empresa_id=empresa.id,
                 restaurante_id=None,
-                password=generate_password_hash("123456"),
+                password=generate_password_hash(
+                    "123456", method=PASSWORD_HASH_METHOD
+                ),
             )
             db.session.add(director)
-        db.session.commit()
+        db.session.flush()
 
         print(f"Creando restaurantes para {admin_info['nombre']}...")
 
@@ -175,7 +182,7 @@ with app.app_context():
                 empresa_id=empresa.id,
             )
             db.session.add(restaurante)
-            db.session.commit()
+            db.session.flush()
 
             # Margen objetivo por restaurante
             margen_min = round(random.uniform(0.30, 0.34), 2)
@@ -186,7 +193,7 @@ with app.app_context():
                 porcentaje_max=margen_max * 100,
             )
             db.session.add(margen)
-            db.session.commit()
+            db.session.flush()
 
             # Usuarios por restaurante
             encargado = Usuario(
@@ -196,7 +203,9 @@ with app.app_context():
                 status="active",
                 empresa_id=empresa.id,
                 restaurante_id=restaurante.id,
-                password=generate_password_hash("123456"),
+                password=generate_password_hash(
+                    "123456", method=PASSWORD_HASH_METHOD
+                ),
             )
             chef = Usuario(
                 nombre=f"{nombres_chef[i % len(nombres_chef)]} {random.choice(apellidos)}",
@@ -205,11 +214,13 @@ with app.app_context():
                 status="active",
                 empresa_id=empresa.id,
                 restaurante_id=restaurante.id,
-                password=generate_password_hash("123456"),
+                password=generate_password_hash(
+                    "123456", method=PASSWORD_HASH_METHOD
+                ),
             )
             db.session.add(encargado)
             db.session.add(chef)
-            db.session.commit()
+            db.session.flush()
 
             # Proveedores (10 por restaurante)
             proveedores_rest = []
@@ -225,7 +236,7 @@ with app.app_context():
                 )
                 proveedores_rest.append(proveedor_obj)
                 db.session.add(proveedor_obj)
-            db.session.commit()
+            db.session.flush()
 
             # Estado de gasto ficticio para calibrar montos
             estado_gasto = random.choice(["dentro", "limite", "fuera"])
@@ -276,6 +287,7 @@ with app.app_context():
                 )
                 db.session.add(venta)
 
-            db.session.commit()
+            db.session.flush()
 
+    db.session.commit()
     print("Base de datos reiniciada con exito.")

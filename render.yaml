@@ -10,22 +10,34 @@ services:
     envVars:
       - key: VITE_BASENAME
         value: /
+      - key: VITE_BACKEND_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
       - key: FLASK_APP
         value: src/app.py
       - key: FLASK_DEBUG
         value: "0"
       - key: FLASK_APP_KEY
-        value: any_key_works
+        sync: false
       - key: PYTHON_VERSION
-        value: 3.10.6
+        value: 3.13.7
+      - key: NODE_VERSION
+        value: 24.18.0
       - key: DATABASE_URL
         fromDatabase:
           name: postgresql-trapezoidal-42170
           property: connectionString
       - key: JWT_SECRET_KEY
-        value: tu_clave_super_secreta
+        sync: false
       - key: SENDGRID_API_KEY
-        value: tu_api_key_real_aqui
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: EMAIL_SENDER
+        sync: false
 
 databases:
   - name: postgresql-trapezoidal-42170
