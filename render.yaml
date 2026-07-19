@@ -3,7 +3,7 @@ services:
     region: ohio
     name: sample-service-name
     env: python
-    buildCommand: "./render_build.sh"
+    buildCommand: "bash ./render_build.sh"
     startCommand: "gunicorn wsgi --chdir ./src/"
     plan: free
     numInstances: 1
