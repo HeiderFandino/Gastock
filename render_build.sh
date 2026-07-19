@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# exit on error
 set -o errexit
 
-npm install
+# Frontend: install exactly the versions from package-lock.json.
+npm ci --include=dev
 npm run build
 
-pip install pipenv
-pipenv install
+# Backend: Pipfile.lock is the source of truth in every environment.
+python -m pip install --upgrade pip pipenv
+pipenv install --system --deploy
 
 # Aplicar migraciones pendientes sin resetear la base de datos
-pipenv run flask db upgrade
+python -m flask db upgrade
 
 echo "✅ Migrations applied"

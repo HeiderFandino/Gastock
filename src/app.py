@@ -25,7 +25,12 @@ ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins="*")
+frontend_url = os.getenv("FRONTEND_URL")
+CORS(
+    app,
+    supports_credentials=True,
+    origins=[frontend_url] if frontend_url else "*"
+)
 app.url_map.strict_slashes = False
 
 # JWT config

@@ -12,7 +12,7 @@ Gastock es la plataforma que usamos para controlar la salud financiera de varios
 ## Tecnologías
 - **Frontend:** React 18 + Vite, React Router, Bootstrap 5, Bootstrap Icons, FontAwesome, Chart.js, Recharts, React-Select.
 - **Backend:** Flask, SQLAlchemy, Alembic/Flask-Migrate, Flask-JWT-Extended, Flask-Mail, SendGrid.
-- **Herramientas:** Pipenv, Node 20, Python 3.13, Render (deploy), Dockerfile y Procfile listos para producción.
+- **Herramientas:** Pipenv, Node 24, Python 3.13, Render (deploy), Dockerfile y Procfile listos para producción.
 
 ## Estructura del proyecto
 ```

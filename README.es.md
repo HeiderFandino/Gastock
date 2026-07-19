@@ -11,9 +11,9 @@ Construye aplicaciones web usando React.js para el front end y python/flask para
 
 ### 1) Instalación:
 
-> Si usas Github Codespaces (recomendado) o Gitpod, esta plantilla ya vendrá con Python, Node y la base de datos Posgres instalados. Si estás trabajando localmente, asegúrate de instalar Python 3.10, Node.
+> Si usas Github Codespaces (recomendado) o Gitpod, esta plantilla ya vendrá con Python, Node y la base de datos Postgres instalados. Si estás trabajando localmente, asegúrate de instalar Python 3.13 y Node 24.
 
-Se recomienda instalar el backend primero, asegúrate de tener Python 3.10, Pipenv y un motor de base de datos (se recomienda Posgres).
+Se recomienda instalar el backend primero; asegúrate de tener Python 3.13, Pipenv y un motor de base de datos (se recomienda Postgres).
 
 1. Instala los paquetes de python: `$ pipenv install`
 2. Crea un archivo .env basado en el .env.example: `$ cp .env.example .env`
