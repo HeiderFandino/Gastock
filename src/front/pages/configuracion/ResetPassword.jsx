@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/img/gastock2_tmp.png";
+import { readApiResponse } from "../../utils/readApiResponse.js";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -41,7 +42,7 @@ const ResetPassword = () => {
         body: JSON.stringify({ token, new_password: password }),
       });
 
-      const data = await resp.json();
+      const data = await readApiResponse(resp);
 
       if (resp.ok && data.success) {
         setSuccess(true);

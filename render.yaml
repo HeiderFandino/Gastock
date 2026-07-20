@@ -30,13 +30,9 @@ services:
           property: connectionString
       - key: JWT_SECRET_KEY
         sync: false
-      - key: SENDGRID_API_KEY
-        sync: false
       - key: EMAIL_USER
         sync: false
       - key: EMAIL_PASS
-        sync: false
-      - key: EMAIL_SENDER
         sync: false
 
 databases:

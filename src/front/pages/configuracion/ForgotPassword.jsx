@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/img/gastock2_tmp.png";
+import { readApiResponse } from "../../utils/readApiResponse.js";
 
 const ForgotPassword = () => {
 
@@ -18,7 +19,7 @@ const ForgotPassword = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = await resp.json();
+      const data = await readApiResponse(resp);
       if (resp.ok && data.success) {
         setEmailSent(true);
         setMessage("Correo enviado con éxito. Revisa tu bandeja de entrada.");
@@ -88,7 +89,6 @@ const ForgotPassword = () => {
   );
 };
 export default ForgotPassword;
-
 
 
 

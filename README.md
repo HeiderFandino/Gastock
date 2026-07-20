@@ -11,7 +11,7 @@ Gastock es la plataforma que usamos para controlar la salud financiera de varios
 
 ## Tecnologías
 - **Frontend:** React 18 + Vite, React Router, Bootstrap 5, Bootstrap Icons, FontAwesome, Chart.js, Recharts, React-Select.
-- **Backend:** Flask, SQLAlchemy, Alembic/Flask-Migrate, Flask-JWT-Extended, Flask-Mail, SendGrid.
+- **Backend:** Flask, SQLAlchemy, Alembic/Flask-Migrate, Flask-JWT-Extended y Flask-Mail.
 - **Herramientas:** Pipenv, Node 24, Python 3.13, Render (deploy), Dockerfile y Procfile listos para producción.
 
 ## Estructura del proyecto
@@ -31,9 +31,8 @@ src/
 2. Prepara un archivo .env (puedes partir del existente) y define:
    - DATABASE_URL (PostgreSQL recomendado)
    - JWT_SECRET_KEY
-   - EMAIL_USER y EMAIL_PASS (credenciales SMTP)
-   - EMAIL_SENDER (alias para los correos salientes)
-   - SENDGRID_API_KEY (para notificaciones transaccionales)
+   - EMAIL_USER y EMAIL_PASS (credenciales SMTP de Gmail)
+   - FRONTEND_URL (origen público del frontend para los enlaces de recuperación)
    - FLASK_DEBUG=1 opcional para desarrollo
    - En el frontend, VITE_BACKEND_URL apuntando al origen del API, por ejemplo http://localhost:3001
 

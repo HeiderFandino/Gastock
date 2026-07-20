@@ -1,20 +1,26 @@
 import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from flask_mail import Message
+
+from api.mail.mail_config import mail
 
 def send_email(to_email, subject, html_content):
+    """Envía un correo usando la configuración SMTP de Flask-Mail."""
     try:
-        message = Mail(
-            from_email=os.getenv("EMAIL_SENDER"),
-            to_emails=to_email,
+        sender_email = os.getenv("EMAIL_USER")
+        if not sender_email:
+            print("Error al enviar correo: EMAIL_USER no está configurado")
+            return False
+
+        message = Message(
             subject=subject,
-            html_content=html_content
+            recipients=[to_email],
+            sender=sender_email,
+            html=html_content,
         )
 
-        sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-        response = sg.send(message)
-        print("Correo enviado:", response.status_code)
+        mail.send(message)
+        print(f"Correo enviado correctamente a {to_email}")
         return True
     except Exception as e:
-        print("Error al enviar correo:", e)
+        print(f"Error al enviar correo a {to_email}: {type(e).__name__}: {e}")
         return False
