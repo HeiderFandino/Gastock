@@ -1,29 +1,15 @@
-from flask_mail import Message
-from api.mail.mail_config import mail
-
 import os
+
+from api.email_utils import send_email
 
 def send_reset_email(address, token):
     try:
         # URL del frontend
-        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+        frontend_url = os.getenv(
+            'FRONTEND_URL', 'http://localhost:3000'
+        ).rstrip('/')
         reset_url = f"{frontend_url}/reset?token={token}"
-        print("FRONTEND URL:", frontend_url)
-        print("RESET URL:", reset_url)
-        print("Enviando a:", address)
-        # Crear el mensaje
-        sender_email = os.getenv('EMAIL_USER')
-        print(f"Usando sender: {sender_email}")
-
-        if not sender_email:
-            print("ERROR: EMAIL_USER no está configurado")
-            return {'success': False, 'msg': 'Configuración de email faltante'}
-
-        msg = Message(
-            subject="🔑 Restablece tu contraseña de Gastock",
-            recipients=[address],
-            sender=sender_email,
-            html=f"""
+        html_content = f"""
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
                     <div style="background: linear-gradient(180deg, #0d2a55 0%, #0b1d3a 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
                         <h1 style="color: white; margin: 0; font-size: 24px;">🔧 Gastock</h1>
@@ -58,16 +44,18 @@ def send_reset_email(address, token):
                     </div>
                 </div>
             """
+
+        sent = send_email(
+            to_email=address,
+            subject="🔑 Restablece tu contraseña de Gastock",
+            html_content=html_content,
         )
-        # Enviar el mensaje
-        mail.send(msg)
-        print("Correo enviado correctamente a:", address)
-        return {'success': True, 'msg': 'Correo enviado con éxito'}
+        if sent:
+            return {'success': True, 'msg': 'Correo enviado con éxito'}
+        return {'success': False, 'msg': 'No se pudo enviar el correo'}
     except Exception as e:
-        print("Error enviando el correo:", str(e))
-        return {'success': False, 'msg': str(e)}
-
-
+        print(f"Error preparando el correo de recuperación: {type(e).__name__}: {e}")
+        return {'success': False, 'msg': 'No se pudo enviar el correo'}
 
 
 

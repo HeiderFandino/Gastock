@@ -17,8 +17,6 @@ import traceback
 from api.email_utils import send_email
 from datetime import datetime, timedelta, date
 import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 import random
 import unicodedata
 from calendar import monthrange
@@ -26,33 +24,6 @@ from calendar import monthrange
 
 api = Blueprint('api', __name__)
 PASSWORD_HASH_METHOD = "pbkdf2:sha256"
-
-
-def send_email(to_email, subject, html_content):
-    """
-    Envía un correo utilizando SendGrid.
-    - Usa EMAIL_SENDER como remitente desde .env
-    - Usa SENDGRID_API_KEY para autenticación
-    """
-
-    try:
-        message = Mail(
-            from_email=os.getenv(
-                "EMAIL_SENDER", "OhMyChef <ohmychefapp@gmail.com>"),
-            to_emails=to_email,
-            subject=subject,
-            html_content=html_content
-        )
-
-        sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-        response = sg.send(message)
-
-        print(f"✅ Correo enviado a {to_email}")
-        return True
-
-    except Exception as e:
-        print("❌ Error al enviar correo:", str(e))
-        return False
 
 
 @api.route('/forgot-password', methods=['POST'])
@@ -299,10 +270,8 @@ def register():
         except Exception as log_error:
             print(f"⚠️ Error en logging de creación de usuario: {log_error}")
 
-        # 📬 Enviar correo con SendGrid (solo si no es super_admin inicial)
+        # Enviar correo de bienvenida con Flask-Mail
         try:
-            from api.email_utils import send_email
-
             subject = "Bienvenido a OhMyChef!"
             html_content = f"""
             <h3>Hola {data['nombre']},</h3>
